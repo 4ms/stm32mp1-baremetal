@@ -1,0 +1,5105 @@
+From c4b103412f1a8cd3472b9d82f7d73737803cf7e7 Mon Sep 17 00:00:00 2001
+From: Romuald JEANNE <romuald.jeanne@st.com>
+Date: Fri, 5 Jun 2020 13:41:19 +0200
+Subject: [PATCH 1/5] ARM v2020.01-stm32mp-r1 MACHINE
+
+---
+ .gitignore                                         |    3 +
+ CONTRIBUTING.md                                    |   30 +
+ MAINTAINERS                                        |    1 +
+ Makefile                                           |    2 +-
+ arch/arm/lib/bootm.c                               |    3 +
+ arch/arm/lib/crt0.S                                |    3 +-
+ arch/arm/mach-stm32mp/Kconfig                      |   79 +-
+ arch/arm/mach-stm32mp/Makefile                     |    4 +-
+ arch/arm/mach-stm32mp/boot_params.c                |   45 +
+ arch/arm/mach-stm32mp/bsec.c                       |  121 +-
+ arch/arm/mach-stm32mp/cmd_stm32prog/Makefile       |    9 +
+ .../arm/mach-stm32mp/cmd_stm32prog/cmd_stm32prog.c |  191 +++
+ arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c    | 1743 ++++++++++++++++++++
+ arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.h    |  185 +++
+ .../mach-stm32mp/cmd_stm32prog/stm32prog_serial.c  |  993 +++++++++++
+ .../arm/mach-stm32mp/cmd_stm32prog/stm32prog_usb.c |  232 +++
+ arch/arm/mach-stm32mp/cpu.c                        |  107 +-
+ arch/arm/mach-stm32mp/dram_init.c                  |   18 +
+ arch/arm/mach-stm32mp/fdt.c                        |  132 +-
+ arch/arm/mach-stm32mp/include/mach/bsec.h          |    7 +
+ arch/arm/mach-stm32mp/include/mach/ddr.h           |    6 +-
+ arch/arm/mach-stm32mp/include/mach/stm32.h         |   24 +-
+ arch/arm/mach-stm32mp/include/mach/stm32mp1_smc.h  |   13 +-
+ arch/arm/mach-stm32mp/include/mach/stm32prog.h     |   16 +
+ arch/arm/mach-stm32mp/include/mach/sys_proto.h     |   24 +-
+ arch/arm/mach-stm32mp/psci.c                       |   22 +
+ arch/arm/mach-stm32mp/pwr_regulator.c              |   31 +-
+ arch/arm/mach-stm32mp/spl.c                        |   43 +-
+ arch/arm/mach-stm32mp/syscon.c                     |    1 -
+ arch/sandbox/dts/test.dts                          |   85 +-
+ arch/sandbox/include/asm/gpio.h                    |   38 +-
+ 31 files changed, 4044 insertions(+), 167 deletions(-)
+ create mode 100644 CONTRIBUTING.md
+ create mode 100644 arch/arm/mach-stm32mp/boot_params.c
+ create mode 100644 arch/arm/mach-stm32mp/cmd_stm32prog/Makefile
+ create mode 100644 arch/arm/mach-stm32mp/cmd_stm32prog/cmd_stm32prog.c
+ create mode 100644 arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c
+ create mode 100644 arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.h
+ create mode 100644 arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog_serial.c
+ create mode 100644 arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog_usb.c
+ create mode 100644 arch/arm/mach-stm32mp/include/mach/bsec.h
+ create mode 100644 arch/arm/mach-stm32mp/include/mach/stm32prog.h
+
+diff --git a/.gitignore b/.gitignore
+index 2e1c8bf..bb2dfee 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -92,3 +92,6 @@ GTAGS
+ *.orig
+ *~
+ \#*#
++
++/oe-*
++bitbake-cookerdaemon.log
+diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md
+new file mode 100644
+index 0000000..3d1bacd
+--- /dev/null
++++ b/CONTRIBUTING.md
+@@ -0,0 +1,30 @@
++﻿# Contributing guide
++
++This document serves as a checklist before contributing to this repository. It includes links to read up on if topics are unclear to you.
++
++This guide mainly focuses on the proper use of Git.
++
++## 1. Issues
++
++STM32MPU projects do not activate "Github issues" feature for the time being. If you need to report an issue or question about this project deliverables, you can report them using [ ST Support Center ](https://my.st.com/ols#/ols/newrequest)  or  [ ST Community MPU Forum ](https://community.st.com/s/topic/0TO0X0000003u2AWAQ/stm32-mpus).
++
++## 2. Pull Requests
++
++STMicrolectronics is happy to receive contributions from the community, based on an initial Contributor License Agreement (CLA) procedure.
++
++* If you are an individual writing original source code and you are sure **you own the intellectual property**, then you need to sign an Individual CLA (https://cla.st.com).
++* If you work for a company that wants also to allow you to contribute with your work, your company needs to provide a Corporate CLA (https://cla.st.com) mentioning your GitHub account name.
++* If you are not sure that a CLA (Individual or Corporate) has been signed for your GitHub account you can check here (https://cla.st.com).
++
++Please note that:
++* The Corporate CLA will always take precedence over the Individual CLA.
++* One CLA submission is sufficient, for any project proposed by STMicroelectronics.
++
++__How to proceed__
++
++* We recommend to fork the project in your GitHub account to further develop your contribution. Please use the latest commit version.
++* Please, submit one Pull Request for one new feature or proposal. This will ease the analysis and final merge if accepted.
++
++__Note__
++
++Merge will not be done directly in GitHub but it will need first to follow internal integration process before public deliver in a standard release. The Pull request will stay open until it is merged and delivered.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 438fb22..afc2f19 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -337,6 +337,7 @@ L:	uboot-stm32@st-md-mailman.stormreply.com (moderated for non-subscribers)
+ T:	git https://gitlab.denx.de/u-boot/custodians/u-boot-stm.git
+ S:	Maintained
+ F:	arch/arm/mach-stm32mp/
++F:	doc/board/st/
+ F:	drivers/adc/stm32-adc*
+ F:	drivers/clk/clk_stm32mp1.c
+ F:	drivers/gpio/stm32_gpio.c
+diff --git a/Makefile b/Makefile
+index 1766f5a..8b390bc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -3,7 +3,7 @@
+ VERSION = 2020
+ PATCHLEVEL = 01
+ SUBLEVEL =
+-EXTRAVERSION =
++EXTRAVERSION = -stm32mp-r1
+ NAME =
+ 
+ # *DOCUMENTATION*
+diff --git a/arch/arm/lib/bootm.c b/arch/arm/lib/bootm.c
+index 769a642..9453c09 100644
+--- a/arch/arm/lib/bootm.c
++++ b/arch/arm/lib/bootm.c
+@@ -74,6 +74,9 @@ void arch_lmb_reserve(struct lmb *lmb)
+ 			gd->bd->bi_dram[bank].size - 1;
+ 		if (sp > bank_end)
+ 			continue;
++		if (bank_end > gd->ram_top)
++			bank_end = gd->ram_top - 1;
++
+ 		lmb_reserve(lmb, sp, bank_end - sp + 1);
+ 		break;
+ 	}
+diff --git a/arch/arm/lib/crt0.S b/arch/arm/lib/crt0.S
+index fb6c37c..df9dd83 100644
+--- a/arch/arm/lib/crt0.S
++++ b/arch/arm/lib/crt0.S
+@@ -127,8 +127,7 @@ ENTRY(_main)
+ 	ldr	r0, [r9, #GD_START_ADDR_SP]	/* sp = gd->start_addr_sp */
+ 	bic	r0, r0, #7	/* 8-byte alignment for ABI compliance */
+ 	mov	sp, r0
+-	ldr	r9, [r9, #GD_BD]		/* r9 = gd->bd */
+-	sub	r9, r9, #GD_SIZE		/* new GD is below bd */
++	ldr	r9, [r9, #GD_NEW_GD]		/* r9 <- gd->new_gd */
+ 
+ 	adr	lr, here
+ 	ldr	r0, [r9, #GD_RELOC_OFF]		/* r0 = gd->reloc_off */
+diff --git a/arch/arm/mach-stm32mp/Kconfig b/arch/arm/mach-stm32mp/Kconfig
+index ae28f6e..f9f7943 100644
+--- a/arch/arm/mach-stm32mp/Kconfig
++++ b/arch/arm/mach-stm32mp/Kconfig
+@@ -33,8 +33,8 @@ config SYS_MALLOC_LEN
+ config ENV_SIZE
+ 	default 0x2000
+ 
+-config TARGET_STM32MP1
+-	bool "Support stm32mp1xx"
++config STM32MP15x
++	bool "Support STMicroelectronics STM32MP15x Soc"
+ 	select ARCH_SUPPORT_PSCI if !STM32MP1_TRUSTED
+ 	select CPU_V7A
+ 	select CPU_V7_HAS_NONSEC if !STM32MP1_TRUSTED
+@@ -45,19 +45,47 @@ config TARGET_STM32MP1
+ 	select STM32_RESET
+ 	select STM32_SERIAL
+ 	select SYS_ARCH_TIMER
++	imply CMD_NVEDIT_INFO
++	imply SYSRESET_PSCI if STM32MP1_TRUSTED
++	imply SYSRESET_SYSCON if !STM32MP1_TRUSTED
++	help
++		support of STMicroelectronics SOC STM32MP15x family
++		STM32MP157, STM32MP153 or STM32MP151
++		STMicroelectronics MPU with core ARMv7
++		dual core A7 for STM32MP157/3, monocore for STM32MP151
++		target all the STMicroelectronics board with SOC STM32MP1 family
++
++choice
++	prompt "STM32MP15x board select"
++	optional
++
++config TARGET_ST_STM32MP15x
++	bool "STMicroelectronics STM32MP15x boards"
++	select STM32MP15x
+ 	imply BOOTCOUNT_LIMIT
++	imply BOOTSTAGE
+ 	imply CMD_BOOTCOUNT
++	imply CMD_BOOTSTAGE
+ 	imply CMD_CLS if CMD_BMP
+ 	imply DISABLE_CONSOLE
+ 	imply PRE_CONSOLE_BUFFER
+ 	imply SILENT_CONSOLE
+-	imply SYSRESET_PSCI if STM32MP1_TRUSTED
+-	imply SYSRESET_SYSCON if !STM32MP1_TRUSTED
++	imply VERSION_VARIABLE
+ 	help
+-		target STMicroelectronics SOC STM32MP1 family
+-		STM32MP157, STM32MP153 or STM32MP151
+-		STMicroelectronics MPU with core ARMv7
+-		dual core A7 for STM32MP157/3, monocore for STM32MP151
++		target the STMicroelectronics board with SOC STM32MP15x
++		managed by board/st/stm32mp1:
++		Evalulation board (EV1) or Discovery board (DK1 and DK2).
++		The difference between board are managed with devicetree
++
++config TARGET_DH_STM32MP1_PDK2
++	bool "DH STM32MP1 PDK2"
++	select STM32MP15x
++	imply BOOTCOUNT_LIMIT
++	imply CMD_BOOTCOUNT
++	help
++		Target the DH PDK2 development kit with STM32MP15x SoM.
++
++endchoice
+ 
+ config STM32MP1_TRUSTED
+ 	bool "Support trusted boot with TF-A"
+@@ -69,23 +97,8 @@ config STM32MP1_TRUSTED
+ 		BootRom => TF-A.stm32 (clock & DDR) => U-Boot.stm32
+ 		TF-A monitor provides proprietary SMC to manage secure devices
+ 
+-config STM32MP1_OPTEE
+-	bool "Support trusted boot with TF-A and OP-TEE"
+-	depends on STM32MP1_TRUSTED
+-	default n
+-	help
+-		Say Y here to enable boot with TF-A and OP-TEE
+-		Trusted boot chain is :
+-		BootRom => TF-A.stm32 (clock & DDR) => OP-TEE => U-Boot.stm32
+-		OP-TEE monitor provides ST SMC to access to secure resources
+-
+ config SYS_TEXT_BASE
+-	prompt "U-Boot base address"
+ 	default 0xC0100000
+-	help
+-		configure the U-Boot base address
+-		when DDR driver is used:
+-		  DDR + 1MB (0xC0100000)
+ 
+ config NR_DRAM_BANKS
+ 	default 1
+@@ -100,11 +113,28 @@ config SYS_MMCSD_RAW_MODE_U_BOOT_PARTITION_MMC2
+ 
+ config STM32_ETZPC
+ 	bool "STM32 Extended TrustZone Protection"
+-	depends on TARGET_STM32MP1
++	depends on STM32MP15x
+ 	default y
+ 	help
+ 	  Say y to enable STM32 Extended TrustZone Protection
+ 
++config CMD_STM32PROG
++	bool "command stm32prog for STM32CudeProgrammer"
++	select DFU
++	select DFU_RAM
++	select DFU_VIRT
++	select PARTITION_TYPE_GUID
++	imply CMD_GPT if MMC
++	imply CMD_MTD if MTD
++	imply DFU_MMC if MMC
++	imply DFU_MTD if MTD
++	help
++		activate a specific command stm32prog for STM32MP soc family
++		witch update the device with the tools STM32CubeProgrammer,
++		using UART with STM32 protocol or USB with DFU protocol
++		NB: access to not volatile memory (NOR/NAND/SD/eMMC) is based
++		    on U-Boot DFU framework
++
+ config CMD_STM32KEY
+ 	bool "command stm32key to fuse public key hash"
+ 	default y
+@@ -147,5 +177,6 @@ config DEBUG_UART_CLOCK
+ endif
+ 
+ source "board/st/stm32mp1/Kconfig"
++source "board/dhelectronics/dh_stm32mp1/Kconfig"
+ 
+ endif
+diff --git a/arch/arm/mach-stm32mp/Makefile b/arch/arm/mach-stm32mp/Makefile
+index eee39c2..1fdacf4 100644
+--- a/arch/arm/mach-stm32mp/Makefile
++++ b/arch/arm/mach-stm32mp/Makefile
+@@ -6,13 +6,15 @@
+ obj-y += cpu.o
+ obj-y += dram_init.o
+ obj-y += syscon.o
++obj-y += bsec.o
+ 
+ ifdef CONFIG_SPL_BUILD
+ obj-y += spl.o
+ else
+-obj-y += bsec.o
++obj-$(CONFIG_CMD_STM32PROG) += cmd_stm32prog/
+ obj-$(CONFIG_CMD_STM32KEY) += cmd_stm32key.o
+ obj-$(CONFIG_ARMV7_PSCI) += psci.o
++obj-$(CONFIG_STM32MP1_TRUSTED) += boot_params.o
+ endif
+ 
+ obj-$(CONFIG_$(SPL_)DM_REGULATOR) += pwr_regulator.o
+diff --git a/arch/arm/mach-stm32mp/boot_params.c b/arch/arm/mach-stm32mp/boot_params.c
+new file mode 100644
+index 0000000..e4351de
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/boot_params.c
+@@ -0,0 +1,45 @@
++// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++/*
++ * Copyright (C) 2019, STMicroelectronics - All Rights Reserved
++ */
++
++#include <common.h>
++#include <asm/sections.h>
++#include <asm/system.h>
++
++/*
++ * Force data-section, as .bss will not be valid
++ * when save_boot_params is invoked.
++ */
++static unsigned long nt_fw_dtb __section(".data");
++
++/*
++ * Save the FDT address provided by TF-A in r2 at boot time
++ * This function is called from start.S
++ */
++void save_boot_params(unsigned long r0, unsigned long r1, unsigned long r2,
++		      unsigned long r3)
++{
++	nt_fw_dtb = r2;
++
++	save_boot_params_ret();
++}
++
++/*
++ * Use the saved FDT address provided by TF-A at boot time (NT_FW_CONFIG =
++ * Non Trusted Firmware configuration file) when the pointer is valid
++ */
++void *board_fdt_blob_setup(void)
++{
++	debug("%s: nt_fw_dtb=%lx\n", __func__, nt_fw_dtb);
++
++	/* use external device tree only if address is valid */
++	if (nt_fw_dtb >= STM32_DDR_BASE) {
++		if (fdt_magic(nt_fw_dtb) == FDT_MAGIC)
++			return (void *)nt_fw_dtb;
++		debug("%s: DTB not found.\n", __func__);
++	}
++	debug("%s: fall back to builtin DTB, %p\n", __func__, &_end);
++
++	return (void *)&_end;
++}
+diff --git a/arch/arm/mach-stm32mp/bsec.c b/arch/arm/mach-stm32mp/bsec.c
+index a77c706..7e04ddd 100644
+--- a/arch/arm/mach-stm32mp/bsec.c
++++ b/arch/arm/mach-stm32mp/bsec.c
+@@ -7,13 +7,12 @@
+ #include <dm.h>
+ #include <misc.h>
+ #include <asm/io.h>
++#include <asm/arch/bsec.h>
+ #include <asm/arch/stm32mp1_smc.h>
+ #include <linux/arm-smccc.h>
+ #include <linux/iopoll.h>
+ 
+ #define BSEC_OTP_MAX_VALUE		95
+-
+-#ifndef CONFIG_STM32MP1_TRUSTED
+ #define BSEC_TIMEOUT_US			10000
+ 
+ /* BSEC REGISTER OFFSET (base relative) */
+@@ -22,11 +21,13 @@
+ #define BSEC_OTP_WRDATA_OFF		0x008
+ #define BSEC_OTP_STATUS_OFF		0x00C
+ #define BSEC_OTP_LOCK_OFF		0x010
++#define BSEC_DENABLE_OFF		0x014
+ #define BSEC_DISTURBED_OFF		0x01C
+ #define BSEC_ERROR_OFF			0x034
+-#define BSEC_SPLOCK_OFF			0x064 /* Program safmem sticky lock */
+-#define BSEC_SWLOCK_OFF			0x07C /* write in OTP sticky lock */
+-#define BSEC_SRLOCK_OFF			0x094 /* shadowing sticky lock */
++#define BSEC_WRLOCK_OFF			0x04C /* OTP write permananet lock */
++#define BSEC_SPLOCK_OFF			0x064 /* OTP write sticky lock */
++#define BSEC_SWLOCK_OFF			0x07C /* shadow write sticky lock */
++#define BSEC_SRLOCK_OFF			0x094 /* shadow read sticky lock */
+ #define BSEC_OTP_DATA_OFF		0x200
+ 
+ /* BSEC_CONFIGURATION Register MASK */
+@@ -46,6 +47,9 @@
+ #define BSEC_MODE_PROGFAIL_MASK		0x10
+ #define BSEC_MODE_PWR_MASK		0x20
+ 
++/* DENABLE Register */
++#define BSEC_DENABLE_DBGSWENABLE	BIT(10)
++
+ /*
+  * OTP Lock services definition
+  * Value must corresponding to the bit number in the register
+@@ -53,12 +57,12 @@
+ #define BSEC_LOCK_PROGRAM		0x04
+ 
+ /**
+- * bsec_check_error() - Check status of one otp
+- * @base: base address of bsec IP
++ * bsec_lock() - manage lock for each type SR/SP/SW
++ * @address: address of bsec IP register
+  * @otp: otp number (0 - BSEC_OTP_MAX_VALUE)
+- * Return: 0 if no error, -EAGAIN or -ENOTSUPP
++ * Return: true if locked else false
+  */
+-static u32 bsec_check_error(u32 base, u32 otp)
++static bool bsec_read_lock(u32 address, u32 otp)
+ {
+ 	u32 bit;
+ 	u32 bank;
+@@ -66,21 +70,17 @@ static u32 bsec_check_error(u32 base, u32 otp)
+ 	bit = 1 << (otp & OTP_LOCK_MASK);
+ 	bank = ((otp >> OTP_LOCK_BANK_SHIFT) & OTP_LOCK_MASK) * sizeof(u32);
+ 
+-	if (readl(base + BSEC_DISTURBED_OFF + bank) & bit)
+-		return -EAGAIN;
+-	else if (readl(base + BSEC_ERROR_OFF + bank) & bit)
+-		return -ENOTSUPP;
+-
+-	return 0;
++	return !!(readl(address + bank) & bit);
+ }
+ 
++#ifndef CONFIG_STM32MP1_TRUSTED
+ /**
+- * bsec_lock() - manage lock for each type SR/SP/SW
+- * @address: address of bsec IP register
++ * bsec_check_error() - Check status of one otp
++ * @base: base address of bsec IP
+  * @otp: otp number (0 - BSEC_OTP_MAX_VALUE)
+- * Return: true if locked else false
++ * Return: 0 if no error, -EAGAIN or -ENOTSUPP
+  */
+-static bool bsec_read_lock(u32 address, u32 otp)
++static u32 bsec_check_error(u32 base, u32 otp)
+ {
+ 	u32 bit;
+ 	u32 bank;
+@@ -88,7 +88,12 @@ static bool bsec_read_lock(u32 address, u32 otp)
+ 	bit = 1 << (otp & OTP_LOCK_MASK);
+ 	bank = ((otp >> OTP_LOCK_BANK_SHIFT) & OTP_LOCK_MASK) * sizeof(u32);
+ 
+-	return !!(readl(address + bank) & bit);
++	if (readl(base + BSEC_DISTURBED_OFF + bank) & bit)
++		return -EAGAIN;
++	else if (readl(base + BSEC_ERROR_OFF + bank) & bit)
++		return -ENOTSUPP;
++
++	return 0;
+ }
+ 
+ /**
+@@ -324,6 +329,16 @@ static int stm32mp_bsec_read_shadow(struct udevice *dev, u32 *val, u32 otp)
+ #endif
+ }
+ 
++static int stm32mp_bsec_read_lock(struct udevice *dev, u32 *val, u32 otp)
++{
++	struct stm32mp_bsec_platdata *plat = dev_get_platdata(dev);
++
++	/* return OTP permanent write lock status */
++	*val = bsec_read_lock(plat->base + BSEC_WRLOCK_OFF, otp);
++
++	return 0;
++}
++
+ static int stm32mp_bsec_write_otp(struct udevice *dev, u32 val, u32 otp)
+ {
+ #ifdef CONFIG_STM32MP1_TRUSTED
+@@ -350,22 +365,41 @@ static int stm32mp_bsec_write_shadow(struct udevice *dev, u32 val, u32 otp)
+ #endif
+ }
+ 
++static int stm32mp_bsec_write_lock(struct udevice *dev, u32 val, u32 otp)
++{
++#ifdef CONFIG_STM32MP1_TRUSTED
++	if (val == 1)
++		return stm32_smc_exec(STM32_SMC_BSEC,
++				      STM32_SMC_WRLOCK_OTP,
++				      otp, 0);
++	if (val == 0)
++		return 0; /* nothing to do */
++
++	return -EINVAL;
++#else
++	return -ENOTSUPP;
++#endif
++}
++
+ static int stm32mp_bsec_read(struct udevice *dev, int offset,
+ 			     void *buf, int size)
+ {
+ 	int ret;
+ 	int i;
+-	bool shadow = true;
++	bool shadow = true, lock = false;
+ 	int nb_otp = size / sizeof(u32);
+ 	int otp;
+ 	unsigned int offs = offset;
+ 
+-	if (offs >= STM32_BSEC_OTP_OFFSET) {
++	if (offs >= STM32_BSEC_LOCK_OFFSET) {
++		offs -= STM32_BSEC_LOCK_OFFSET;
++		lock = true;
++	} else if (offs >= STM32_BSEC_OTP_OFFSET) {
+ 		offs -= STM32_BSEC_OTP_OFFSET;
+ 		shadow = false;
+ 	}
+ 
+-	if (offs < 0 || (offs % 4) || (size % 4))
++	if ((offs % 4) || (size % 4))
+ 		return -EINVAL;
+ 
+ 	otp = offs / sizeof(u32);
+@@ -373,7 +407,9 @@ static int stm32mp_bsec_read(struct udevice *dev, int offset,
+ 	for (i = otp; i < (otp + nb_otp) && i <= BSEC_OTP_MAX_VALUE; i++) {
+ 		u32 *addr = &((u32 *)buf)[i - otp];
+ 
+-		if (shadow)
++		if (lock)
++			ret = stm32mp_bsec_read_lock(dev, addr, i);
++		else if (shadow)
+ 			ret = stm32mp_bsec_read_shadow(dev, addr, i);
+ 		else
+ 			ret = stm32mp_bsec_read_otp(dev, addr, i);
+@@ -392,17 +428,20 @@ static int stm32mp_bsec_write(struct udevice *dev, int offset,
+ {
+ 	int ret = 0;
+ 	int i;
+-	bool shadow = true;
++	bool shadow = true, lock = false;
+ 	int nb_otp = size / sizeof(u32);
+ 	int otp;
+ 	unsigned int offs = offset;
+ 
+-	if (offs >= STM32_BSEC_OTP_OFFSET) {
++	if (offs >= STM32_BSEC_LOCK_OFFSET) {
++		offs -= STM32_BSEC_LOCK_OFFSET;
++		lock = true;
++	} else if (offs >= STM32_BSEC_OTP_OFFSET) {
+ 		offs -= STM32_BSEC_OTP_OFFSET;
+ 		shadow = false;
+ 	}
+ 
+-	if (offs < 0 || (offs % 4) || (size % 4))
++	if ((offs % 4) || (size % 4))
+ 		return -EINVAL;
+ 
+ 	otp = offs / sizeof(u32);
+@@ -410,7 +449,9 @@ static int stm32mp_bsec_write(struct udevice *dev, int offset,
+ 	for (i = otp; i < otp + nb_otp && i <= BSEC_OTP_MAX_VALUE; i++) {
+ 		u32 *val = &((u32 *)buf)[i - otp];
+ 
+-		if (shadow)
++		if (lock)
++			ret = stm32mp_bsec_write_lock(dev, *val, i);
++		else if (shadow)
+ 			ret = stm32mp_bsec_write_shadow(dev, *val, i);
+ 		else
+ 			ret = stm32mp_bsec_write_otp(dev, *val, i);
+@@ -437,7 +478,7 @@ static int stm32mp_bsec_ofdata_to_platdata(struct udevice *dev)
+ 	return 0;
+ }
+ 
+-#ifndef CONFIG_STM32MP1_TRUSTED
++#if !defined(CONFIG_STM32MP1_TRUSTED) && !defined(CONFIG_SPL_BUILD)
+ static int stm32mp_bsec_probe(struct udevice *dev)
+ {
+ 	int otp;
+@@ -464,7 +505,27 @@ U_BOOT_DRIVER(stm32mp_bsec) = {
+ 	.ofdata_to_platdata = stm32mp_bsec_ofdata_to_platdata,
+ 	.platdata_auto_alloc_size = sizeof(struct stm32mp_bsec_platdata),
+ 	.ops = &stm32mp_bsec_ops,
+-#ifndef CONFIG_STM32MP1_TRUSTED
++#if !defined(CONFIG_STM32MP1_TRUSTED) && !defined(CONFIG_SPL_BUILD)
+ 	.probe = stm32mp_bsec_probe,
+ #endif
+ };
++
++bool bsec_dbgswenable(void)
++{
++	struct udevice *dev;
++	struct stm32mp_bsec_platdata *plat;
++	int ret;
++
++	ret = uclass_get_device_by_driver(UCLASS_MISC,
++					  DM_GET_DRIVER(stm32mp_bsec), &dev);
++	if (ret || !dev) {
++		pr_debug("bsec driver not available\n");
++		return false;
++	}
++
++	plat = dev_get_platdata(dev);
++	if (readl(plat->base + BSEC_DENABLE_OFF) & BSEC_DENABLE_DBGSWENABLE)
++		return true;
++
++	return false;
++}
+diff --git a/arch/arm/mach-stm32mp/cmd_stm32prog/Makefile b/arch/arm/mach-stm32mp/cmd_stm32prog/Makefile
+new file mode 100644
+index 0000000..548a378
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/cmd_stm32prog/Makefile
+@@ -0,0 +1,9 @@
++# SPDX-License-Identifier: GPL-2.0+
++#
++# Copyright (C) 2020, STMicroelectronics - All Rights Reserved
++#
++
++obj-y += cmd_stm32prog.o
++obj-y += stm32prog.o
++obj-y += stm32prog_serial.o
++obj-y += stm32prog_usb.o
+diff --git a/arch/arm/mach-stm32mp/cmd_stm32prog/cmd_stm32prog.c b/arch/arm/mach-stm32mp/cmd_stm32prog/cmd_stm32prog.c
+new file mode 100644
+index 0000000..db1f3a7
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/cmd_stm32prog/cmd_stm32prog.c
+@@ -0,0 +1,191 @@
++// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++/*
++ * Copyright (C) 2020, STMicroelectronics - All Rights Reserved
++ */
++
++#include <common.h>
++#include <command.h>
++#include <dfu.h>
++#include <image.h>
++#include <asm/arch/stm32prog.h>
++#include "stm32prog.h"
++
++struct stm32prog_data *stm32prog_data;
++
++static void enable_vidconsole(void)
++{
++#ifdef CONFIG_DM_VIDEO
++	char *stdname;
++	char buf[64];
++
++	stdname = env_get("stdout");
++	if (!stdname || !strstr(stdname, "vidconsole")) {
++		if (!stdname)
++			snprintf(buf, sizeof(buf), "serial,vidconsole");
++		else
++			snprintf(buf, sizeof(buf), "%s,vidconsole", stdname);
++		env_set("stdout", buf);
++	}
++
++	stdname = env_get("stderr");
++	if (!stdname || !strstr(stdname, "vidconsole")) {
++		if (!stdname)
++			snprintf(buf, sizeof(buf), "serial,vidconsole");
++		else
++			snprintf(buf, sizeof(buf), "%s,vidconsole", stdname);
++		env_set("stderr", buf);
++	}
++#endif
++}
++
++static int do_stm32prog(cmd_tbl_t *cmdtp, int flag, int argc,
++			char * const argv[])
++{
++	ulong	addr, size;
++	int dev, ret;
++	enum stm32prog_link_t link = LINK_UNDEFINED;
++	bool reset = false;
++	struct image_header_s header;
++	struct stm32prog_data *data;
++	u32 uimage, dtb;
++
++	if (argc < 3 ||  argc > 5)
++		return CMD_RET_USAGE;
++
++	if (!strcmp(argv[1], "usb"))
++		link = LINK_USB;
++	else if (!strcmp(argv[1], "serial"))
++		link = LINK_SERIAL;
++
++	if (link == LINK_UNDEFINED) {
++		pr_err("not supported link=%s\n", argv[1]);
++		return CMD_RET_USAGE;
++	}
++
++	dev = (int)simple_strtoul(argv[2], NULL, 10);
++
++	addr = STM32_DDR_BASE;
++	size = 0;
++	if (argc > 3) {
++		addr = simple_strtoul(argv[3], NULL, 16);
++		if (!addr)
++			return CMD_RET_FAILURE;
++	}
++	if (argc > 4)
++		size = simple_strtoul(argv[4], NULL, 16);
++
++	/* check STM32IMAGE presence */
++	if (size == 0 &&
++	    !stm32prog_header_check((struct raw_header_s *)addr, &header)) {
++		size = header.image_length + BL_HEADER_SIZE;
++
++		/* uImage detected in STM32IMAGE, execute the script */
++		if (IMAGE_FORMAT_LEGACY ==
++		    genimg_get_format((void *)(addr + BL_HEADER_SIZE)))
++			return source(addr + BL_HEADER_SIZE, "script@1");
++	}
++
++	enable_vidconsole();
++
++	data = (struct stm32prog_data *)malloc(sizeof(*data));
++
++	if (!data) {
++		pr_err("Alloc failed.");
++		return CMD_RET_FAILURE;
++	}
++	stm32prog_data = data;
++
++	ret = stm32prog_init(data, addr, size);
++	if (ret)
++		printf("Invalid or missing layout file.");
++
++	/* prepare DFU for device read/write */
++	ret = stm32prog_dfu_init(data);
++	if (ret)
++		goto cleanup;
++
++	switch (link) {
++	case LINK_SERIAL:
++		ret = stm32prog_serial_init(data, dev);
++		if (ret)
++			goto cleanup;
++		reset = stm32prog_serial_loop(data);
++		break;
++	case LINK_USB:
++		reset = stm32prog_usb_loop(data, dev);
++		break;
++	default:
++		goto cleanup;
++	}
++
++	uimage = data->uimage;
++	dtb = data->dtb;
++
++	stm32prog_clean(data);
++	free(stm32prog_data);
++	stm32prog_data = NULL;
++
++	puts("Download done\n");
++
++	if (uimage) {
++		char boot_addr_start[20];
++		char dtb_addr[20];
++		char *bootm_argv[5] = {
++			"bootm", boot_addr_start, "-", dtb_addr, NULL
++		};
++		if (!dtb)
++			bootm_argv[3] = env_get("fdtcontroladdr");
++		else
++			snprintf(dtb_addr, sizeof(dtb_addr) - 1,
++				 "0x%x", dtb);
++
++		snprintf(boot_addr_start, sizeof(boot_addr_start) - 1,
++			 "0x%x", uimage);
++		printf("Booting kernel at %s - %s...\n\n\n",
++		       boot_addr_start, bootm_argv[3]);
++		/* Try bootm for legacy and FIT format image */
++		if (genimg_get_format((void *)uimage) != IMAGE_FORMAT_INVALID)
++			do_bootm(cmdtp, 0, 4, bootm_argv);
++		else if CONFIG_IS_ENABLED(CMD_BOOTZ)
++			do_bootz(cmdtp, 0, 4, bootm_argv);
++	}
++
++	if (reset) {
++		puts("Reset...\n");
++		run_command("reset", 0);
++	}
++
++	return CMD_RET_SUCCESS;
++
++cleanup:
++	stm32prog_clean(data);
++	free(stm32prog_data);
++	stm32prog_data = NULL;
++
++	return CMD_RET_FAILURE;
++}
++
++U_BOOT_CMD(stm32prog, 5, 0, do_stm32prog,
++	   "<link> <dev> [<addr>] [<size>]\n"
++	   "start communication with tools STM32Cubeprogrammer on <link> with Flashlayout at <addr>",
++	   "<link> = serial|usb\n"
++	   "<dev>  = device instance\n"
++	   "<addr> = address of flashlayout\n"
++	   "<size> = size of flashlayout\n"
++);
++
++bool stm32prog_get_tee_partitions(void)
++{
++	if (stm32prog_data)
++		return stm32prog_data->tee_detected;
++
++	return false;
++}
++
++bool stm32prog_get_fsbl_nor(void)
++{
++	if (stm32prog_data)
++		return stm32prog_data->fsbl_nor_detected;
++
++	return false;
++}
+diff --git a/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c b/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c
+new file mode 100644
+index 0000000..f2f9ed9
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c
+@@ -0,0 +1,1743 @@
++// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++/*
++ * Copyright (C) 2020, STMicroelectronics - All Rights Reserved
++ */
++
++#include <common.h>
++#include <console.h>
++#include <dfu.h>
++#include <malloc.h>
++#include <misc.h>
++#include <mmc.h>
++#include <part.h>
++#include <asm/arch/stm32mp1_smc.h>
++#include <dm/uclass.h>
++#include <jffs2/load_kernel.h>
++#include <linux/list.h>
++#include <linux/list_sort.h>
++#include <linux/mtd/mtd.h>
++#include <linux/sizes.h>
++
++#include "stm32prog.h"
++
++/* Primary GPT header size for 128 entries : 17kB = 34 LBA of 512B */
++#define GPT_HEADER_SZ	34
++
++#define OPT_SELECT	BIT(0)
++#define OPT_EMPTY	BIT(1)
++#define OPT_DELETE	BIT(2)
++
++#define IS_SELECT(part)	((part)->option & OPT_SELECT)
++#define IS_EMPTY(part)	((part)->option & OPT_EMPTY)
++#define IS_DELETE(part)	((part)->option & OPT_DELETE)
++
++#define ALT_BUF_LEN			SZ_1K
++
++#define ROOTFS_MMC0_UUID \
++	EFI_GUID(0xE91C4E10, 0x16E6, 0x4C0E, \
++		 0xBD, 0x0E, 0x77, 0xBE, 0xCF, 0x4A, 0x35, 0x82)
++
++#define ROOTFS_MMC1_UUID \
++	EFI_GUID(0x491F6117, 0x415D, 0x4F53, \
++		 0x88, 0xC9, 0x6E, 0x0D, 0xE5, 0x4D, 0xEA, 0xC6)
++
++#define ROOTFS_MMC2_UUID \
++	EFI_GUID(0xFD58F1C7, 0xBE0D, 0x4338, \
++		 0x88, 0xE9, 0xAD, 0x8F, 0x05, 0x0A, 0xEB, 0x18)
++
++/* RAW parttion (binary / bootloader) used Linux - reserved UUID */
++#define LINUX_RESERVED_UUID "8DA63339-0007-60C0-C436-083AC8230908"
++
++/*
++ * unique partition guid (uuid) for partition named "rootfs"
++ * on each MMC instance = SD Card or eMMC
++ * allow fixed kernel bootcmd: "rootf=PARTUID=e91c4e10-..."
++ */
++static const efi_guid_t uuid_mmc[3] = {
++	ROOTFS_MMC0_UUID,
++	ROOTFS_MMC1_UUID,
++	ROOTFS_MMC2_UUID
++};
++
++DECLARE_GLOBAL_DATA_PTR;
++
++/* order of column in flash layout file */
++enum stm32prog_col_t {
++	COL_OPTION,
++	COL_ID,
++	COL_NAME,
++	COL_TYPE,
++	COL_IP,
++	COL_OFFSET,
++	COL_NB_STM32
++};
++
++/* partition handling routines : CONFIG_CMD_MTDPARTS */
++int mtdparts_init(void);
++int find_dev_and_part(const char *id, struct mtd_device **dev,
++		      u8 *part_num, struct part_info **part);
++
++char *stm32prog_get_error(struct stm32prog_data *data)
++{
++	static const char error_msg[] = "Unspecified";
++
++	if (strlen(data->error) == 0)
++		strcpy(data->error, error_msg);
++
++	return data->error;
++}
++
++u8 stm32prog_header_check(struct raw_header_s *raw_header,
++			  struct image_header_s *header)
++{
++	unsigned int i;
++
++	header->present = 0;
++	header->image_checksum = 0x0;
++	header->image_length = 0x0;
++
++	if (!raw_header || !header) {
++		pr_debug("%s:no header data\n", __func__);
++		return -1;
++	}
++	if (raw_header->magic_number !=
++		(('S' << 0) | ('T' << 8) | ('M' << 16) | (0x32 << 24))) {
++		pr_debug("%s:invalid magic number : 0x%x\n",
++			 __func__, raw_header->magic_number);
++		return -2;
++	}
++	/* only header v1.0 supported */
++	if (raw_header->header_version != 0x00010000) {
++		pr_debug("%s:invalid header version : 0x%x\n",
++			 __func__, raw_header->header_version);
++		return -3;
++	}
++	if (raw_header->reserved1 != 0x0 || raw_header->reserved2) {
++		pr_debug("%s:invalid reserved field\n", __func__);
++		return -4;
++	}
++	for (i = 0; i < (sizeof(raw_header->padding) / 4); i++) {
++		if (raw_header->padding[i] != 0) {
++			pr_debug("%s:invalid padding field\n", __func__);
++			return -5;
++		}
++	}
++	header->present = 1;
++	header->image_checksum = le32_to_cpu(raw_header->image_checksum);
++	header->image_length = le32_to_cpu(raw_header->image_length);
++
++	return 0;
++}
++
++static u32 stm32prog_header_checksum(u32 addr, struct image_header_s *header)
++{
++	u32 i, checksum;
++	u8 *payload;
++
++	/* compute checksum on payload */
++	payload = (u8 *)addr;
++	checksum = 0;
++	for (i = header->image_length; i > 0; i--)
++		checksum += *(payload++);
++
++	return checksum;
++}
++
++/* FLASHLAYOUT PARSING *****************************************/
++static int parse_option(struct stm32prog_data *data,
++			int i, char *p, struct stm32prog_part_t *part)
++{
++	int result = 0;
++	char *c = p;
++
++	part->option = 0;
++	if (!strcmp(p, "-"))
++		return 0;
++
++	while (*c) {
++		switch (*c) {
++		case 'P':
++			part->option |= OPT_SELECT;
++			break;
++		case 'E':
++			part->option |= OPT_EMPTY;
++			break;
++		case 'D':
++			part->option |= OPT_DELETE;
++			break;
++		default:
++			result = -EINVAL;
++			stm32prog_err("Layout line %d: invalid option '%c' in %s)",
++				      i, *c, p);
++			return -EINVAL;
++		}
++		c++;
++	}
++	if (!(part->option & OPT_SELECT)) {
++		stm32prog_err("Layout line %d: missing 'P' in option %s", i, p);
++		return -EINVAL;
++	}
++
++	return result;
++}
++
++static int parse_id(struct stm32prog_data *data,
++		    int i, char *p, struct stm32prog_part_t *part)
++{
++	int result = 0;
++	unsigned long value;
++
++	result = strict_strtoul(p, 0, &value);
++	part->id = value;
++	if (result || value > PHASE_LAST_USER) {
++		stm32prog_err("Layout line %d: invalid phase value = %s", i, p);
++		result = -EINVAL;
++	}
++
++	return result;
++}
++
++static int parse_name(struct stm32prog_data *data,
++		      int i, char *p, struct stm32prog_part_t *part)
++{
++	int result = 0;
++
++	if (strlen(p) < sizeof(part->name)) {
++		strcpy(part->name, p);
++	} else {
++		stm32prog_err("Layout line %d: partition name too long [%d]: %s",
++			      i, strlen(p), p);
++		result = -EINVAL;
++	}
++
++	return result;
++}
++
++static int parse_type(struct stm32prog_data *data,
++		      int i, char *p, struct stm32prog_part_t *part)
++{
++	int result = 0;
++	int len = 0;
++
++	part->bin_nb = 0;
++	if (!strncmp(p, "Binary", 6)) {
++		part->part_type = PART_BINARY;
++
++		/* search for Binary(X) case */
++		len = strlen(p);
++		part->bin_nb = 1;
++		if (len > 6) {
++			if (len < 8 ||
++			    (p[6] != '(') ||
++			    (p[len - 1] != ')'))
++				result = -EINVAL;
++			else
++				part->bin_nb =
++					simple_strtoul(&p[7], NULL, 10);
++		}
++	} else if (!strcmp(p, "System")) {
++		part->part_type = PART_SYSTEM;
++	} else if (!strcmp(p, "FileSystem")) {
++		part->part_type = PART_FILESYSTEM;
++	} else if (!strcmp(p, "RawImage")) {
++		part->part_type = RAW_IMAGE;
++	} else {
++		result = -EINVAL;
++	}
++	if (result)
++		stm32prog_err("Layout line %d: type parsing error : '%s'",
++			      i, p);
++
++	return result;
++}
++
++static int parse_ip(struct stm32prog_data *data,
++		    int i, char *p, struct stm32prog_part_t *part)
++{
++	int result = 0;
++	unsigned int len = 0;
++
++	part->dev_id = 0;
++	if (!strcmp(p, "none")) {
++		part->target = STM32PROG_NONE;
++	} else if (!strncmp(p, "mmc", 3)) {
++		part->target = STM32PROG_MMC;
++		len = 3;
++	} else if (!strncmp(p, "nor", 3)) {
++		part->target = STM32PROG_NOR;
++		len = 3;
++	} else if (!strncmp(p, "nand", 4)) {
++		part->target = STM32PROG_NAND;
++		len = 4;
++	} else if (!strncmp(p, "spi-nand", 8)) {
++		part->target = STM32PROG_SPI_NAND;
++		len = 8;
++	} else if (!strncmp(p, "ram", 3)) {
++		part->target = STM32PROG_RAM;
++		len = 0;
++	} else {
++		result = -EINVAL;
++	}
++	if (len) {
++		/* only one digit allowed for device id */
++		if (strlen(p) != len + 1) {
++			result = -EINVAL;
++		} else {
++			part->dev_id = p[len] - '0';
++			if (part->dev_id > 9)
++				result = -EINVAL;
++		}
++	}
++	if (result)
++		stm32prog_err("Layout line %d: ip parsing error: '%s'", i, p);
++
++	return result;
++}
++
++static int parse_offset(struct stm32prog_data *data,
++			int i, char *p, struct stm32prog_part_t *part)
++{
++	int result = 0;
++	char *tail;
++
++	part->part_id = 0;
++	part->addr = 0;
++	part->size = 0;
++	/* eMMC boot parttion */
++	if (!strncmp(p, "boot", 4)) {
++		if (strlen(p) != 5) {
++			result = -EINVAL;
++		} else {
++			if (p[4] == '1')
++				part->part_id = -1;
++			else if (p[4] == '2')
++				part->part_id = -2;
++			else
++				result = -EINVAL;
++		}
++		if (result)
++			stm32prog_err("Layout line %d: invalid part '%s'",
++				      i, p);
++	} else {
++		part->addr = simple_strtoull(p, &tail, 0);
++		if (tail == p || *tail != '\0') {
++			stm32prog_err("Layout line %d: invalid offset '%s'",
++				      i, p);
++			result = -EINVAL;
++		}
++	}
++
++	return result;
++}
++
++static
++int (* const parse[COL_NB_STM32])(struct stm32prog_data *data, int i, char *p,
++				  struct stm32prog_part_t *part) = {
++	[COL_OPTION] = parse_option,
++	[COL_ID] = parse_id,
++	[COL_NAME] =  parse_name,
++	[COL_TYPE] = parse_type,
++	[COL_IP] = parse_ip,
++	[COL_OFFSET] = parse_offset,
++};
++
++static int parse_flash_layout(struct stm32prog_data *data,
++			      ulong addr,
++			      ulong size)
++{
++	int column = 0, part_nb = 0, ret;
++	bool end_of_line, eof;
++	char *p, *start, *last, *col;
++	struct stm32prog_part_t *part;
++	int part_list_size;
++	int i;
++
++	data->part_nb = 0;
++
++	/* check if STM32image is detected */
++	if (!stm32prog_header_check((struct raw_header_s *)addr,
++				    &data->header)) {
++		u32 checksum;
++
++		addr = addr + BL_HEADER_SIZE;
++		size = data->header.image_length;
++
++		checksum = stm32prog_header_checksum(addr, &data->header);
++		if (checksum != data->header.image_checksum) {
++			stm32prog_err("Layout: invalid checksum : 0x%x expected 0x%x",
++				      checksum, data->header.image_checksum);
++			return -EIO;
++		}
++	}
++	if (!size)
++		return -EINVAL;
++
++	start = (char *)addr;
++	last = start + size;
++
++	*last = 0x0; /* force null terminated string */
++	pr_debug("flash layout =\n%s\n", start);
++
++	/* calculate expected number of partitions */
++	part_list_size = 1;
++	p = start;
++	while (*p && (p < last)) {
++		if (*p++ == '\n') {
++			part_list_size++;
++			if (p < last && *p == '#')
++				part_list_size--;
++		}
++	}
++	if (part_list_size > PHASE_LAST_USER) {
++		stm32prog_err("Layout: too many partition (%d)",
++			      part_list_size);
++		return -1;
++	}
++	part = calloc(sizeof(struct stm32prog_part_t), part_list_size);
++	if (!part) {
++		stm32prog_err("Layout: alloc failed");
++		return -ENOMEM;
++	}
++	data->part_array = part;
++
++	/* main parsing loop */
++	i = 1;
++	eof = false;
++	p = start;
++	col = start; /* 1st column */
++	end_of_line = false;
++	while (!eof) {
++		switch (*p) {
++		/* CR is ignored and replaced by NULL character */
++		case '\r':
++			*p = '\0';
++			p++;
++			continue;
++		case '\0':
++			end_of_line = true;
++			eof = true;
++			break;
++		case '\n':
++			end_of_line = true;
++			break;
++		case '\t':
++			break;
++		case '#':
++			/* comment line is skipped */
++			if (column == 0 && p == col) {
++				while ((p < last) && *p)
++					if (*p++ == '\n')
++						break;
++				col = p;
++				i++;
++				if (p >= last || !*p) {
++					eof = true;
++					end_of_line = true;
++				}
++				continue;
++			}
++			/* fall through */
++		/* by default continue with the next character */
++		default:
++			p++;
++			continue;
++		}
++
++		/* replace by \0: allow string parsing for each column */
++		*p = '\0';
++		p++;
++		if (p >= last) {
++			eof = true;
++			end_of_line = true;
++		}
++
++		/* skip empty line and multiple TAB in tsv file */
++		if (strlen(col) == 0) {
++			col = p;
++			/* skip empty line */
++			if (column == 0 && end_of_line) {
++				end_of_line = false;
++				i++;
++			}
++			continue;
++		}
++
++		if (column < COL_NB_STM32) {
++			ret = parse[column](data, i, col, part);
++			if (ret)
++				return ret;
++		}
++
++		/* save the beginning of the next column */
++		column++;
++		col = p;
++
++		if (!end_of_line)
++			continue;
++
++		/* end of the line detected */
++		end_of_line = false;
++
++		if (column < COL_NB_STM32) {
++			stm32prog_err("Layout line %d: no enought column", i);
++			return -EINVAL;
++		}
++		column = 0;
++		part_nb++;
++		part++;
++		i++;
++		if (part_nb >= part_list_size) {
++			part = NULL;
++			if (!eof) {
++				stm32prog_err("Layout: no enought memory for %d part",
++					      part_nb);
++				return -EINVAL;
++			}
++		}
++	}
++	data->part_nb = part_nb;
++	if (data->part_nb == 0) {
++		stm32prog_err("Layout: no partition found");
++		return -ENODEV;
++	}
++
++	return 0;
++}
++
++static int __init part_cmp(void *priv, struct list_head *a, struct list_head *b)
++{
++	struct stm32prog_part_t *parta, *partb;
++
++	parta = container_of(a, struct stm32prog_part_t, list);
++	partb = container_of(b, struct stm32prog_part_t, list);
++
++	if (parta->part_id != partb->part_id)
++		return parta->part_id - partb->part_id;
++	else
++		return parta->addr > partb->addr ? 1 : -1;
++}
++
++static void get_mtd_by_target(char *string, enum stm32prog_target target,
++			      int dev_id)
++{
++	const char *dev_str;
++
++	switch (target) {
++	case STM32PROG_NOR:
++		dev_str = "nor";
++		break;
++	case STM32PROG_NAND:
++		dev_str = "nand";
++		break;
++	case STM32PROG_SPI_NAND:
++		dev_str = "spi-nand";
++		break;
++	default:
++		dev_str = "invalid";
++		break;
++	}
++	sprintf(string, "%s%d", dev_str, dev_id);
++}
++
++static int init_device(struct stm32prog_data *data,
++		       struct stm32prog_dev_t *dev)
++{
++	struct mmc *mmc = NULL;
++	struct blk_desc *block_dev = NULL;
++#ifdef CONFIG_MTD
++	struct mtd_info *mtd = NULL;
++	char mtd_id[16];
++#endif
++	int part_id;
++	int ret;
++	u64 first_addr = 0, last_addr = 0;
++	struct stm32prog_part_t *part, *next_part;
++	u64 part_addr, part_size;
++	bool part_found;
++	const char *part_name;
++
++	switch (dev->target) {
++#ifdef CONFIG_MMC
++	case STM32PROG_MMC:
++		mmc = find_mmc_device(dev->dev_id);
++		if (mmc_init(mmc)) {
++			stm32prog_err("mmc device %d not found", dev->dev_id);
++			return -ENODEV;
++		}
++		block_dev = mmc_get_blk_desc(mmc);
++		if (!block_dev) {
++			stm32prog_err("mmc device %d not probed", dev->dev_id);
++			return -ENODEV;
++		}
++		dev->erase_size = mmc->erase_grp_size * block_dev->blksz;
++		dev->mmc = mmc;
++
++		/* reserve a full erase group for each GTP headers */
++		if (mmc->erase_grp_size > GPT_HEADER_SZ) {
++			first_addr = dev->erase_size;
++			last_addr = (u64)(block_dev->lba -
++					  mmc->erase_grp_size) *
++				    block_dev->blksz;
++		} else {
++			first_addr = (u64)GPT_HEADER_SZ * block_dev->blksz;
++			last_addr = (u64)(block_dev->lba - GPT_HEADER_SZ - 1) *
++				    block_dev->blksz;
++		}
++		pr_debug("MMC %d: lba=%ld blksz=%ld\n", dev->dev_id,
++			 block_dev->lba, block_dev->blksz);
++		pr_debug(" available address = 0x%llx..0x%llx\n",
++			 first_addr, last_addr);
++		pr_debug(" full_update = %d\n", dev->full_update);
++		break;
++#endif
++#ifdef CONFIG_MTD
++	case STM32PROG_NOR:
++	case STM32PROG_NAND:
++	case STM32PROG_SPI_NAND:
++		get_mtd_by_target(mtd_id, dev->target, dev->dev_id);
++		pr_debug("%s\n", mtd_id);
++
++		mtdparts_init();
++		mtd = get_mtd_device_nm(mtd_id);
++		if (IS_ERR(mtd)) {
++			stm32prog_err("MTD device %s not found", mtd_id);
++			return -ENODEV;
++		}
++		first_addr = 0;
++		last_addr = mtd->size;
++		dev->erase_size = mtd->erasesize;
++		pr_debug("MTD device %s: size=%lld erasesize=%d\n",
++			 mtd_id, mtd->size, mtd->erasesize);
++		pr_debug(" available address = 0x%llx..0x%llx\n",
++			 first_addr, last_addr);
++		dev->mtd = mtd;
++		break;
++#endif
++	case STM32PROG_RAM:
++		first_addr = gd->bd->bi_dram[0].start;
++		last_addr = first_addr + gd->bd->bi_dram[0].size;
++		dev->erase_size = 1;
++		break;
++	default:
++		stm32prog_err("unknown device type = %d", dev->target);
++		return -ENODEV;
++	}
++	pr_debug(" erase size = 0x%x\n", dev->erase_size);
++	pr_debug(" full_update = %d\n", dev->full_update);
++
++	/* order partition list in offset order */
++	list_sort(NULL, &dev->part_list, &part_cmp);
++	part_id = 1;
++	pr_debug("id : Opt Phase     Name target.n dev.n addr     size     part_off part_size\n");
++	list_for_each_entry(part, &dev->part_list, list) {
++		if (part->bin_nb > 1) {
++			if ((dev->target != STM32PROG_NAND &&
++			     dev->target != STM32PROG_SPI_NAND) ||
++			    part->id >= PHASE_FIRST_USER ||
++			    strncmp(part->name, "fsbl", 4)) {
++				stm32prog_err("%s (0x%x): multiple binary %d not supported",
++					      part->name, part->id,
++					      part->bin_nb);
++				return -EINVAL;
++			}
++		}
++		if (part->part_type == RAW_IMAGE) {
++			part->part_id = 0x0;
++			part->addr = 0x0;
++			if (block_dev)
++				part->size = block_dev->lba * block_dev->blksz;
++			else
++				part->size = last_addr;
++			pr_debug("-- : %1d %02x %14s %02d.%d %02d.%02d %08llx %08llx\n",
++				 part->option, part->id, part->name,
++				 part->part_type, part->bin_nb, part->target,
++				 part->dev_id, part->addr, part->size);
++			continue;
++		}
++		if (part->part_id < 0) { /* boot hw partition for eMMC */
++			if (mmc) {
++				part->size = mmc->capacity_boot;
++			} else {
++				stm32prog_err("%s (0x%x): hw partition not expected : %d",
++					      part->name, part->id,
++					      part->part_id);
++				return -ENODEV;
++			}
++		} else {
++			part->part_id = part_id++;
++
++			/* last partition : size to the end of the device */
++			if (part->list.next != &dev->part_list) {
++				next_part =
++					container_of(part->list.next,
++						     struct stm32prog_part_t,
++						     list);
++				if (part->addr < next_part->addr) {
++					part->size = next_part->addr -
++						     part->addr;
++				} else {
++					stm32prog_err("%s (0x%x): same address : 0x%llx == %s (0x%x): 0x%llx",
++						      part->name, part->id,
++						      part->addr,
++						      next_part->name,
++						      next_part->id,
++						      next_part->addr);
++					return -EINVAL;
++				}
++			} else {
++				if (part->addr <= last_addr) {
++					part->size = last_addr - part->addr;
++				} else {
++					stm32prog_err("%s (0x%x): invalid address 0x%llx (max=0x%llx)",
++						      part->name, part->id,
++						      part->addr, last_addr);
++					return -EINVAL;
++				}
++			}
++			if (part->addr < first_addr) {
++				stm32prog_err("%s (0x%x): invalid address 0x%llx (min=0x%llx)",
++					      part->name, part->id,
++					      part->addr, first_addr);
++				return -EINVAL;
++			}
++		}
++		if ((part->addr & ((u64)part->dev->erase_size - 1)) != 0) {
++			stm32prog_err("%s (0x%x): not aligned address : 0x%llx on erase size 0x%x",
++				      part->name, part->id, part->addr,
++				      part->dev->erase_size);
++			return -EINVAL;
++		}
++		pr_debug("%02d : %1d %02x %14s %02d.%d %02d.%02d %08llx %08llx",
++			 part->part_id, part->option, part->id, part->name,
++			 part->part_type, part->bin_nb, part->target,
++			 part->dev_id, part->addr, part->size);
++
++		part_addr = 0;
++		part_size = 0;
++		part_found = false;
++
++		/* check coherency with existing partition */
++		if (block_dev) {
++			/*
++			 * block devices with GPT: check user partition size
++			 * only for partial update, the GPT partions are be
++			 * created for full update
++			 */
++			if (dev->full_update || part->part_id < 0) {
++				pr_debug("\n");
++				continue;
++			}
++			disk_partition_t partinfo;
++
++			ret = part_get_info(block_dev, part->part_id,
++					    &partinfo);
++
++			if (ret) {
++				stm32prog_err("%s (0x%x):Couldn't find part %d on device mmc %d",
++					      part->name, part->id,
++					      part_id, part->dev_id);
++				return -ENODEV;
++			}
++			part_addr = (u64)partinfo.start * partinfo.blksz;
++			part_size = (u64)partinfo.size * partinfo.blksz;
++			part_name = (char *)partinfo.name;
++			part_found = true;
++		}
++
++#ifdef CONFIG_MTD
++		if (mtd) {
++			char mtd_part_id[32];
++			struct part_info *mtd_part;
++			struct mtd_device *mtd_dev;
++			u8 part_num;
++
++			sprintf(mtd_part_id, "%s,%d", mtd_id,
++				part->part_id - 1);
++			ret = find_dev_and_part(mtd_part_id, &mtd_dev,
++						&part_num, &mtd_part);
++			if (ret != 0) {
++				stm32prog_err("%s (0x%x): Invalid MTD partition %s",
++					      part->name, part->id,
++					      mtd_part_id);
++				return -ENODEV;
++			}
++			part_addr = mtd_part->offset;
++			part_size = mtd_part->size;
++			part_name = mtd_part->name;
++			part_found = true;
++		}
++#endif
++
++		/* no partition for this device */
++		if (!part_found) {
++			pr_debug("\n");
++			continue;
++		}
++
++		pr_debug(" %08llx %08llx\n", part_addr, part_size);
++
++		if (part->addr != part_addr) {
++			stm32prog_err("%s (0x%x): Bad address for partition %d (%s) = 0x%llx <> 0x%llx expected",
++				      part->name, part->id, part->part_id,
++				      part_name, part->addr, part_addr);
++			return -ENODEV;
++		}
++		if (part->size != part_size) {
++			stm32prog_err("%s (0x%x): Bad size for partition %d (%s) at 0x%llx = 0x%llx <> 0x%llx expected",
++				      part->name, part->id, part->part_id,
++				      part_name, part->addr, part->size,
++				      part_size);
++			return -ENODEV;
++		}
++	}
++	return 0;
++}
++
++static int treat_partition_list(struct stm32prog_data *data)
++{
++	int i, j;
++	struct stm32prog_part_t *part;
++
++	for (j = 0; j < STM32PROG_MAX_DEV; j++) {
++		data->dev[j].target = STM32PROG_NONE;
++		INIT_LIST_HEAD(&data->dev[j].part_list);
++	}
++
++	data->tee_detected = false;
++	data->fsbl_nor_detected = false;
++	for (i = 0; i < data->part_nb; i++) {
++		part = &data->part_array[i];
++		part->alt_id = -1;
++
++		/* skip partition with IP="none" */
++		if (part->target == STM32PROG_NONE) {
++			if (IS_SELECT(part)) {
++				stm32prog_err("Layout: selected none phase = 0x%x",
++					      part->id);
++				return -EINVAL;
++			}
++			continue;
++		}
++
++		if (part->id == PHASE_FLASHLAYOUT ||
++		    part->id > PHASE_LAST_USER) {
++			stm32prog_err("Layout: invalid phase = 0x%x",
++				      part->id);
++			return -EINVAL;
++		}
++		for (j = i + 1; j < data->part_nb; j++) {
++			if (part->id == data->part_array[j].id) {
++				stm32prog_err("Layout: duplicated phase 0x%x at line %d and %d",
++					      part->id, i, j);
++				return -EINVAL;
++			}
++		}
++		for (j = 0; j < STM32PROG_MAX_DEV; j++) {
++			if (data->dev[j].target == STM32PROG_NONE) {
++				/* new device found */
++				data->dev[j].target = part->target;
++				data->dev[j].dev_id = part->dev_id;
++				data->dev[j].full_update = true;
++				data->dev_nb++;
++				break;
++			} else if ((part->target == data->dev[j].target) &&
++				   (part->dev_id == data->dev[j].dev_id)) {
++				break;
++			}
++		}
++		if (j == STM32PROG_MAX_DEV) {
++			stm32prog_err("Layout: too many device");
++			return -EINVAL;
++		}
++		switch (part->target)  {
++		case STM32PROG_NOR:
++			if (!data->fsbl_nor_detected &&
++			    !strncmp(part->name, "fsbl", 4))
++				data->fsbl_nor_detected = true;
++			/* fallthrough */
++		case STM32PROG_NAND:
++		case STM32PROG_SPI_NAND:
++			if (!data->tee_detected &&
++			    !strncmp(part->name, "tee", 3))
++				data->tee_detected = true;
++			break;
++		default:
++			break;
++		}
++		part->dev = &data->dev[j];
++		if (!IS_SELECT(part))
++			part->dev->full_update = false;
++		list_add_tail(&part->list, &data->dev[j].part_list);
++	}
++
++	return 0;
++}
++
++static int create_partitions(struct stm32prog_data *data)
++{
++#ifdef CONFIG_MMC
++	int offset = 0;
++	const int buflen = SZ_8K;
++	char *buf;
++	char uuid[UUID_STR_LEN + 1];
++	unsigned char *uuid_bin;
++	unsigned int mmc_id;
++	int i;
++	bool rootfs_found;
++	struct stm32prog_part_t *part;
++
++	buf = malloc(buflen);
++	if (!buf)
++		return -ENOMEM;
++
++	puts("partitions : ");
++	/* initialize the selected device */
++	for (i = 0; i < data->dev_nb; i++) {
++		/* create gpt partition support only for full update on MMC */
++		if (data->dev[i].target != STM32PROG_MMC ||
++		    !data->dev[i].full_update)
++			continue;
++
++		offset = 0;
++		rootfs_found = false;
++		memset(buf, 0, buflen);
++
++		list_for_each_entry(part, &data->dev[i].part_list, list) {
++			/* skip eMMC boot partitions */
++			if (part->part_id < 0)
++				continue;
++			/* skip Raw Image */
++			if (part->part_type == RAW_IMAGE)
++				continue;
++
++			if (offset + 100 > buflen) {
++				pr_debug("\n%s: buffer too small, %s skippped",
++					 __func__, part->name);
++				continue;
++			}
++
++			if (!offset)
++				offset += sprintf(buf, "gpt write mmc %d \"",
++						  data->dev[i].dev_id);
++
++			offset += snprintf(buf + offset, buflen - offset,
++					   "name=%s,start=0x%llx,size=0x%llx",
++					   part->name,
++					   part->addr,
++					   part->size);
++
++			if (part->part_type == PART_BINARY)
++				offset += snprintf(buf + offset,
++						   buflen - offset,
++						   ",type="
++						   LINUX_RESERVED_UUID);
++			else
++				offset += snprintf(buf + offset,
++						   buflen - offset,
++						   ",type=linux");
++
++			if (part->part_type == PART_SYSTEM)
++				offset += snprintf(buf + offset,
++						   buflen - offset,
++						   ",bootable");
++
++			if (!rootfs_found && !strcmp(part->name, "rootfs")) {
++				mmc_id = part->dev_id;
++				rootfs_found = true;
++				if (mmc_id < ARRAY_SIZE(uuid_mmc)) {
++					uuid_bin =
++					  (unsigned char *)uuid_mmc[mmc_id].b;
++					uuid_bin_to_str(uuid_bin, uuid,
++							UUID_STR_FORMAT_GUID);
++					offset += snprintf(buf + offset,
++							   buflen - offset,
++							   ",uuid=%s", uuid);
++				}
++			}
++
++			offset += snprintf(buf + offset, buflen - offset, ";");
++		}
++
++		if (offset) {
++			offset += snprintf(buf + offset, buflen - offset, "\"");
++			pr_debug("\ncmd: %s\n", buf);
++			if (run_command(buf, 0)) {
++				stm32prog_err("GPT partitionning fail: %s",
++					      buf);
++				free(buf);
++
++				return -1;
++			}
++		}
++
++		if (data->dev[i].mmc)
++			part_init(mmc_get_blk_desc(data->dev[i].mmc));
++
++#ifdef DEBUG
++		sprintf(buf, "gpt verify mmc %d", data->dev[i].dev_id);
++		pr_debug("\ncmd: %s", buf);
++		if (run_command(buf, 0))
++			printf("fail !\n");
++		else
++			printf("OK\n");
++
++		sprintf(buf, "part list mmc %d", data->dev[i].dev_id);
++		run_command(buf, 0);
++#endif
++	}
++	puts("done\n");
++
++#ifdef DEBUG
++	run_command("mtd list", 0);
++#endif
++	free(buf);
++#endif
++
++	return 0;
++}
++
++static int stm32prog_alt_add(struct stm32prog_data *data,
++			     struct dfu_entity *dfu,
++			     struct stm32prog_part_t *part)
++{
++	int ret = 0;
++	int offset = 0;
++	char devstr[10];
++	char dfustr[10];
++	char buf[ALT_BUF_LEN];
++	u32 size;
++	char multiplier,  type;
++
++	/* max 3 digit for sector size */
++	if (part->size > SZ_1M) {
++		size = (u32)(part->size / SZ_1M);
++		multiplier = 'M';
++	} else if (part->size > SZ_1K) {
++		size = (u32)(part->size / SZ_1K);
++		multiplier = 'K';
++	} else {
++		size = (u32)part->size;
++		multiplier = 'B';
++	}
++	if (IS_SELECT(part) && !IS_EMPTY(part))
++		type = 'e'; /*Readable and Writeable*/
++	else
++		type = 'a';/*Readable*/
++
++	memset(buf, 0, sizeof(buf));
++	offset = snprintf(buf, ALT_BUF_LEN - offset,
++			  "@%s/0x%02x/1*%d%c%c ",
++			  part->name, part->id,
++			  size, multiplier, type);
++
++	if (part->target == STM32PROG_RAM) {
++		offset += snprintf(buf + offset, ALT_BUF_LEN - offset,
++				   "ram 0x%llx 0x%llx",
++				   part->addr, part->size);
++	} else if (part->part_type == RAW_IMAGE) {
++		u64 dfu_size;
++
++		if (part->dev->target == STM32PROG_MMC)
++			dfu_size = part->size / part->dev->mmc->read_bl_len;
++		else
++			dfu_size = part->size;
++		offset += snprintf(buf + offset, ALT_BUF_LEN - offset,
++				   "raw 0x0 0x%llx", dfu_size);
++	} else if (part->part_id < 0) {
++		u64 nb_blk = part->size / part->dev->mmc->read_bl_len;
++
++		offset += snprintf(buf + offset, ALT_BUF_LEN - offset,
++				   "raw 0x%llx 0x%llx",
++				   part->addr, nb_blk);
++		offset += snprintf(buf + offset, ALT_BUF_LEN - offset,
++				   " mmcpart %d;", -(part->part_id));
++	} else {
++		if (part->part_type == PART_SYSTEM &&
++		    (part->target == STM32PROG_NAND ||
++		     part->target == STM32PROG_NOR ||
++		     part->target == STM32PROG_SPI_NAND))
++			offset += snprintf(buf + offset,
++					   ALT_BUF_LEN - offset,
++					   "partubi");
++		else
++			offset += snprintf(buf + offset,
++					   ALT_BUF_LEN - offset,
++					   "part");
++		/* dev_id requested by DFU MMC */
++		if (part->target == STM32PROG_MMC)
++			offset += snprintf(buf + offset, ALT_BUF_LEN - offset,
++					   " %d", part->dev_id);
++		offset += snprintf(buf + offset, ALT_BUF_LEN - offset,
++				   " %d;", part->part_id);
++	}
++	switch (part->target) {
++#ifdef CONFIG_MMC
++	case STM32PROG_MMC:
++		sprintf(dfustr, "mmc");
++		sprintf(devstr, "%d", part->dev_id);
++		break;
++#endif
++#ifdef CONFIG_MTD
++	case STM32PROG_NAND:
++	case STM32PROG_NOR:
++	case STM32PROG_SPI_NAND:
++		sprintf(dfustr, "mtd");
++		get_mtd_by_target(devstr, part->target, part->dev_id);
++		break;
++#endif
++	case STM32PROG_RAM:
++		sprintf(dfustr, "ram");
++		sprintf(devstr, "0");
++		break;
++	default:
++		stm32prog_err("invalid target: %d", part->target);
++		return -ENODEV;
++	}
++	pr_debug("dfu_alt_add(%s,%s,%s)\n", dfustr, devstr, buf);
++	ret = dfu_alt_add(dfu, dfustr, devstr, buf);
++	pr_debug("dfu_alt_add(%s,%s,%s) result %d\n",
++		 dfustr, devstr, buf, ret);
++
++	return ret;
++}
++
++static int stm32prog_alt_add_virt(struct dfu_entity *dfu,
++				  char *name, int phase, int size)
++{
++	int ret = 0;
++	char devstr[4];
++	char buf[ALT_BUF_LEN];
++
++	sprintf(devstr, "%d", phase);
++	sprintf(buf, "@%s/0x%02x/1*%dBe", name, phase, size);
++	ret = dfu_alt_add(dfu, "virt", devstr, buf);
++	pr_debug("dfu_alt_add(virt,%s,%s) result %d\n", devstr, buf, ret);
++
++	return ret;
++}
++
++static int dfu_init_entities(struct stm32prog_data *data)
++{
++	int ret = 0;
++	int phase, i, alt_id;
++	struct stm32prog_part_t *part;
++	struct dfu_entity *dfu;
++	int alt_nb;
++
++	alt_nb = 3; /* number of virtual = CMD, OTP, PMIC*/
++	if (data->part_nb == 0)
++		alt_nb++;  /* +1 for FlashLayout */
++	else
++		for (i = 0; i < data->part_nb; i++) {
++			if (data->part_array[i].target != STM32PROG_NONE)
++				alt_nb++;
++		}
++
++	if (dfu_alt_init(alt_nb, &dfu))
++		return -ENODEV;
++
++	puts("DFU alt info setting: ");
++	if (data->part_nb) {
++		alt_id = 0;
++		for (phase = 1;
++		     (phase <= PHASE_LAST_USER) &&
++		     (alt_id < alt_nb) && !ret;
++		     phase++) {
++			/* ordering alt setting by phase id */
++			part = NULL;
++			for (i = 0; i < data->part_nb; i++) {
++				if (phase == data->part_array[i].id) {
++					part = &data->part_array[i];
++					break;
++				}
++			}
++			if (!part)
++				continue;
++			if (part->target == STM32PROG_NONE)
++				continue;
++			part->alt_id = alt_id;
++			alt_id++;
++
++			ret = stm32prog_alt_add(data, dfu, part);
++		}
++	} else {
++		char buf[ALT_BUF_LEN];
++
++		sprintf(buf, "@FlashLayout/0x%02x/1*256Ke ram %x 40000",
++			PHASE_FLASHLAYOUT, STM32_DDR_BASE);
++		ret = dfu_alt_add(dfu, "ram", NULL, buf);
++		pr_debug("dfu_alt_add(ram, NULL,%s) result %d\n", buf, ret);
++	}
++
++	if (!ret)
++		ret = stm32prog_alt_add_virt(dfu, "virtual", PHASE_CMD, 512);
++
++	if (!ret)
++		ret = stm32prog_alt_add_virt(dfu, "OTP", PHASE_OTP, 512);
++
++	if (!ret && CONFIG_IS_ENABLED(DM_PMIC))
++		ret = stm32prog_alt_add_virt(dfu, "PMIC", PHASE_PMIC, 8);
++
++	if (ret)
++		stm32prog_err("dfu init failed: %d", ret);
++	puts("done\n");
++
++#ifdef DEBUG
++	dfu_show_entities();
++#endif
++	return ret;
++}
++
++int stm32prog_otp_write(struct stm32prog_data *data, u32 offset, u8 *buffer,
++			long *size)
++{
++	pr_debug("%s: %x %lx\n", __func__, offset, *size);
++
++	if (!data->otp_part) {
++		data->otp_part = memalign(CONFIG_SYS_CACHELINE_SIZE, OTP_SIZE);
++		if (!data->otp_part)
++			return -ENOMEM;
++	}
++
++	if (!offset)
++		memset(data->otp_part, 0, OTP_SIZE);
++
++	if (offset + *size > OTP_SIZE)
++		*size = OTP_SIZE - offset;
++
++	memcpy((void *)((u32)data->otp_part + offset), buffer, *size);
++
++	return 0;
++}
++
++int stm32prog_otp_read(struct stm32prog_data *data, u32 offset, u8 *buffer,
++		       long *size)
++{
++#ifndef CONFIG_ARM_SMCCC
++	stm32prog_err("OTP update not supported");
++
++	return -1;
++#else
++	int result = 0;
++
++	pr_debug("%s: %x %lx\n", __func__, offset, *size);
++	/* alway read for first packet */
++	if (!offset) {
++		if (!data->otp_part)
++			data->otp_part =
++				memalign(CONFIG_SYS_CACHELINE_SIZE, OTP_SIZE);
++
++		if (!data->otp_part) {
++			result = -ENOMEM;
++			goto end_otp_read;
++		}
++
++		/* init struct with 0 */
++		memset(data->otp_part, 0, OTP_SIZE);
++
++		/* call the service */
++		result = stm32_smc_exec(STM32_SMC_BSEC, STM32_SMC_READ_ALL,
++					(u32)data->otp_part, 0);
++		if (result)
++			goto end_otp_read;
++	}
++
++	if (!data->otp_part) {
++		result = -ENOMEM;
++		goto end_otp_read;
++	}
++
++	if (offset + *size > OTP_SIZE)
++		*size = OTP_SIZE - offset;
++	memcpy(buffer, (void *)((u32)data->otp_part + offset), *size);
++
++end_otp_read:
++	pr_debug("%s: result %i\n", __func__, result);
++
++	return result;
++#endif
++}
++
++int stm32prog_otp_start(struct stm32prog_data *data)
++{
++#ifndef CONFIG_ARM_SMCCC
++	stm32prog_err("OTP update not supported");
++
++	return -1;
++#else
++	int result = 0;
++	struct arm_smccc_res res;
++
++	if (!data->otp_part) {
++		stm32prog_err("start OTP without data");
++		return -1;
++	}
++
++	arm_smccc_smc(STM32_SMC_BSEC, STM32_SMC_WRITE_ALL,
++		      (u32)data->otp_part, 0, 0, 0, 0, 0, &res);
++
++	if (!res.a0) {
++		switch (res.a1) {
++		case 0:
++			result = 0;
++			break;
++		case 1:
++			stm32prog_err("Provisioning");
++			result = 0;
++			break;
++		default:
++			pr_err("%s: OTP incorrect value (err = %ld)\n",
++			       __func__, res.a1);
++			result = -EINVAL;
++			break;
++		}
++	} else {
++		pr_err("%s: Failed to exec svc=%x op=%x in secure mode (err = %ld)\n",
++		       __func__, STM32_SMC_BSEC, STM32_SMC_WRITE_ALL, res.a0);
++		result = -EINVAL;
++	}
++
++	free(data->otp_part);
++	data->otp_part = NULL;
++	pr_debug("%s: result %i\n", __func__, result);
++
++	return result;
++#endif
++}
++
++int stm32prog_pmic_write(struct stm32prog_data *data, u32 offset, u8 *buffer,
++			 long *size)
++{
++	pr_debug("%s: %x %lx\n", __func__, offset, *size);
++
++	if (!offset)
++		memset(data->pmic_part, 0, PMIC_SIZE);
++
++	if (offset + *size > PMIC_SIZE)
++		*size = PMIC_SIZE - offset;
++
++	memcpy(&data->pmic_part[offset], buffer, *size);
++
++	return 0;
++}
++
++int stm32prog_pmic_read(struct stm32prog_data *data, u32 offset, u8 *buffer,
++			long *size)
++{
++	int result = 0, ret;
++	struct udevice *dev;
++
++	if (!CONFIG_IS_ENABLED(PMIC_STPMIC1)) {
++		stm32prog_err("PMIC update not supported");
++
++		return -EOPNOTSUPP;
++	}
++
++	pr_debug("%s: %x %lx\n", __func__, offset, *size);
++	ret = uclass_get_device_by_driver(UCLASS_MISC,
++					  DM_GET_DRIVER(stpmic1_nvm),
++					  &dev);
++	if (ret)
++		return ret;
++
++	/* alway request PMIC for first packet */
++	if (!offset) {
++		/* init struct with 0 */
++		memset(data->pmic_part, 0, PMIC_SIZE);
++
++		ret = uclass_get_device_by_driver(UCLASS_MISC,
++						  DM_GET_DRIVER(stpmic1_nvm),
++						  &dev);
++		if (ret)
++			return ret;
++
++		ret = misc_read(dev, 0xF8, data->pmic_part, PMIC_SIZE);
++		if (ret < 0) {
++			result = ret;
++			goto end_pmic_read;
++		}
++		if (ret != PMIC_SIZE) {
++			result = -EACCES;
++			goto end_pmic_read;
++		}
++	}
++
++	if (offset + *size > PMIC_SIZE)
++		*size = PMIC_SIZE - offset;
++
++	memcpy(buffer, &data->pmic_part[offset], *size);
++
++end_pmic_read:
++	pr_debug("%s: result %i\n", __func__, result);
++	return result;
++}
++
++int stm32prog_pmic_start(struct stm32prog_data *data)
++{
++	int ret;
++	struct udevice *dev;
++
++	if (!CONFIG_IS_ENABLED(PMIC_STPMIC1)) {
++		stm32prog_err("PMIC update not supported");
++
++		return -EOPNOTSUPP;
++	}
++
++	ret = uclass_get_device_by_driver(UCLASS_MISC,
++					  DM_GET_DRIVER(stpmic1_nvm),
++					  &dev);
++	if (ret)
++		return ret;
++
++	return misc_write(dev, 0xF8, data->pmic_part, PMIC_SIZE);
++}
++
++/* copy FSBL on NAND to improve reliability on NAND */
++static int stm32prog_copy_fsbl(struct stm32prog_part_t *part)
++{
++	int ret, i;
++	void *fsbl;
++	struct image_header_s header;
++	struct raw_header_s raw_header;
++	struct dfu_entity *dfu;
++	long size, offset;
++
++	if (part->target != STM32PROG_NAND &&
++	    part->target != STM32PROG_SPI_NAND)
++		return -1;
++
++	dfu = dfu_get_entity(part->alt_id);
++
++	/* read header */
++	dfu_transaction_cleanup(dfu);
++	size = BL_HEADER_SIZE;
++	ret = dfu->read_medium(dfu, 0, (void *)&raw_header, &size);
++	if (ret)
++		return ret;
++	if (stm32prog_header_check(&raw_header, &header))
++		return -1;
++
++	/* read header + payload */
++	size = header.image_length + BL_HEADER_SIZE;
++	size = round_up(size, part->dev->mtd->erasesize);
++	fsbl = calloc(1, size);
++	if (!fsbl)
++		return -ENOMEM;
++	ret = dfu->read_medium(dfu, 0, fsbl, &size);
++	pr_debug("%s read size=%lx ret=%d\n", __func__, size, ret);
++	if (ret)
++		goto error;
++
++	dfu_transaction_cleanup(dfu);
++	offset = 0;
++	for (i = part->bin_nb - 1; i > 0; i--) {
++		offset += size;
++		/* write to the next erase block */
++		ret = dfu->write_medium(dfu, offset, fsbl, &size);
++		pr_debug("%s copy at ofset=%lx size=%lx ret=%d",
++			 __func__, offset, size, ret);
++		if (ret)
++			goto error;
++	}
++
++error:
++	free(fsbl);
++	return ret;
++}
++
++static void stm32prog_end_phase(struct stm32prog_data *data)
++{
++	if (data->phase == PHASE_FLASHLAYOUT) {
++		if (parse_flash_layout(data, STM32_DDR_BASE, 0))
++			stm32prog_err("Layout: invalid FlashLayout");
++		return;
++	}
++
++	if (!data->cur_part)
++		return;
++
++	if (data->cur_part->target == STM32PROG_RAM) {
++		if (data->cur_part->part_type == PART_SYSTEM)
++			data->uimage = data->cur_part->addr;
++		if (data->cur_part->part_type == PART_FILESYSTEM)
++			data->dtb = data->cur_part->addr;
++	}
++
++	if (CONFIG_IS_ENABLED(MMC) &&
++	    data->cur_part->part_id < 0) {
++		char cmdbuf[60];
++
++		sprintf(cmdbuf, "mmc bootbus %d 0 0 0; mmc partconf %d 1 %d 0",
++			data->cur_part->dev_id, data->cur_part->dev_id,
++			-(data->cur_part->part_id));
++		if (run_command(cmdbuf, 0)) {
++			stm32prog_err("commands '%s' failed", cmdbuf);
++			return;
++		}
++	}
++
++	if (CONFIG_IS_ENABLED(MTD) &&
++	    data->cur_part->bin_nb > 1) {
++		if (stm32prog_copy_fsbl(data->cur_part)) {
++			stm32prog_err("%s (0x%x): copy of fsbl failed",
++				      data->cur_part->name, data->cur_part->id);
++			return;
++		}
++	}
++}
++
++void stm32prog_do_reset(struct stm32prog_data *data)
++{
++	if (data->phase == PHASE_RESET) {
++		data->phase = PHASE_DO_RESET;
++		puts("Reset requested\n");
++	}
++}
++
++void stm32prog_next_phase(struct stm32prog_data *data)
++{
++	int phase, i;
++	struct stm32prog_part_t *part;
++	bool found;
++
++	phase = data->phase;
++	switch (phase) {
++	case PHASE_RESET:
++	case PHASE_END:
++	case PHASE_DO_RESET:
++		return;
++	}
++
++	/* found next selected partition */
++	data->dfu_seq = 0;
++	data->cur_part = NULL;
++	data->phase = PHASE_END;
++	found = false;
++	do {
++		phase++;
++		if (phase > PHASE_LAST_USER)
++			break;
++		for (i = 0; i < data->part_nb; i++) {
++			part = &data->part_array[i];
++			if (part->id == phase) {
++				if (IS_SELECT(part) && !IS_EMPTY(part)) {
++					data->cur_part = part;
++					data->phase = phase;
++					found = true;
++				}
++				break;
++			}
++		}
++	} while (!found);
++
++	if (data->phase == PHASE_END)
++		puts("Phase=END\n");
++}
++
++static int part_delete(struct stm32prog_data *data,
++		       struct stm32prog_part_t *part)
++{
++	int ret = 0;
++#ifdef CONFIG_MMC
++	unsigned long blks, blks_offset, blks_size;
++	struct blk_desc *block_dev = NULL;
++ #endif
++#ifdef CONFIG_MTD
++	char cmdbuf[40];
++	char devstr[10];
++#endif
++
++	printf("Erasing %s ", part->name);
++	switch (part->target) {
++#ifdef CONFIG_MMC
++	case STM32PROG_MMC:
++		printf("on mmc %d: ", part->dev->dev_id);
++		block_dev = mmc_get_blk_desc(part->dev->mmc);
++		blks_offset = lldiv(part->addr, part->dev->mmc->read_bl_len);
++		blks_size = lldiv(part->size, part->dev->mmc->read_bl_len);
++		/* -1 or -2 : delete boot partition of MMC
++		 * need to switch to associated hwpart 1 or 2
++		 */
++		if (part->part_id < 0)
++			if (blk_select_hwpart_devnum(IF_TYPE_MMC,
++						     part->dev->dev_id,
++						     -part->part_id))
++				return -1;
++		blks = blk_derase(block_dev, blks_offset, blks_size);
++		/* return to user partition */
++		if (part->part_id < 0)
++			blk_select_hwpart_devnum(IF_TYPE_MMC,
++						 part->dev->dev_id, 0);
++		if (blks != blks_size) {
++			ret = -1;
++			stm32prog_err("%s (0x%x): MMC erase failed",
++				      part->name, part->id);
++		}
++		break;
++#endif
++#ifdef CONFIG_MTD
++	case STM32PROG_NOR:
++	case STM32PROG_NAND:
++	case STM32PROG_SPI_NAND:
++		get_mtd_by_target(devstr, part->target, part->dev->dev_id);
++		printf("on %s: ", devstr);
++		sprintf(cmdbuf, "mtd erase %s 0x%llx 0x%llx",
++			devstr, part->addr, part->size);
++		if (run_command(cmdbuf, 0)) {
++			ret = -1;
++			stm32prog_err("%s (0x%x): MTD erase commands failed (%s)",
++				      part->name, part->id, cmdbuf);
++		}
++		break;
++#endif
++	case STM32PROG_RAM:
++		printf("on ram: ");
++		memset((void *)(uintptr_t)part->addr, 0, (size_t)part->size);
++		break;
++	default:
++		ret = -1;
++		stm32prog_err("%s (0x%x): erase invalid", part->name, part->id);
++		break;
++	}
++	if (!ret)
++		printf("done\n");
++
++	return ret;
++}
++
++static void stm32prog_devices_init(struct stm32prog_data *data)
++{
++	int i;
++	int ret;
++	struct stm32prog_part_t *part;
++
++	ret = treat_partition_list(data);
++	if (ret)
++		goto error;
++
++	/* initialize the selected device */
++	for (i = 0; i < data->dev_nb; i++) {
++		ret = init_device(data, &data->dev[i]);
++		if (ret)
++			goto error;
++	}
++
++	/* delete RAW partition before create partition */
++	for (i = 0; i < data->part_nb; i++) {
++		part = &data->part_array[i];
++
++		if (part->part_type != RAW_IMAGE)
++			continue;
++
++		if (!IS_SELECT(part) || !IS_DELETE(part))
++			continue;
++
++		ret = part_delete(data, part);
++		if (ret)
++			goto error;
++	}
++
++	ret = create_partitions(data);
++	if (ret)
++		goto error;
++
++	/* delete partition GPT or MTD */
++	for (i = 0; i < data->part_nb; i++) {
++		part = &data->part_array[i];
++
++		if (part->part_type == RAW_IMAGE)
++			continue;
++
++		if (!IS_SELECT(part) || !IS_DELETE(part))
++			continue;
++
++		ret = part_delete(data, part);
++		if (ret)
++			goto error;
++	}
++
++	return;
++
++error:
++	data->part_nb = 0;
++}
++
++int stm32prog_dfu_init(struct stm32prog_data *data)
++{
++	/* init device if no error */
++	if (data->part_nb)
++		stm32prog_devices_init(data);
++
++	if (data->part_nb)
++		stm32prog_next_phase(data);
++
++	/* prepare DFU for device read/write */
++	dfu_free_entities();
++	return dfu_init_entities(data);
++}
++
++int stm32prog_init(struct stm32prog_data *data, ulong addr, ulong size)
++{
++	memset(data, 0x0, sizeof(*data));
++	data->read_phase = PHASE_RESET;
++	data->phase = PHASE_FLASHLAYOUT;
++
++	return parse_flash_layout(data, addr, size);
++}
++
++void stm32prog_clean(struct stm32prog_data *data)
++{
++	/* clean */
++	dfu_free_entities();
++	free(data->part_array);
++	free(data->otp_part);
++	free(data->buffer);
++	free(data->header_data);
++}
++
++/* DFU callback: used after serial and direct DFU USB access */
++void dfu_flush_callback(struct dfu_entity *dfu)
++{
++	if (!stm32prog_data)
++		return;
++
++	if (dfu->dev_type == DFU_DEV_VIRT) {
++		if (dfu->data.virt.dev_num == PHASE_OTP)
++			stm32prog_otp_start(stm32prog_data);
++		else if (dfu->data.virt.dev_num == PHASE_PMIC)
++			stm32prog_pmic_start(stm32prog_data);
++		return;
++	}
++
++	if (dfu->dev_type == DFU_DEV_RAM) {
++		if (dfu->alt == 0 &&
++		    stm32prog_data->phase == PHASE_FLASHLAYOUT) {
++			stm32prog_end_phase(stm32prog_data);
++			/* waiting DFU DETACH for reenumeration */
++		}
++	}
++
++	if (!stm32prog_data->cur_part)
++		return;
++
++	if (dfu->alt == stm32prog_data->cur_part->alt_id) {
++		stm32prog_end_phase(stm32prog_data);
++		stm32prog_next_phase(stm32prog_data);
++	}
++}
++
++void dfu_initiated_callback(struct dfu_entity *dfu)
++{
++	if (!stm32prog_data)
++		return;
++
++	if (!stm32prog_data->cur_part)
++		return;
++
++	/* force the saved offset for the current partition */
++	if (dfu->alt == stm32prog_data->cur_part->alt_id) {
++		dfu->offset = stm32prog_data->offset;
++		stm32prog_data->dfu_seq = 0;
++		pr_debug("dfu offset = 0x%llx\n", dfu->offset);
++	}
++}
+diff --git a/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.h b/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.h
+new file mode 100644
+index 0000000..bae4e91
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.h
+@@ -0,0 +1,185 @@
++/* SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause */
++/*
++ * Copyright (C) 2020, STMicroelectronics - All Rights Reserved
++ */
++
++#ifndef _STM32PROG_H_
++#define _STM32PROG_H_
++
++/* - phase defines ------------------------------------------------*/
++#define PHASE_FLASHLAYOUT	0x00
++#define PHASE_FIRST_USER	0x10
++#define PHASE_LAST_USER		0xF0
++#define PHASE_CMD		0xF1
++#define PHASE_OTP		0xF2
++#define PHASE_PMIC		0xF4
++#define PHASE_END		0xFE
++#define PHASE_RESET		0xFF
++#define PHASE_DO_RESET		0x1FF
++
++#define DEFAULT_ADDRESS		0xFFFFFFFF
++
++#define OTP_SIZE		1024
++#define PMIC_SIZE		8
++
++enum stm32prog_target {
++	STM32PROG_NONE,
++	STM32PROG_MMC,
++	STM32PROG_NAND,
++	STM32PROG_NOR,
++	STM32PROG_SPI_NAND,
++	STM32PROG_RAM
++};
++
++enum stm32prog_link_t {
++	LINK_SERIAL,
++	LINK_USB,
++	LINK_UNDEFINED,
++};
++
++struct image_header_s {
++	bool	present;
++	u32	image_checksum;
++	u32	image_length;
++};
++
++struct raw_header_s {
++	u32 magic_number;
++	u32 image_signature[64 / 4];
++	u32 image_checksum;
++	u32 header_version;
++	u32 image_length;
++	u32 image_entry_point;
++	u32 reserved1;
++	u32 load_address;
++	u32 reserved2;
++	u32 version_number;
++	u32 option_flags;
++	u32 ecdsa_algorithm;
++	u32 ecdsa_public_key[64 / 4];
++	u32 padding[83 / 4];
++	u32 binary_type;
++};
++
++#define BL_HEADER_SIZE	sizeof(struct raw_header_s)
++
++/* partition type in flashlayout file */
++enum stm32prog_part_type {
++	PART_BINARY,
++	PART_SYSTEM,
++	PART_FILESYSTEM,
++	RAW_IMAGE
++};
++
++/* device information */
++struct stm32prog_dev_t {
++	enum stm32prog_target	target;
++	char			dev_id;
++	u32			erase_size;
++	struct mmc		*mmc;
++	struct mtd_info		*mtd;
++	/* list of partition for this device / ordered in offset */
++	struct list_head	part_list;
++	bool			full_update;
++};
++
++/* partition information build from FlashLayout and device */
++struct stm32prog_part_t {
++	/* FlashLayout information */
++	int			option;
++	int			id;
++	enum stm32prog_part_type part_type;
++	enum stm32prog_target	target;
++	char			dev_id;
++
++	/* partition name
++	 * (16 char in gpt, + 1 for null terminated string
++	 */
++	char			name[16 + 1];
++	u64			addr;
++	u64			size;
++	enum stm32prog_part_type bin_nb;	/* SSBL repeatition */
++
++	/* information on associated device */
++	struct stm32prog_dev_t	*dev;		/* pointer to device */
++	s16			part_id;	/* partition id in device */
++	int			alt_id;		/* alt id in usb/dfu */
++
++	struct list_head	list;
++};
++
++#define STM32PROG_MAX_DEV 5
++struct stm32prog_data {
++	/* Layout information */
++	int			dev_nb;		/* device number*/
++	struct stm32prog_dev_t	dev[STM32PROG_MAX_DEV];	/* array of device */
++	int			part_nb;	/* nb of partition */
++	struct stm32prog_part_t	*part_array;	/* array of partition */
++	bool			tee_detected;
++	bool			fsbl_nor_detected;
++
++	/* command internal information */
++	unsigned int		phase;
++	u32			offset;
++	char			error[255];
++	struct stm32prog_part_t	*cur_part;
++	u32			*otp_part;
++	u8			pmic_part[PMIC_SIZE];
++
++	/* STM32 header information */
++	struct raw_header_s	*header_data;
++	struct image_header_s	header;
++
++	/* SERIAL information */
++	u32	cursor;
++	u32	packet_number;
++	u32	checksum;
++	u8	*buffer; /* size = USART_RAM_BUFFER_SIZE*/
++	int	dfu_seq;
++	u8	read_phase;
++
++	/* bootm information */
++	u32	uimage;
++	u32	dtb;
++};
++
++extern struct stm32prog_data *stm32prog_data;
++
++/* OTP access */
++int stm32prog_otp_write(struct stm32prog_data *data, u32 offset,
++			u8 *buffer, long *size);
++int stm32prog_otp_read(struct stm32prog_data *data, u32 offset,
++		       u8 *buffer, long *size);
++int stm32prog_otp_start(struct stm32prog_data *data);
++
++/* PMIC access */
++int stm32prog_pmic_write(struct stm32prog_data *data, u32 offset,
++			 u8 *buffer, long *size);
++int stm32prog_pmic_read(struct stm32prog_data *data, u32 offset,
++			u8 *buffer, long *size);
++int stm32prog_pmic_start(struct stm32prog_data *data);
++
++/* generic part*/
++u8 stm32prog_header_check(struct raw_header_s *raw_header,
++			  struct image_header_s *header);
++int stm32prog_dfu_init(struct stm32prog_data *data);
++void stm32prog_next_phase(struct stm32prog_data *data);
++void stm32prog_do_reset(struct stm32prog_data *data);
++
++char *stm32prog_get_error(struct stm32prog_data *data);
++
++#define stm32prog_err(args...) {\
++	if (data->phase != PHASE_RESET) { \
++		sprintf(data->error, args); \
++		data->phase = PHASE_RESET; \
++		pr_err("Error: %s\n", data->error); } \
++	}
++
++/* Main function */
++int stm32prog_init(struct stm32prog_data *data, ulong addr, ulong size);
++int stm32prog_serial_init(struct stm32prog_data *data, int link_dev);
++bool stm32prog_serial_loop(struct stm32prog_data *data);
++bool stm32prog_usb_loop(struct stm32prog_data *data, int dev);
++void stm32prog_clean(struct stm32prog_data *data);
++
++#endif
+diff --git a/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog_serial.c b/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog_serial.c
+new file mode 100644
+index 0000000..5a16979
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog_serial.c
+@@ -0,0 +1,993 @@
++// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++/*
++ * Copyright (C) 2020, STMicroelectronics - All Rights Reserved
++ */
++
++#include <common.h>
++#include <console.h>
++#include <dfu.h>
++#include <malloc.h>
++#include <serial.h>
++#include <watchdog.h>
++#include <dm/lists.h>
++#include <dm/device-internal.h>
++#include "stm32prog.h"
++
++/* - configuration part -----------------------------*/
++#define USART_BL_VERSION	0x40	/* USART bootloader version V4.0*/
++#define UBOOT_BL_VERSION	0x03	/* bootloader version V0.3*/
++#define DEVICE_ID_BYTE1		0x05	/* MSB byte of device ID*/
++#define DEVICE_ID_BYTE2		0x00	/* LSB byte of device ID*/
++#define USART_RAM_BUFFER_SIZE	256	/* Size of USART_RAM_Buf buffer*/
++
++/* - Commands -----------------------------*/
++#define GET_CMD_COMMAND		0x00	/* Get CMD command*/
++#define GET_VER_COMMAND		0x01	/* Get Version command*/
++#define GET_ID_COMMAND		0x02	/* Get ID command*/
++#define GET_PHASE_COMMAND	0x03	/* Get Phase command*/
++#define RM_COMMAND		0x11	/* Read Memory command*/
++#define READ_PART_COMMAND	0x12	/* Read Partition command*/
++#define START_COMMAND		0x21	/* START command (Go)*/
++#define DOWNLOAD_COMMAND	0x31	/* Download command*/
++/* existing command for other STM32 but not used */
++/* ERASE			0x43 */
++/* EXTENDED_ERASE		0x44 */
++/* WRITE_UNPROTECTED		0x73 */
++/* READOUT_PROTECT		0x82 */
++/* READOUT_UNPROTECT		0x92 */
++
++/* - miscellaneous defines ----------------------------------------*/
++#define INIT_BYTE		0x7F	/*Init Byte ID*/
++#define ACK_BYTE		0x79	/*Acknowlede Byte ID*/
++#define NACK_BYTE		0x1F	/*No Acknowlede Byte ID*/
++#define ABORT_BYTE		0x5F	/*ABORT*/
++
++struct udevice *down_serial_dev;
++
++const u8 cmd_id[] = {
++	GET_CMD_COMMAND,
++	GET_VER_COMMAND,
++	GET_ID_COMMAND,
++	GET_PHASE_COMMAND,
++	RM_COMMAND,
++	READ_PART_COMMAND,
++	START_COMMAND,
++	DOWNLOAD_COMMAND
++};
++
++#define NB_CMD sizeof(cmd_id)
++
++/* DFU support for serial *********************************************/
++static struct dfu_entity *stm32prog_get_entity(struct stm32prog_data *data)
++{
++	int alt_id;
++
++	if (!data->cur_part)
++		if (data->phase == PHASE_FLASHLAYOUT)
++			alt_id = 0;
++		else
++			return NULL;
++	else
++		alt_id = data->cur_part->alt_id;
++
++	return dfu_get_entity(alt_id);
++}
++
++static int stm32prog_write(struct stm32prog_data *data, u8 *buffer,
++			   u32 buffer_size)
++{
++	struct dfu_entity *dfu_entity;
++	u8 ret = 0;
++
++	dfu_entity = stm32prog_get_entity(data);
++	if (!dfu_entity)
++		return -ENODEV;
++
++	ret = dfu_write(dfu_entity,
++			buffer,
++			buffer_size,
++			data->dfu_seq);
++
++	if (ret) {
++		stm32prog_err("DFU write failed [%d] cnt: %d",
++			      ret, data->dfu_seq);
++	}
++	data->dfu_seq++;
++	/* handle rollover as in driver/dfu/dfu.c */
++	data->dfu_seq &= 0xffff;
++	if (buffer_size == 0)
++		data->dfu_seq = 0; /* flush done */
++
++	return ret;
++}
++
++static int stm32prog_read(struct stm32prog_data *data, u8 phase, u32 offset,
++			  u8 *buffer, u32 buffer_size)
++{
++	struct dfu_entity *dfu_entity;
++	struct stm32prog_part_t *part;
++	u32 size;
++	int ret, i;
++
++	if (data->dfu_seq) {
++		stm32prog_err("DFU write pending for phase %d, seq %d",
++			      data->phase, data->dfu_seq);
++		return -EINVAL;
++	}
++	if (phase == PHASE_FLASHLAYOUT || phase > PHASE_LAST_USER) {
++		stm32prog_err("read failed : phase %d is invalid", phase);
++		return -EINVAL;
++	}
++	if (data->read_phase <= PHASE_LAST_USER &&
++	    phase != data->read_phase) {
++		/* clear previous read session */
++		dfu_entity = dfu_get_entity(data->read_phase - 1);
++		if (dfu_entity)
++			dfu_transaction_cleanup(dfu_entity);
++	}
++
++	dfu_entity = NULL;
++	/* found partition for the expected phase */
++	for (i = 0; i < data->part_nb; i++) {
++		part = &data->part_array[i];
++		if (part->id == phase)
++			dfu_entity = dfu_get_entity(part->alt_id);
++	}
++	if (!dfu_entity) {
++		stm32prog_err("read failed : phase %d is unknown", phase);
++		return -ENODEV;
++	}
++
++	/* clear pending read before to force offset */
++	if (dfu_entity->inited &&
++	    (data->read_phase != phase || data->offset != offset))
++		dfu_transaction_cleanup(dfu_entity);
++
++	/* initiate before to force offset */
++	if (!dfu_entity->inited) {
++		ret = dfu_transaction_initiate(dfu_entity, true);
++			if (ret < 0) {
++				stm32prog_err("DFU read init failed [%d] phase = %d offset = 0x%08x",
++					      ret, phase, offset);
++			return ret;
++		}
++	}
++	/* force new offset */
++	if (dfu_entity->offset != offset)
++		dfu_entity->offset = offset;
++	data->offset = offset;
++	data->read_phase = phase;
++	pr_debug("\nSTM32 download read %s offset=0x%x\n",
++		 dfu_entity->name, offset);
++	ret = dfu_read(dfu_entity, buffer, buffer_size,
++		       dfu_entity->i_blk_seq_num);
++	if (ret < 0) {
++		stm32prog_err("DFU read failed [%d] phase = %d offset = 0x%08x",
++			      ret, phase, offset);
++		return ret;
++	}
++
++	size = ret;
++
++	if (size < buffer_size) {
++		data->offset = 0;
++		data->read_phase = PHASE_END;
++		memset(buffer + size, 0, buffer_size - size);
++	} else {
++		data->offset += size;
++	}
++
++	return ret;
++}
++
++/* UART access ***************************************************/
++int stm32prog_serial_init(struct stm32prog_data *data, int link_dev)
++{
++	struct udevice *dev = NULL;
++	int node;
++	char alias[10];
++	const char *path;
++	struct dm_serial_ops *ops;
++	/* no parity, 8 bits, 1 stop */
++	u32 serial_config = SERIAL_DEFAULT_CONFIG;
++
++	down_serial_dev = NULL;
++
++	sprintf(alias, "serial%d", link_dev);
++	path = fdt_get_alias(gd->fdt_blob, alias);
++	if (!path) {
++		pr_err("%s alias not found", alias);
++		return -ENODEV;
++	}
++	node = fdt_path_offset(gd->fdt_blob, path);
++	if (!uclass_get_device_by_of_offset(UCLASS_SERIAL, node,
++					    &dev)) {
++		down_serial_dev = dev;
++	} else if (node > 0 &&
++		   !lists_bind_fdt(gd->dm_root, offset_to_ofnode(node),
++				   &dev, false)) {
++		if (!device_probe(dev))
++			down_serial_dev = dev;
++	}
++	if (!down_serial_dev) {
++		pr_err("%s = %s device not found", alias, path);
++		return -ENODEV;
++	}
++
++	/* force silent console on uart only when used */
++	if (gd->cur_serial_dev == down_serial_dev)
++		gd->flags |= GD_FLG_DISABLE_CONSOLE | GD_FLG_SILENT;
++	else
++		gd->flags &= ~(GD_FLG_DISABLE_CONSOLE | GD_FLG_SILENT);
++
++	ops = serial_get_ops(down_serial_dev);
++
++	if (!ops) {
++		pr_err("%s = %s missing ops", alias, path);
++		return -ENODEV;
++	}
++	if (!ops->setconfig) {
++		pr_err("%s = %s missing setconfig", alias, path);
++		return -ENODEV;
++	}
++
++	clrsetbits_le32(&serial_config, SERIAL_PAR_MASK, SERIAL_PAR_EVEN);
++
++	data->buffer = memalign(CONFIG_SYS_CACHELINE_SIZE,
++				USART_RAM_BUFFER_SIZE);
++
++	return ops->setconfig(down_serial_dev, serial_config);
++}
++
++static void stm32prog_serial_flush(void)
++{
++	struct dm_serial_ops *ops = serial_get_ops(down_serial_dev);
++	int err;
++
++	do {
++		err = ops->getc(down_serial_dev);
++	} while (err != -EAGAIN);
++}
++
++static int stm32prog_serial_getc_err(void)
++{
++	struct dm_serial_ops *ops = serial_get_ops(down_serial_dev);
++	int err;
++
++	do {
++		err = ops->getc(down_serial_dev);
++		if (err == -EAGAIN) {
++			ctrlc();
++			WATCHDOG_RESET();
++		}
++	} while ((err == -EAGAIN) && (!had_ctrlc()));
++
++	return err;
++}
++
++static u8 stm32prog_serial_getc(void)
++{
++	int err;
++
++	err = stm32prog_serial_getc_err();
++
++	return err >= 0 ? err : 0;
++}
++
++static bool stm32prog_serial_get_buffer(u8 *buffer, u32 *count)
++{
++	struct dm_serial_ops *ops = serial_get_ops(down_serial_dev);
++	int err;
++
++	do {
++		err = ops->getc(down_serial_dev);
++		if (err >= 0) {
++			*buffer++ = err;
++			*count -= 1;
++		} else if (err == -EAGAIN) {
++			ctrlc();
++			WATCHDOG_RESET();
++		} else {
++			break;
++		}
++	} while (*count && !had_ctrlc());
++
++	return !!(err < 0);
++}
++
++static void stm32prog_serial_putc(u8 w_byte)
++{
++	struct dm_serial_ops *ops = serial_get_ops(down_serial_dev);
++	int err;
++
++	do {
++		err = ops->putc(down_serial_dev, w_byte);
++	} while (err == -EAGAIN);
++}
++
++/* Helper function ************************************************/
++
++static u8 stm32prog_header(struct stm32prog_data *data)
++{
++	u8 ret;
++	u8 boot = 0;
++	struct dfu_entity *dfu_entity;
++	u64 size = 0;
++
++	dfu_entity = stm32prog_get_entity(data);
++	if (!dfu_entity)
++		return -ENODEV;
++
++	printf("\nSTM32 download write %s\n", dfu_entity->name);
++
++	/* force cleanup to avoid issue with previous read */
++	dfu_transaction_cleanup(dfu_entity);
++
++	ret = stm32prog_header_check(data->header_data,
++				     &data->header);
++
++	/* no header : max size is partition size */
++	if (ret) {
++		dfu_entity->get_medium_size(dfu_entity, &size);
++		data->header.image_length = size;
++	}
++
++	/**** Flash the header if necessary for boot partition */
++	if (data->phase < PHASE_FIRST_USER)
++		boot = 1;
++
++	/* write header if boot partition */
++	if (boot) {
++		if (ret) {
++			stm32prog_err("invalid header (error %d)", ret);
++		} else {
++			ret = stm32prog_write(data,
++					      (u8 *)data->header_data,
++					      BL_HEADER_SIZE);
++		}
++	} else {
++		if (ret)
++			printf("  partition without checksum\n");
++		ret = 0;
++	}
++
++	free(data->header_data);
++	data->header_data = NULL;
++
++	return ret;
++}
++
++static u8 stm32prog_start(struct stm32prog_data *data, u32 address)
++{
++	u8 ret = 0;
++	struct dfu_entity *dfu_entity;
++
++	if (address < 0x100) {
++		if (address == PHASE_OTP)
++			return stm32prog_otp_start(data);
++
++		if (address == PHASE_PMIC)
++			return stm32prog_pmic_start(data);
++
++		if (address == PHASE_RESET || address == PHASE_END) {
++			data->cur_part = NULL;
++			data->dfu_seq = 0;
++			data->phase = address;
++			return 0;
++		}
++		if (address != data->phase) {
++			stm32prog_err("invalid received phase id %d, current phase is %d",
++				      (u8)address, (u8)data->phase);
++			return -EINVAL;
++		}
++	}
++	/* check the last loaded partition */
++	if (address == DEFAULT_ADDRESS || address == data->phase) {
++		switch (data->phase) {
++		case PHASE_END:
++		case PHASE_RESET:
++		case PHASE_DO_RESET:
++			data->cur_part = NULL;
++			data->phase = PHASE_DO_RESET;
++			return 0;
++		}
++		dfu_entity = stm32prog_get_entity(data);
++		if (!dfu_entity)
++			return -ENODEV;
++
++		if (data->dfu_seq) {
++			ret = dfu_flush(dfu_entity, NULL, 0, data->dfu_seq);
++			data->dfu_seq = 0;
++			if (ret) {
++				stm32prog_err("DFU flush failed [%d]", ret);
++				return ret;
++			}
++		}
++		printf("\n  received length = 0x%x\n", data->cursor);
++		if (data->header.present) {
++			if (data->cursor !=
++			    (data->header.image_length + BL_HEADER_SIZE)) {
++				stm32prog_err("transmission interrupted (length=0x%x expected=0x%x)",
++					      data->cursor,
++					      data->header.image_length +
++					      BL_HEADER_SIZE);
++				return -EIO;
++			}
++			if (data->header.image_checksum != data->checksum) {
++				stm32prog_err("invalid checksum received (0x%x expected 0x%x)",
++					      data->checksum,
++					      data->header.image_checksum);
++				return -EIO;
++			}
++			printf("\n  checksum OK (0x%x)\n", data->checksum);
++		}
++
++		/* update DFU with received flashlayout */
++		if (data->phase == PHASE_FLASHLAYOUT)
++			stm32prog_dfu_init(data);
++	} else {
++		void (*entry)(void) = (void *)address;
++
++		printf("## Starting application at 0x%x ...\n", address);
++		(*entry)();
++		printf("## Application terminated\n");
++		ret = -ENOEXEC;
++	}
++
++	return ret;
++}
++
++/**
++ * get_address() - Get address if it is valid
++ *
++ * @tmp_xor:		Current xor value to update
++ * @return The address area
++ */
++static u32 get_address(u8 *tmp_xor)
++{
++	u32 address = 0x0;
++	u8 data;
++
++	data = stm32prog_serial_getc();
++	*tmp_xor ^= data;
++	address |= ((u32)data) << 24;
++
++	data = stm32prog_serial_getc();
++	address |= ((u32)data) << 16;
++	*tmp_xor ^= data;
++
++	data = stm32prog_serial_getc();
++	address |= ((u32)data) << 8;
++	*tmp_xor ^= data;
++
++	data = stm32prog_serial_getc();
++	address |= ((u32)data);
++	*tmp_xor ^= data;
++
++	return address;
++}
++
++static void stm32prog_serial_result(u8 result)
++{
++	/* always flush fifo before to send result */
++	stm32prog_serial_flush();
++	stm32prog_serial_putc(result);
++}
++
++/* Command -----------------------------------------------*/
++/**
++ * get_cmd_command() - Respond to Get command
++ *
++ * @data:		Current command context
++ */
++static void get_cmd_command(struct stm32prog_data *data)
++{
++	u32 counter = 0x0;
++
++	stm32prog_serial_putc(NB_CMD);
++	stm32prog_serial_putc(USART_BL_VERSION);
++
++	for (counter = 0; counter < NB_CMD; counter++)
++		stm32prog_serial_putc(cmd_id[counter]);
++
++	stm32prog_serial_result(ACK_BYTE);
++}
++
++/**
++ * get_version_command() - Respond to Get Version command
++ *
++ * @data:		Current command context
++ */
++static void get_version_command(struct stm32prog_data *data)
++{
++	stm32prog_serial_putc(UBOOT_BL_VERSION);
++	stm32prog_serial_result(ACK_BYTE);
++}
++
++/**
++ * get_id_command() - Respond to Get ID command
++ *
++ * @data:		Current command context
++ */
++static void get_id_command(struct stm32prog_data *data)
++{
++	/* Send Device IDCode */
++	stm32prog_serial_putc(0x1);
++	stm32prog_serial_putc(DEVICE_ID_BYTE1);
++	stm32prog_serial_putc(DEVICE_ID_BYTE2);
++	stm32prog_serial_result(ACK_BYTE);
++}
++
++/**
++ * get_phase_command() - Respond to Get phase
++ *
++ * @data:		Current command context
++ */
++static void get_phase_command(struct stm32prog_data *data)
++{
++	char *err_msg = NULL;
++	u8 i, length = 0;
++	u32 destination = DEFAULT_ADDRESS; /* destination address */
++	int phase = data->phase;
++
++	if (phase == PHASE_RESET || phase == PHASE_DO_RESET) {
++		err_msg = stm32prog_get_error(data);
++		length = strlen(err_msg);
++	}
++	if (phase == PHASE_FLASHLAYOUT)
++		destination = STM32_DDR_BASE;
++
++	stm32prog_serial_putc(length + 5);           /* Total length */
++	stm32prog_serial_putc(phase & 0xFF);         /* partition ID */
++	stm32prog_serial_putc(destination);          /* byte 1 of address */
++	stm32prog_serial_putc(destination >> 8);     /* byte 2 of address */
++	stm32prog_serial_putc(destination >> 16);    /* byte 3 of address */
++	stm32prog_serial_putc(destination >> 24);    /* byte 4 of address */
++
++	stm32prog_serial_putc(length);               /* Information length */
++	for (i = 0; i < length; i++)
++		stm32prog_serial_putc(err_msg[i]);
++	stm32prog_serial_result(ACK_BYTE);
++
++	if (phase == PHASE_RESET)
++		stm32prog_do_reset(data);
++}
++
++/**
++ * read_memory_command() - Read data from memory
++ *
++ * @data:		Current command context
++ */
++static void read_memory_command(struct stm32prog_data *data)
++{
++	u32 address = 0x0;
++	u8 rcv_data = 0x0, tmp_xor = 0x0;
++	u32 counter = 0x0;
++
++	/* Read memory address */
++	address = get_address(&tmp_xor);
++
++	/* If address memory is not received correctly */
++	rcv_data = stm32prog_serial_getc();
++	if (rcv_data != tmp_xor) {
++		stm32prog_serial_result(NACK_BYTE);
++		return;
++	}
++
++	stm32prog_serial_result(ACK_BYTE);
++
++	/* Read the number of bytes to be received:
++	 * Max NbrOfData = Data + 1 = 256
++	 */
++	rcv_data = stm32prog_serial_getc();
++	tmp_xor = ~rcv_data;
++	if (stm32prog_serial_getc() != tmp_xor) {
++		stm32prog_serial_result(NACK_BYTE);
++		return;
++	}
++
++	/* If checksum is correct send ACK */
++	stm32prog_serial_result(ACK_BYTE);
++
++	/* Send data to the host:
++	 * Number of data to read = data + 1
++	 */
++	for (counter = (rcv_data + 1); counter != 0; counter--)
++		stm32prog_serial_putc(*(u8 *)(address++));
++}
++
++/**
++ * start_command() - Respond to start command
++ *
++ * Jump to user application in RAM or partition check
++ *
++ * @data:		Current command context
++ */
++static void start_command(struct stm32prog_data *data)
++{
++	u32 address = 0;
++	u8 tmp_xor = 0x0;
++	u8 ret, rcv_data;
++
++	/* Read memory address */
++	address = get_address(&tmp_xor);
++
++	/* If address memory is not received correctly */
++	rcv_data = stm32prog_serial_getc();
++	if (rcv_data != tmp_xor) {
++		stm32prog_serial_result(NACK_BYTE);
++		return;
++	}
++	/* validate partition */
++	ret = stm32prog_start(data,
++			      address);
++
++	if (ret)
++		stm32prog_serial_result(ABORT_BYTE);
++	else
++		stm32prog_serial_result(ACK_BYTE);
++}
++
++/**
++ * download_command() - Respond to download command
++ *
++ * Write data to not volatile memory, Flash
++ *
++ * @data:		Current command context
++ */
++static void download_command(struct stm32prog_data *data)
++{
++	u32 address = 0x0;
++	u8 my_xor = 0x0;
++	u8 rcv_xor;
++	u32 counter = 0x0, codesize = 0x0;
++	u8 *ramaddress = 0;
++	u8 rcv_data = 0x0;
++	struct image_header_s *image_header = &data->header;
++	u32 cursor = data->cursor;
++	long size = 0;
++	u8 operation;
++	u32 packet_number;
++	u32 result = ACK_BYTE;
++	u8 ret;
++	unsigned int i;
++	bool error;
++	int rcv;
++
++	address = get_address(&my_xor);
++
++	/* If address memory is not received correctly */
++	rcv_xor = stm32prog_serial_getc();
++	if (rcv_xor != my_xor) {
++		result = NACK_BYTE;
++		goto end;
++	}
++
++	/* If address valid send ACK */
++	stm32prog_serial_result(ACK_BYTE);
++
++	/* get packet number and operation type */
++	operation = (u8)((u32)address >> 24);
++	packet_number = ((u32)(((u32)address << 8))) >> 8;
++
++	switch (operation) {
++	/* supported operation */
++	case PHASE_FLASHLAYOUT:
++	case PHASE_OTP:
++	case PHASE_PMIC:
++		break;
++	default:
++		result = NACK_BYTE;
++		goto end;
++	}
++	/* check the packet number */
++	if (packet_number == 0) {
++		/* erase: re-initialize the image_header struct */
++		data->packet_number = 0;
++		if (data->header_data)
++			memset(data->header_data, 0, BL_HEADER_SIZE);
++		else
++			data->header_data = calloc(1, BL_HEADER_SIZE);
++		cursor = 0;
++		data->cursor = 0;
++		data->checksum = 0;
++		/*idx = cursor;*/
++	} else {
++		data->packet_number++;
++	}
++
++	/* Check with the number of current packet if the device receive
++	 * the true packet
++	 */
++	if (packet_number != data->packet_number) {
++		data->packet_number--;
++		result = NACK_BYTE;
++		goto end;
++	}
++
++	/*-- Read number of bytes to be written and data -----------*/
++
++	/* Read the number of bytes to be written:
++	 * Max NbrOfData = data + 1 <= 256
++	 */
++	rcv_data = stm32prog_serial_getc();
++
++	/* NbrOfData to write = data + 1 */
++	codesize = rcv_data + 0x01;
++
++	if (codesize > USART_RAM_BUFFER_SIZE) {
++		result = NACK_BYTE;
++		goto end;
++	}
++
++	/* Checksum Initialization */
++	my_xor = rcv_data;
++
++	/* UART receive data and send to Buffer */
++	counter = codesize;
++	error = stm32prog_serial_get_buffer(data->buffer, &counter);
++
++	/* read checksum */
++	if (!error) {
++		rcv = stm32prog_serial_getc_err();
++		error = !!(rcv < 0);
++		rcv_xor = rcv;
++	}
++
++	if (error) {
++		printf("transmission error on packet %d, byte %d\n",
++		       packet_number, codesize - counter);
++		/* waiting end of packet before flush & NACK */
++		mdelay(30);
++		data->packet_number--;
++		result = NACK_BYTE;
++		goto end;
++	}
++
++	/* Compute Checksum */
++	ramaddress = data->buffer;
++	for (counter = codesize; counter != 0; counter--)
++		my_xor ^= *(ramaddress++);
++
++	/* If Checksum is incorrect */
++	if (rcv_xor != my_xor) {
++		printf("checksum error on packet %d\n",
++		       packet_number);
++		/* wait to be sure that all data are received
++		 * in the FIFO before flush
++		 */
++		mdelay(30);
++		data->packet_number--;
++		result = NACK_BYTE;
++		goto end;
++	}
++
++	/* Update current position in buffer */
++	data->cursor += codesize;
++
++	if (operation == PHASE_OTP) {
++		size = data->cursor - cursor;
++		/* no header for OTP */
++		if (stm32prog_otp_write(data, cursor,
++					data->buffer, &size))
++			result = ABORT_BYTE;
++		goto end;
++	}
++
++	if (operation == PHASE_PMIC) {
++		size = data->cursor - cursor;
++		/* no header for PMIC */
++		if (stm32prog_pmic_write(data, cursor,
++					 data->buffer, &size))
++			result = ABORT_BYTE;
++		goto end;
++	}
++
++	if (cursor < BL_HEADER_SIZE) {
++		/* size = portion of header in this chunck */
++		if (data->cursor >= BL_HEADER_SIZE)
++			size = BL_HEADER_SIZE - cursor;
++		else
++			size = data->cursor - cursor;
++		memcpy((void *)((u32)(data->header_data) + cursor),
++		       data->buffer, size);
++		cursor += size;
++
++		if (cursor == BL_HEADER_SIZE) {
++			/* Check and Write the header */
++			if (stm32prog_header(data)) {
++				result = ABORT_BYTE;
++				goto end;
++			}
++		} else {
++			goto end;
++		}
++	}
++
++	if (image_header->present) {
++		if (data->cursor <= BL_HEADER_SIZE)
++			goto end;
++		/* compute checksum on payload */
++		for (i = (unsigned long)size; i < codesize; i++)
++			data->checksum += data->buffer[i];
++
++		if (data->cursor >
++		    image_header->image_length + BL_HEADER_SIZE) {
++			pr_err("expected size exceeded\n");
++			result = ABORT_BYTE;
++			goto end;
++		}
++
++		/* write data (payload) */
++		ret = stm32prog_write(data,
++				      &data->buffer[size],
++				      codesize - size);
++	} else {
++		/* write all */
++		ret = stm32prog_write(data,
++				      data->buffer,
++				      codesize);
++	}
++	if (ret)
++		result = ABORT_BYTE;
++
++end:
++	stm32prog_serial_result(result);
++}
++
++/**
++ * read_partition() - Respond to read command
++ *
++ * Read data from not volatile memory, Flash
++ *
++ * @data:		Current command context
++ */
++static void read_partition_command(struct stm32prog_data *data)
++{
++	u32 i, part_id, codesize, offset = 0, rcv_data;
++	long size;
++	u8 tmp_xor;
++	int res;
++	u8 buffer[256];
++
++	part_id = stm32prog_serial_getc();
++	tmp_xor = part_id;
++
++	offset = get_address(&tmp_xor);
++
++	rcv_data = stm32prog_serial_getc();
++	if (rcv_data != tmp_xor) {
++		pr_debug("1st checksum received = %x, computed %x\n",
++			 rcv_data, tmp_xor);
++		goto error;
++	}
++	stm32prog_serial_putc(ACK_BYTE);
++
++	/* NbrOfData to read = data + 1 */
++	rcv_data = stm32prog_serial_getc();
++	codesize = rcv_data + 0x01;
++	tmp_xor = rcv_data;
++
++	rcv_data = stm32prog_serial_getc();
++	if ((rcv_data ^ tmp_xor) != 0xFF) {
++		pr_debug("2nd checksum received = %x, computed %x\n",
++			 rcv_data, tmp_xor);
++		goto error;
++	}
++
++	pr_debug("%s : %x\n", __func__, part_id);
++	rcv_data = 0;
++	switch (part_id) {
++	case PHASE_OTP:
++		size = codesize;
++		if (!stm32prog_otp_read(data, offset, buffer, &size))
++			rcv_data = size;
++		break;
++	case PHASE_PMIC:
++		size = codesize;
++		if (!stm32prog_pmic_read(data, offset, buffer, &size))
++			rcv_data = size;
++		break;
++	default:
++		res = stm32prog_read(data, part_id, offset,
++				     buffer, codesize);
++		if (res > 0)
++			rcv_data = res;
++		break;
++	}
++	if (rcv_data > 0) {
++		stm32prog_serial_putc(ACK_BYTE);
++		/*----------- Send data to the host -----------*/
++		for (i = 0; i < rcv_data; i++)
++			stm32prog_serial_putc(buffer[i]);
++		/*----------- Send filler to the host -----------*/
++		for (; i < codesize; i++)
++			stm32prog_serial_putc(0x0);
++		return;
++	}
++	stm32prog_serial_result(ABORT_BYTE);
++	return;
++
++error:
++	stm32prog_serial_result(NACK_BYTE);
++}
++
++/* MAIN function = SERIAL LOOP ***********************************************/
++
++/**
++ * stm32prog_serial_loop() - USART bootloader Loop routine
++ *
++ * @data:		Current command context
++ * @return true if reset is needed after loop
++ */
++bool stm32prog_serial_loop(struct stm32prog_data *data)
++{
++	u32 counter = 0x0;
++	u8 command = 0x0;
++	u8 found;
++	int phase = data->phase;
++
++	/* element of cmd_func need to aligned with cmd_id[]*/
++	void (*cmd_func[NB_CMD])(struct stm32prog_data *) = {
++		/* GET_CMD_COMMAND */	get_cmd_command,
++		/* GET_VER_COMMAND */	get_version_command,
++		/* GET_ID_COMMAND */	get_id_command,
++		/* GET_PHASE_COMMAND */	get_phase_command,
++		/* RM_COMMAND */	read_memory_command,
++		/* READ_PART_COMMAND */	read_partition_command,
++		/* START_COMMAND */	start_command,
++		/* DOWNLOAD_COMMAND */	download_command
++	};
++
++	/* flush and NACK pending command received during u-boot init
++	 * request command reemit
++	 */
++	stm32prog_serial_result(NACK_BYTE);
++
++	clear_ctrlc(); /* forget any previous Control C */
++	while (!had_ctrlc()) {
++		phase = data->phase;
++
++		if (phase == PHASE_DO_RESET)
++			return true;
++
++		/* Get the user command: read first byte */
++		command = stm32prog_serial_getc();
++
++		if (command == INIT_BYTE) {
++			puts("\nConnected\n");
++			stm32prog_serial_result(ACK_BYTE);
++			continue;
++		}
++
++		found = 0;
++		for (counter = 0; counter < NB_CMD; counter++)
++			if (cmd_id[counter] == command) {
++				found = 1;
++				break;
++			}
++		if (found)
++			if ((command ^ stm32prog_serial_getc()) != 0xFF)
++				found = 0;
++		if (!found) {
++			/* wait to be sure that all data are received
++			 * in the FIFO before flush (CMD and XOR)
++			 */
++			mdelay(3);
++			stm32prog_serial_result(NACK_BYTE);
++		} else {
++			stm32prog_serial_result(ACK_BYTE);
++			cmd_func[counter](data);
++		}
++		WATCHDOG_RESET();
++	}
++
++	/* clean device */
++	if (gd->cur_serial_dev == down_serial_dev) {
++		/* restore console on uart */
++		gd->flags &= ~(GD_FLG_DISABLE_CONSOLE | GD_FLG_SILENT);
++	}
++	down_serial_dev = NULL;
++
++	return false; /* no reset after ctrlc */
++}
+diff --git a/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog_usb.c b/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog_usb.c
+new file mode 100644
+index 0000000..30547f9
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog_usb.c
+@@ -0,0 +1,232 @@
++// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
++/*
++ * Copyright (C) 2020, STMicroelectronics - All Rights Reserved
++ */
++
++#include <common.h>
++#include <dfu.h>
++#include <g_dnl.h>
++#include <usb.h>
++#include <asm/arch/stm32prog.h>
++#include <asm/arch/sys_proto.h>
++#include "stm32prog.h"
++
++static int stm32prog_set_phase(struct stm32prog_data *data, u8 phase,
++			       u32 offset)
++{
++	struct stm32prog_part_t *part;
++	int i;
++
++	if (phase == data->phase) {
++		data->offset = offset;
++		data->dfu_seq = 0;
++		return 0;
++	}
++
++	/* found partition for phase */
++	for (i = 0; i < data->part_nb; i++) {
++		part = &data->part_array[i];
++		if (part->id == phase) {
++			data->cur_part = part;
++			data->phase = phase;
++			data->offset = offset;
++			data->dfu_seq = 0;
++			return 0;
++		}
++	}
++
++	return  -EINVAL;
++}
++
++static int stm32prog_cmd_write(u64 offset, void *buf, long *len)
++{
++	u8 phase;
++	u32 address;
++	u8 *pt = buf;
++	void (*entry)(void);
++	int ret;
++
++	if (*len < 5) {
++		pr_err("size not allowed\n");
++		return  -EINVAL;
++	}
++	if (offset) {
++		pr_err("invalid offset\n");
++		return  -EINVAL;
++	}
++	phase = pt[0];
++	address = (pt[1] << 24) | (pt[2] << 16) | (pt[3] << 8) | pt[4];
++	if (phase == PHASE_RESET) {
++		entry = (void *)address;
++		printf("## Starting application at 0x%x ...\n", address);
++		(*entry)();
++		printf("## Application terminated\n");
++		return 0;
++	}
++	/* set phase and offset */
++	ret = stm32prog_set_phase(stm32prog_data, phase, address);
++	if (ret)
++		pr_err("failed: %d\n", ret);
++	return ret;
++}
++
++#define PHASE_MIN_SIZE	9
++static int stm32prog_cmd_read(u64 offset, void *buf, long *len)
++{
++	u32 destination = DEFAULT_ADDRESS; /* destination address */
++	u32 dfu_offset;
++	u8 *pt_buf = buf;
++	int phase;
++	char *err_msg;
++	int length;
++
++	if (*len < PHASE_MIN_SIZE) {
++		pr_err("request exceeds allowed area\n");
++		return  -EINVAL;
++	}
++	if (offset) {
++		*len = 0; /* EOF for second request */
++		return 0;
++	}
++	phase = stm32prog_data->phase;
++	if (phase == PHASE_FLASHLAYOUT)
++		destination = STM32_DDR_BASE;
++	dfu_offset = stm32prog_data->offset;
++
++	/* mandatory header, size = PHASE_MIN_SIZE */
++	*pt_buf++ = (u8)(phase & 0xFF);
++	*pt_buf++ = (u8)(destination);
++	*pt_buf++ = (u8)(destination >> 8);
++	*pt_buf++ = (u8)(destination >> 16);
++	*pt_buf++ = (u8)(destination >> 24);
++	*pt_buf++ = (u8)(dfu_offset);
++	*pt_buf++ = (u8)(dfu_offset >> 8);
++	*pt_buf++ = (u8)(dfu_offset >> 16);
++	*pt_buf++ = (u8)(dfu_offset >> 24);
++
++	if (phase == PHASE_RESET || phase == PHASE_DO_RESET) {
++		err_msg = stm32prog_get_error(stm32prog_data);
++		length = strlen(err_msg);
++		if (length + PHASE_MIN_SIZE > *len)
++			length = *len - PHASE_MIN_SIZE;
++
++		memcpy(pt_buf, err_msg, length);
++		*len = PHASE_MIN_SIZE + length;
++		stm32prog_do_reset(stm32prog_data);
++	} else if (phase == PHASE_FLASHLAYOUT) {
++		*pt_buf++ = stm32prog_data->part_nb ? 1 : 0;
++		*len = PHASE_MIN_SIZE + 1;
++	} else {
++		*len = PHASE_MIN_SIZE;
++	}
++
++	return 0;
++}
++
++int stm32prog_write_medium_virt(struct dfu_entity *dfu, u64 offset,
++				void *buf, long *len)
++{
++	if (dfu->dev_type != DFU_DEV_VIRT)
++		return -EINVAL;
++
++	switch (dfu->data.virt.dev_num) {
++	case PHASE_CMD:
++		return stm32prog_cmd_write(offset, buf, len);
++
++	case PHASE_OTP:
++		return stm32prog_otp_write(stm32prog_data, (u32)offset,
++					   buf, len);
++
++	case PHASE_PMIC:
++		return stm32prog_pmic_write(stm32prog_data, (u32)offset,
++					    buf, len);
++	}
++	*len = 0;
++	return 0;
++}
++
++int stm32prog_read_medium_virt(struct dfu_entity *dfu, u64 offset,
++			       void *buf, long *len)
++{
++	if (dfu->dev_type != DFU_DEV_VIRT)
++		return -EINVAL;
++
++	switch (dfu->data.virt.dev_num) {
++	case PHASE_CMD:
++		return stm32prog_cmd_read(offset, buf, len);
++
++	case PHASE_OTP:
++		return stm32prog_otp_read(stm32prog_data, (u32)offset,
++					  buf, len);
++
++	case PHASE_PMIC:
++		return stm32prog_pmic_read(stm32prog_data, (u32)offset,
++					   buf, len);
++	}
++	*len = 0;
++	return 0;
++}
++
++int stm32prog_get_medium_size_virt(struct dfu_entity *dfu, u64 *size)
++{
++	if (dfu->dev_type != DFU_DEV_VIRT) {
++		*size = 0;
++		pr_debug("%s, invalid dev_type = %d\n",
++			 __func__, dfu->dev_type);
++		return -EINVAL;
++	}
++
++	switch (dfu->data.virt.dev_num) {
++	case PHASE_CMD:
++		*size = 512;
++		break;
++	case PHASE_OTP:
++		*size = OTP_SIZE;
++		break;
++	case PHASE_PMIC:
++		*size = PMIC_SIZE;
++		break;
++	}
++
++	return 0;
++}
++
++bool stm32prog_usb_loop(struct stm32prog_data *data, int dev)
++{
++	int ret;
++	bool result;
++	/* USB download gadget for STM32 Programmer */
++	char product[128];
++	char name[SOC_NAME_SIZE];
++
++	get_soc_name(name);
++	snprintf(product, sizeof(product),
++		 "USB download gadget@Device ID /0x%03X, @Revision ID /0x%04X, @Name /%s,",
++		 get_cpu_dev(), get_cpu_rev(), name);
++	g_dnl_set_product(product);
++
++	if (stm32prog_data->phase == PHASE_FLASHLAYOUT) {
++		ret = run_usb_dnl_gadget(dev, "usb_dnl_dfu");
++		if (ret || stm32prog_data->phase == PHASE_DO_RESET)
++			return ret;
++		/* prepare the second enumeration with the FlashLayout */
++		if (stm32prog_data->phase == PHASE_FLASHLAYOUT)
++			stm32prog_dfu_init(data);
++		/* found next selected partition */
++		stm32prog_next_phase(data);
++	}
++
++	ret = run_usb_dnl_gadget(dev, "usb_dnl_dfu");
++
++	result = !!(ret) || (stm32prog_data->phase == PHASE_DO_RESET);
++
++	g_dnl_set_product(NULL);
++
++	return result;
++}
++
++int g_dnl_get_board_bcd_device_number(int gcnum)
++{
++	pr_debug("%s\n", __func__);
++	return 0x200;
++}
+diff --git a/arch/arm/mach-stm32mp/cpu.c b/arch/arm/mach-stm32mp/cpu.c
+index ed7d9f6..305534f 100644
+--- a/arch/arm/mach-stm32mp/cpu.c
++++ b/arch/arm/mach-stm32mp/cpu.c
+@@ -9,6 +9,7 @@
+ #include <env.h>
+ #include <misc.h>
+ #include <asm/io.h>
++#include <asm/arch/bsec.h>
+ #include <asm/arch/stm32.h>
+ #include <asm/arch/sys_proto.h>
+ #include <dm/device.h>
+@@ -35,7 +36,9 @@
+ #define TAMP_CR1		(STM32_TAMP_BASE + 0x00)
+ 
+ #define PWR_CR1			(STM32_PWR_BASE + 0x00)
++#define PWR_MCUCR		(STM32_PWR_BASE + 0x14)
+ #define PWR_CR1_DBP		BIT(8)
++#define PWR_MCUCR_SBF		BIT(6)
+ 
+ /* DBGMCU register */
+ #define DBGMCU_IDC		(STM32_DBGMCU_BASE + 0x00)
+@@ -59,12 +62,6 @@
+ #define BOOTROM_INSTANCE_MASK	 GENMASK(31, 16)
+ #define BOOTROM_INSTANCE_SHIFT	16
+ 
+-/* BSEC OTP index */
+-#define BSEC_OTP_RPN	1
+-#define BSEC_OTP_SERIAL	13
+-#define BSEC_OTP_PKG	16
+-#define BSEC_OTP_MAC	57
+-
+ /* Device Part Number (RPN) = OTP_DATA1 lower 8 bits */
+ #define RPN_SHIFT	0
+ #define RPN_MASK	GENMASK(7, 0)
+@@ -149,8 +146,13 @@ static void dbgmcu_init(void)
+ {
+ 	setbits_le32(RCC_DBGCFGR, RCC_DBGCFGR_DBGCKEN);
+ 
+-	/* Freeze IWDG2 if Cortex-A7 is in debug mode */
+-	setbits_le32(DBGMCU_APB4FZ1, DBGMCU_APB4FZ1_IWDG2);
++	/*
++	 * Freeze IWDG2 if Cortex-A7 is in debug mode
++	 * done in TF-A for TRUSTED boot and
++	 * DBGMCU access is controlled by BSEC_DENABLE.DBGSWENABLE
++	*/
++	if (!CONFIG_IS_ENABLED(STM32MP1_TRUSTED) && bsec_dbgswenable())
++		setbits_le32(DBGMCU_APB4FZ1, DBGMCU_APB4FZ1_IWDG2);
+ }
+ #endif /* !defined(CONFIG_SPL) || defined(CONFIG_SPL_BUILD) */
+ 
+@@ -206,6 +208,11 @@ int arch_cpu_init(void)
+ 	security_init();
+ 	update_bootmode();
+ #endif
++	/* Reset Coprocessor state unless it wakes up from Standby power mode */
++	if (!(readl(PWR_MCUCR) & PWR_MCUCR_SBF)) {
++		writel(TAMP_COPRO_STATE_OFF, TAMP_COPRO_STATE);
++		writel(0, TAMP_COPRO_RSC_TBL_ADDRESS);
++	}
+ #endif
+ 
+ 	boot_mode = get_bootmode();
+@@ -230,9 +237,22 @@ void enable_caches(void)
+ 
+ static u32 read_idc(void)
+ {
+-	setbits_le32(RCC_DBGCFGR, RCC_DBGCFGR_DBGCKEN);
++	/* DBGMCU access is controlled by BSEC_DENABLE.DBGSWENABLE */
++	if (bsec_dbgswenable()) {
++		setbits_le32(RCC_DBGCFGR, RCC_DBGCFGR_DBGCKEN);
++
++		return readl(DBGMCU_IDC);
++	}
+ 
+-	return readl(DBGMCU_IDC);
++	if (CONFIG_IS_ENABLED(STM32MP15x))
++		return CPU_DEV_STM32MP15; /* STM32MP15x and unknown revision */
++	else
++		return 0x0;
++}
++
++u32 get_cpu_dev(void)
++{
++	return (read_idc() & DBGMCU_IDC_DEV_ID_MASK) >> DBGMCU_IDC_DEV_ID_SHIFT;
+ }
+ 
+ u32 get_cpu_rev(void)
+@@ -265,11 +285,7 @@ static u32 get_cpu_rpn(void)
+ 
+ u32 get_cpu_type(void)
+ {
+-	u32 id;
+-
+-	id = (read_idc() & DBGMCU_IDC_DEV_ID_MASK) >> DBGMCU_IDC_DEV_ID_SHIFT;
+-
+-	return (id << 16) | get_cpu_rpn();
++	return (get_cpu_dev() << 16) | get_cpu_rpn();
+ }
+ 
+ /* Get Package options from OTP */
+@@ -278,25 +294,42 @@ u32 get_cpu_package(void)
+ 	return get_otp(BSEC_OTP_PKG, PKG_SHIFT, PKG_MASK);
+ }
+ 
+-#if defined(CONFIG_DISPLAY_CPUINFO)
+-int print_cpuinfo(void)
++void get_soc_name(char name[SOC_NAME_SIZE])
+ {
+ 	char *cpu_s, *cpu_r, *pkg;
+ 
+ 	/* MPUs Part Numbers */
+ 	switch (get_cpu_type()) {
++	case CPU_STM32MP157Fxx:
++		cpu_s = "157F";
++		break;
++	case CPU_STM32MP157Dxx:
++		cpu_s = "157D";
++		break;
+ 	case CPU_STM32MP157Cxx:
+ 		cpu_s = "157C";
+ 		break;
+ 	case CPU_STM32MP157Axx:
+ 		cpu_s = "157A";
+ 		break;
++	case CPU_STM32MP153Fxx:
++		cpu_s = "153F";
++		break;
++	case CPU_STM32MP153Dxx:
++		cpu_s = "153D";
++		break;
+ 	case CPU_STM32MP153Cxx:
+ 		cpu_s = "153C";
+ 		break;
+ 	case CPU_STM32MP153Axx:
+ 		cpu_s = "153A";
+ 		break;
++	case CPU_STM32MP151Fxx:
++		cpu_s = "151F";
++		break;
++	case CPU_STM32MP151Dxx:
++		cpu_s = "151D";
++		break;
+ 	case CPU_STM32MP151Cxx:
+ 		cpu_s = "151C";
+ 		break;
+@@ -335,12 +368,24 @@ int print_cpuinfo(void)
+ 	case CPU_REVB:
+ 		cpu_r = "B";
+ 		break;
++	case CPU_REVZ:
++		cpu_r = "Z";
++		break;
+ 	default:
+ 		cpu_r = "?";
+ 		break;
+ 	}
+ 
+-	printf("CPU: STM32MP%s%s Rev.%s\n", cpu_s, pkg, cpu_r);
++	snprintf(name, SOC_NAME_SIZE, "STM32MP%s%s Rev.%s", cpu_s, pkg, cpu_r);
++}
++
++#if defined(CONFIG_DISPLAY_CPUINFO)
++int print_cpuinfo(void)
++{
++	char name[SOC_NAME_SIZE];
++
++	get_soc_name(name);
++	printf("CPU: %s\n", name);
+ 
+ 	return 0;
+ }
+@@ -405,6 +450,10 @@ static void setup_boot_mode(void)
+ 		env_set("boot_device", "nand");
+ 		env_set("boot_instance", "0");
+ 		break;
++	case BOOT_FLASH_SPINAND:
++		env_set("boot_device", "spi-nand");
++		env_set("boot_instance", "0");
++		break;
+ 	case BOOT_FLASH_NOR:
+ 		env_set("boot_device", "nor");
+ 		env_set("boot_instance", "0");
+@@ -449,7 +498,7 @@ static void setup_boot_mode(void)
+  * If there is no MAC address in the environment, then it will be initialized
+  * (silently) from the value in the OTP.
+  */
+-static int setup_mac_address(void)
++__weak int setup_mac_address(void)
+ {
+ #if defined(CONFIG_NET)
+ 	int ret;
+@@ -481,8 +530,9 @@ static int setup_mac_address(void)
+ 		return -EINVAL;
+ 	}
+ 	pr_debug("OTP MAC address = %pM\n", enetaddr);
+-	ret = !eth_env_set_enetaddr("ethaddr", enetaddr);
+-	if (!ret)
++
++	ret = eth_env_set_enetaddr("ethaddr", enetaddr);
++	if (ret)
+ 		pr_err("Failed to set mac address %pM from OTP: %d\n",
+ 		       enetaddr, ret);
+ #endif
+@@ -492,13 +542,13 @@ static int setup_mac_address(void)
+ 
+ static int setup_serial_number(void)
+ {
++	char *serial_env;
+ 	char serial_string[25];
+ 	u32 otp[3] = {0, 0, 0 };
+ 	struct udevice *dev;
+ 	int ret;
+ 
+-	if (env_get("serial#"))
+-		return 0;
++	serial_env = env_get("serial#");
+ 
+ 	ret = uclass_get_device_by_driver(UCLASS_MISC,
+ 					  DM_GET_DRIVER(stm32mp_bsec),
+@@ -512,6 +562,15 @@ static int setup_serial_number(void)
+ 		return ret;
+ 
+ 	sprintf(serial_string, "%08X%08X%08X", otp[0], otp[1], otp[2]);
++
++	if (serial_env) {
++		if (!strcmp(serial_string, serial_env))
++			return 0;
++		/* For invalid enviromnent (serial# change), reset to default */
++		env_set_default("serial number mismatch", 0);
++	}
++
++	/* save serial number */
+ 	env_set("serial#", serial_string);
+ 
+ 	return 0;
+@@ -519,9 +578,9 @@ static int setup_serial_number(void)
+ 
+ int arch_misc_init(void)
+ {
++	setup_serial_number();
+ 	setup_boot_mode();
+ 	setup_mac_address();
+-	setup_serial_number();
+ 
+ 	return 0;
+ }
+diff --git a/arch/arm/mach-stm32mp/dram_init.c b/arch/arm/mach-stm32mp/dram_init.c
+index 7688b3e..3233415 100644
+--- a/arch/arm/mach-stm32mp/dram_init.c
++++ b/arch/arm/mach-stm32mp/dram_init.c
+@@ -5,6 +5,7 @@
+ 
+ #include <common.h>
+ #include <dm.h>
++#include <lmb.h>
+ #include <ram.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+@@ -31,3 +32,20 @@ int dram_init(void)
+ 
+ 	return 0;
+ }
++
++ulong board_get_usable_ram_top(ulong total_size)
++{
++	phys_addr_t reg;
++	struct lmb lmb;
++
++	/* found enough not-reserved memory to relocated U-Boot */
++	lmb_init(&lmb);
++	lmb_add(&lmb, gd->ram_base, gd->ram_size);
++	boot_fdt_add_mem_rsv_regions(&lmb, (void *)gd->fdt_blob);
++	reg = lmb_alloc(&lmb, CONFIG_SYS_MALLOC_LEN + total_size, SZ_4K);
++
++	if (reg)
++		return ALIGN(reg + CONFIG_SYS_MALLOC_LEN + total_size, SZ_4K);
++
++	return gd->ram_top;
++}
+diff --git a/arch/arm/mach-stm32mp/fdt.c b/arch/arm/mach-stm32mp/fdt.c
+index 82c430b..21b5f09 100644
+--- a/arch/arm/mach-stm32mp/fdt.c
++++ b/arch/arm/mach-stm32mp/fdt.c
+@@ -5,6 +5,7 @@
+ 
+ #include <common.h>
+ #include <fdt_support.h>
++#include <tee.h>
+ #include <asm/arch/sys_proto.h>
+ #include <dt-bindings/pinctrl/stm32-pinfunc.h>
+ #include <linux/io.h>
+@@ -23,6 +24,12 @@
+ 
+ #define ETZPC_RESERVED		0xffffffff
+ 
++#define STM32_FDCAN_BASE	0x4400e000
++#define STM32_CRYP2_BASE	0x4c005000
++#define STM32_CRYP1_BASE	0x54001000
++#define STM32_GPU_BASE		0x59000000
++#define STM32_DSI_BASE		0x5a000000
++
+ static const u32 stm32mp1_ip_addr[] = {
+ 	0x5c008000,	/* 00 stgenc */
+ 	0x54000000,	/* 01 bkpsram */
+@@ -33,7 +40,7 @@ static const u32 stm32mp1_ip_addr[] = {
+ 	ETZPC_RESERVED,	/* 06 reserved */
+ 	0x54003000,	/* 07 rng1 */
+ 	0x54002000,	/* 08 hash1 */
+-	0x54001000,	/* 09 cryp1 */
++	STM32_CRYP1_BASE,	/* 09 cryp1 */
+ 	0x5a003000,	/* 0A ddrctrl */
+ 	0x5a004000,	/* 0B ddrphyc */
+ 	0x5c009000,	/* 0C i2c6 */
+@@ -86,7 +93,7 @@ static const u32 stm32mp1_ip_addr[] = {
+ 	0x4400b000,	/* 3B sai2 */
+ 	0x4400c000,	/* 3C sai3 */
+ 	0x4400d000,	/* 3D dfsdm */
+-	0x4400e000,	/* 3E tt_fdcan */
++	STM32_FDCAN_BASE,	/* 3E tt_fdcan */
+ 	ETZPC_RESERVED,	/* 3F reserved */
+ 	0x50021000,	/* 40 lptim2 */
+ 	0x50022000,	/* 41 lptim3 */
+@@ -99,7 +106,7 @@ static const u32 stm32mp1_ip_addr[] = {
+ 	0x48003000,	/* 48 adc */
+ 	0x4c002000,	/* 49 hash2 */
+ 	0x4c003000,	/* 4A rng2 */
+-	0x4c005000,	/* 4B cryp2 */
++	STM32_CRYP2_BASE,	/* 4B cryp2 */
+ 	ETZPC_RESERVED,	/* 4C reserved */
+ 	ETZPC_RESERVED,	/* 4D reserved */
+ 	ETZPC_RESERVED,	/* 4E reserved */
+@@ -126,11 +133,13 @@ static const u32 stm32mp1_ip_addr[] = {
+ static bool fdt_disable_subnode_by_address(void *fdt, int offset, u32 addr)
+ {
+ 	int node;
++	fdt_addr_t regs;
+ 
+ 	for (node = fdt_first_subnode(fdt, offset);
+ 	     node >= 0;
+ 	     node = fdt_next_subnode(fdt, node)) {
+-		if (addr == (u32)fdt_getprop(fdt, node, "reg", 0)) {
++		regs = fdtdec_get_addr(fdt, node, "reg");
++		if (addr == regs) {
+ 			if (fdtdec_get_is_enabled(fdt, node)) {
+ 				fdt_status_disabled(fdt, node);
+ 
+@@ -143,11 +152,11 @@ static bool fdt_disable_subnode_by_address(void *fdt, int offset, u32 addr)
+ 	return false;
+ }
+ 
+-static int stm32_fdt_fixup_etzpc(void *fdt)
++static int stm32_fdt_fixup_etzpc(void *fdt, int soc_node)
+ {
+ 	const u32 *array;
+ 	int array_size, i;
+-	int soc_node, offset, shift;
++	int offset, shift;
+ 	u32 addr, status, decprot[ETZPC_DECPROT_NB];
+ 
+ 	array = stm32mp1_ip_addr;
+@@ -156,10 +165,6 @@ static int stm32_fdt_fixup_etzpc(void *fdt)
+ 	for (i = 0; i < ETZPC_DECPROT_NB; i++)
+ 		decprot[i] = readl(ETZPC_DECPROT(i));
+ 
+-	soc_node = fdt_path_offset(fdt, "/soc");
+-	if (soc_node < 0)
+-		return soc_node;
+-
+ 	for (i = 0; i < array_size; i++) {
+ 		offset = i / NB_PROT_PER_REG;
+ 		shift = (i % NB_PROT_PER_REG) * DECPROT_NB_BITS;
+@@ -180,6 +185,60 @@ static int stm32_fdt_fixup_etzpc(void *fdt)
+ 	return 0;
+ }
+ 
++/* deactivate all the cpu except core 0 */
++static void stm32_fdt_fixup_cpu(void *blob, char *name)
++{
++	int off;
++	u32 reg;
++
++	off = fdt_path_offset(blob, "/cpus");
++	if (off < 0) {
++		printf("%s: couldn't find /cpus node\n", __func__);
++		return;
++	}
++
++	off = fdt_node_offset_by_prop_value(blob, -1, "device_type", "cpu", 4);
++	while (off != -FDT_ERR_NOTFOUND) {
++		reg = fdtdec_get_addr(blob, off, "reg");
++		if (reg != 0) {
++			fdt_del_node(blob, off);
++			printf("FDT: cpu %d node remove for %s\n", reg, name);
++			/* after delete we can't trust the offsets anymore */
++			off = -1;
++		}
++		off = fdt_node_offset_by_prop_value(blob, off,
++						    "device_type", "cpu", 4);
++	}
++}
++
++static void stm32_fdt_disable(void *fdt, int offset, u32 addr,
++			      const char *string, const char *name)
++{
++	if (fdt_disable_subnode_by_address(fdt, offset, addr))
++		printf("FDT: %s@%08x node disabled for %s\n",
++		       string, addr, name);
++}
++
++static void stm32_fdt_disable_optee(void *blob)
++{
++	int off, node;
++
++	off = fdt_node_offset_by_compatible(blob, -1, "linaro,optee-tz");
++	if (off >= 0 && fdtdec_get_is_enabled(blob, off))
++		fdt_status_disabled(blob, off);
++
++	/* Disabled "optee@..." reserved-memory node */
++	off = fdt_path_offset(blob, "/reserved-memory/");
++	if (off < 0)
++		return;
++	for (node = fdt_first_subnode(blob, off);
++	     node >= 0;
++	     node = fdt_next_subnode(blob, node)) {
++		if (!strncmp(fdt_get_name(blob, node, NULL), "optee@", 6))
++			fdt_status_disabled(blob, node);
++	}
++}
++
+ /*
+  * This function is called right before the kernel is booted. "blob" is the
+  * device tree that will be passed to the kernel.
+@@ -187,14 +246,59 @@ static int stm32_fdt_fixup_etzpc(void *fdt)
+ int ft_system_setup(void *blob, bd_t *bd)
+ {
+ 	int ret = 0;
+-	u32 pkg;
++	int soc;
++	u32 pkg, cpu;
++	char name[SOC_NAME_SIZE];
++
++	soc = fdt_path_offset(blob, "/soc");
++	if (soc < 0)
++		return soc;
+ 
+ 	if (CONFIG_IS_ENABLED(STM32_ETZPC)) {
+-		ret = stm32_fdt_fixup_etzpc(blob);
++		ret = stm32_fdt_fixup_etzpc(blob, soc);
+ 		if (ret)
+ 			return ret;
+ 	}
+ 
++	/* MPUs Part Numbers and name*/
++	cpu = get_cpu_type();
++	get_soc_name(name);
++
++	switch (cpu) {
++	case CPU_STM32MP151Fxx:
++	case CPU_STM32MP151Dxx:
++	case CPU_STM32MP151Cxx:
++	case CPU_STM32MP151Axx:
++		stm32_fdt_fixup_cpu(blob, name);
++		/* after cpu delete we can't trust the soc offsets anymore */
++		soc = fdt_path_offset(blob, "/soc");
++		stm32_fdt_disable(blob, soc, STM32_FDCAN_BASE, "can", name);
++		/* fall through */
++	case CPU_STM32MP153Fxx:
++	case CPU_STM32MP153Dxx:
++	case CPU_STM32MP153Cxx:
++	case CPU_STM32MP153Axx:
++		stm32_fdt_disable(blob, soc, STM32_GPU_BASE, "gpu", name);
++		stm32_fdt_disable(blob, soc, STM32_DSI_BASE, "dsi", name);
++		break;
++	default:
++		break;
++	}
++
++	switch (cpu) {
++	case CPU_STM32MP157Dxx:
++	case CPU_STM32MP157Axx:
++	case CPU_STM32MP153Dxx:
++	case CPU_STM32MP153Axx:
++	case CPU_STM32MP151Dxx:
++	case CPU_STM32MP151Axx:
++		stm32_fdt_disable(blob, soc, STM32_CRYP1_BASE, "cryp", name);
++		stm32_fdt_disable(blob, soc, STM32_CRYP2_BASE, "cryp", name);
++		break;
++	default:
++		break;
++	}
++
+ 	switch (get_cpu_package()) {
+ 	case PKG_AA_LBGA448:
+ 		pkg = STM32MP_PKG_AA;
+@@ -219,5 +323,9 @@ int ft_system_setup(void *blob, bd_t *bd)
+ 				       "st,package", pkg, false);
+ 	}
+ 
++	if (!CONFIG_IS_ENABLED(OPTEE) ||
++	    !tee_find_device(NULL, NULL, NULL, NULL))
++		stm32_fdt_disable_optee(blob);
++
+ 	return ret;
+ }
+diff --git a/arch/arm/mach-stm32mp/include/mach/bsec.h b/arch/arm/mach-stm32mp/include/mach/bsec.h
+new file mode 100644
+index 0000000..252eac3
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/include/mach/bsec.h
+@@ -0,0 +1,7 @@
++/* SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause */
++/*
++ * Copyright (C) 2020, STMicroelectronics - All Rights Reserved
++ */
++
++/* check self hosted debug status = BSEC_DENABLE.DBGSWENABLE */
++bool bsec_dbgswenable(void);
+diff --git a/arch/arm/mach-stm32mp/include/mach/ddr.h b/arch/arm/mach-stm32mp/include/mach/ddr.h
+index b8a17cf..bfc42a7 100644
+--- a/arch/arm/mach-stm32mp/include/mach/ddr.h
++++ b/arch/arm/mach-stm32mp/include/mach/ddr.h
+@@ -9,8 +9,10 @@
+ /* DDR power initializations */
+ enum ddr_type {
+ 	STM32MP_DDR3,
+-	STM32MP_LPDDR2,
+-	STM32MP_LPDDR3,
++	STM32MP_LPDDR2_16,
++	STM32MP_LPDDR2_32,
++	STM32MP_LPDDR3_16,
++	STM32MP_LPDDR3_32,
+ };
+ 
+ int board_ddr_power_init(enum ddr_type ddr_type);
+diff --git a/arch/arm/mach-stm32mp/include/mach/stm32.h b/arch/arm/mach-stm32mp/include/mach/stm32.h
+index b3e9ccc..8820bc4 100644
+--- a/arch/arm/mach-stm32mp/include/mach/stm32.h
++++ b/arch/arm/mach-stm32mp/include/mach/stm32.h
+@@ -37,7 +37,6 @@
+ /* enumerated used to identify the SYSCON driver instance */
+ enum {
+ 	STM32MP_SYSCON_UNKNOWN,
+-	STM32MP_SYSCON_PWR,
+ 	STM32MP_SYSCON_SYSCFG,
+ };
+ 
+@@ -80,15 +79,29 @@ enum boot_device {
+ 
+ 	BOOT_SERIAL_USB = 0x60,
+ 	BOOT_SERIAL_USB_OTG = 0x62,
++
++	BOOT_FLASH_SPINAND = 0x70,
++	BOOT_FLASH_SPINAND_1 = 0x71,
+ };
+ 
+ /* TAMP registers */
+ #define TAMP_BACKUP_REGISTER(x)		(STM32_TAMP_BASE + 0x100 + 4 * x)
++/* secure access */
+ #define TAMP_BACKUP_MAGIC_NUMBER	TAMP_BACKUP_REGISTER(4)
+ #define TAMP_BACKUP_BRANCH_ADDRESS	TAMP_BACKUP_REGISTER(5)
++/* non secure access */
++#define TAMP_COPRO_RSC_TBL_ADDRESS	TAMP_BACKUP_REGISTER(17)
++#define TAMP_COPRO_STATE		TAMP_BACKUP_REGISTER(18)
+ #define TAMP_BOOT_CONTEXT		TAMP_BACKUP_REGISTER(20)
+ #define TAMP_BOOTCOUNT			TAMP_BACKUP_REGISTER(21)
+ 
++#define TAMP_COPRO_STATE_OFF		0
++#define TAMP_COPRO_STATE_INIT		1
++#define TAMP_COPRO_STATE_CRUN		2
++#define TAMP_COPRO_STATE_CSTOP		3
++#define TAMP_COPRO_STATE_STANDBY	4
++#define TAMP_COPRO_STATE_CRASH		5
++
+ #define TAMP_BOOT_MODE_MASK		GENMASK(15, 8)
+ #define TAMP_BOOT_MODE_SHIFT		8
+ #define TAMP_BOOT_DEVICE_MASK		GENMASK(7, 4)
+@@ -111,7 +124,14 @@ enum forced_boot_mode {
+ #define STM32_BSEC_SHADOW(id)		(STM32_BSEC_SHADOW_OFFSET + (id) * 4)
+ #define STM32_BSEC_OTP_OFFSET		0x80000000
+ #define STM32_BSEC_OTP(id)		(STM32_BSEC_OTP_OFFSET + (id) * 4)
+-
++#define STM32_BSEC_LOCK_OFFSET		0xC0000000
++#define STM32_BSEC_LOCK(id)		(STM32_BSEC_LOCK_OFFSET + (id) * 4)
++
++/* BSEC OTP index */
++#define BSEC_OTP_RPN	1
++#define BSEC_OTP_SERIAL	13
++#define BSEC_OTP_PKG	16
++#define BSEC_OTP_MAC	57
+ #define BSEC_OTP_BOARD	59
+ 
+ #endif /* __ASSEMBLY__*/
+diff --git a/arch/arm/mach-stm32mp/include/mach/stm32mp1_smc.h b/arch/arm/mach-stm32mp/include/mach/stm32mp1_smc.h
+index 8130546..dea5b4a 100644
+--- a/arch/arm/mach-stm32mp/include/mach/stm32mp1_smc.h
++++ b/arch/arm/mach-stm32mp/include/mach/stm32mp1_smc.h
+@@ -18,8 +18,16 @@
+ #define STM32_SMC_VERSION		0x82000000
+ 
+ /* Secure Service access from Non-secure */
++#define STM32_SMC_RCC			0x82001000
++#define STM32_SMC_PWR			0x82001001
++#define STM32_SMC_RTC			0x82001002
+ #define STM32_SMC_BSEC			0x82001003
+ 
++/* Register access service use for RCC/RTC/PWR */
++#define STM32_SMC_REG_WRITE		0x1
++#define STM32_SMC_REG_SET		0x2
++#define STM32_SMC_REG_CLEAR		0x3
++
+ /* Service for BSEC */
+ #define STM32_SMC_READ_SHADOW		0x01
+ #define STM32_SMC_PROG_OTP		0x02
+@@ -27,6 +35,7 @@
+ #define STM32_SMC_READ_OTP		0x04
+ #define STM32_SMC_READ_ALL		0x05
+ #define STM32_SMC_WRITE_ALL		0x06
++#define STM32_SMC_WRLOCK_OTP		0x07
+ 
+ /* SMC error codes */
+ #define STM32_SMC_OK			0x0
+@@ -45,8 +54,8 @@ static inline u32 stm32_smc(u32 svc, u8 op, u32 data1, u32 data2, u32 *result)
+ 	arm_smccc_smc(svc, op, data1, data2, 0, 0, 0, 0, &res);
+ 
+ 	if (res.a0) {
+-		pr_err("%s: Failed to exec in secure mode (err = %ld)\n",
+-		       __func__, res.a0);
++		pr_err("%s: Failed to exec svc=%x op=%x in secure mode (err = %ld)\n",
++		       __func__, svc, op, res.a0);
+ 		return -EINVAL;
+ 	}
+ 	if (result)
+diff --git a/arch/arm/mach-stm32mp/include/mach/stm32prog.h b/arch/arm/mach-stm32mp/include/mach/stm32prog.h
+new file mode 100644
+index 0000000..c080b9c
+--- /dev/null
++++ b/arch/arm/mach-stm32mp/include/mach/stm32prog.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause */
++/*
++ * Copyright (C) 2020, STMicroelectronics - All Rights Reserved
++ */
++
++#define STM32PROG_VIRT_FIRST_DEV_NUM		0xF1
++
++int stm32prog_write_medium_virt(struct dfu_entity *dfu, u64 offset,
++				void *buf, long *len);
++int stm32prog_read_medium_virt(struct dfu_entity *dfu, u64 offset,
++			       void *buf, long *len);
++int stm32prog_get_medium_size_virt(struct dfu_entity *dfu, u64 *size);
++
++bool stm32prog_get_tee_partitions(void);
++
++bool stm32prog_get_fsbl_nor(void);
+diff --git a/arch/arm/mach-stm32mp/include/mach/sys_proto.h b/arch/arm/mach-stm32mp/include/mach/sys_proto.h
+index 99eefab..b6ad3c6 100644
+--- a/arch/arm/mach-stm32mp/include/mach/sys_proto.h
++++ b/arch/arm/mach-stm32mp/include/mach/sys_proto.h
+@@ -3,19 +3,31 @@
+  * Copyright (C) 2015-2017, STMicroelectronics - All Rights Reserved
+  */
+ 
+-/* ID = Device Version (bit31:16) + Device Part Number (RPN) (bit15:0)*/
++/* ID = Device Version (bit31:16) + Device Part Number (RPN) (bit7:0) */
+ #define CPU_STM32MP157Cxx	0x05000000
+ #define CPU_STM32MP157Axx	0x05000001
+ #define CPU_STM32MP153Cxx	0x05000024
+ #define CPU_STM32MP153Axx	0x05000025
+ #define CPU_STM32MP151Cxx	0x0500002E
+ #define CPU_STM32MP151Axx	0x0500002F
++#define CPU_STM32MP157Fxx	0x05000080
++#define CPU_STM32MP157Dxx	0x05000081
++#define CPU_STM32MP153Fxx	0x050000A4
++#define CPU_STM32MP153Dxx	0x050000A5
++#define CPU_STM32MP151Fxx	0x050000AE
++#define CPU_STM32MP151Dxx	0x050000AF
+ 
+ /* return CPU_STMP32MP...Xxx constants */
+ u32 get_cpu_type(void);
+ 
++#define CPU_DEV_STM32MP15	0x500
++
++/* return CPU_DEV constants */
++u32 get_cpu_dev(void);
++
+ #define CPU_REVA	0x1000
+ #define CPU_REVB	0x2000
++#define CPU_REVZ	0x2001
+ 
+ /* return CPU_REV constants */
+ u32 get_cpu_rev(void);
+@@ -28,5 +40,15 @@ u32 get_cpu_package(void);
+ #define PKG_AC_TFBGA361	2
+ #define PKG_AD_TFBGA257	1
+ 
++/* Get SOC name */
++#define SOC_NAME_SIZE 20
++void get_soc_name(char name[SOC_NAME_SIZE]);
++
+ /* return boot mode */
+ u32 get_bootmode(void);
++
++int setup_mac_address(void);
++
++/* board power management : configure vddcore according OPP */
++void board_vddcore_init(u32 voltage_mv);
++int board_vddcore_set(void);
+diff --git a/arch/arm/mach-stm32mp/psci.c b/arch/arm/mach-stm32mp/psci.c
+index 1d91b2d..3fb038d 100644
+--- a/arch/arm/mach-stm32mp/psci.c
++++ b/arch/arm/mach-stm32mp/psci.c
+@@ -30,6 +30,22 @@ u8 psci_state[STM32MP1_PSCI_NR_CPUS] __secure_data = {
+ 	 PSCI_AFFINITY_LEVEL_ON,
+ 	 PSCI_AFFINITY_LEVEL_OFF};
+ 
++static u32 __secure_data cntfrq;
++
++static u32 __secure cp15_read_cntfrq(void)
++{
++	u32 frq;
++
++	asm volatile("mrc p15, 0, %0, c14, c0, 0" : "=r" (frq));
++
++	return frq;
++}
++
++static void __secure cp15_write_cntfrq(u32 frq)
++{
++	asm volatile ("mcr p15, 0, %0, c14, c0, 0" : : "r" (frq));
++}
++
+ static inline void psci_set_state(int cpu, u8 state)
+ {
+ 	psci_state[cpu] = state;
+@@ -63,6 +79,9 @@ void __secure psci_arch_cpu_entry(void)
+ 
+ 	psci_set_state(cpu, PSCI_AFFINITY_LEVEL_ON);
+ 
++	/* write the saved cntfrq */
++	cp15_write_cntfrq(cntfrq);
++
+ 	/* reset magic in TAMP register */
+ 	writel(0xFFFFFFFF, TAMP_BACKUP_MAGIC_NUMBER);
+ }
+@@ -130,6 +149,9 @@ s32 __secure psci_cpu_on(u32 function_id, u32 target_cpu, u32 pc,
+ 	if (psci_state[cpu] == PSCI_AFFINITY_LEVEL_ON)
+ 		return ARM_PSCI_RET_ALREADY_ON;
+ 
++	/* read and save cntfrq of current cpu to write on target cpu  */
++	cntfrq = cp15_read_cntfrq();
++
+ 	/* reset magic in TAMP register */
+ 	if (readl(TAMP_BACKUP_MAGIC_NUMBER))
+ 		writel(0xFFFFFFFF, TAMP_BACKUP_MAGIC_NUMBER);
+diff --git a/arch/arm/mach-stm32mp/pwr_regulator.c b/arch/arm/mach-stm32mp/pwr_regulator.c
+index 9484645..7219af5 100644
+--- a/arch/arm/mach-stm32mp/pwr_regulator.c
++++ b/arch/arm/mach-stm32mp/pwr_regulator.c
+@@ -6,8 +6,9 @@
+ #include <common.h>
+ #include <dm.h>
+ #include <errno.h>
+-#include <regmap.h>
+ #include <syscon.h>
++#include <asm/io.h>
++#include <asm/arch/stm32mp1_smc.h>
+ #include <power/pmic.h>
+ #include <power/regulator.h>
+ 
+@@ -26,19 +27,28 @@ struct stm32mp_pwr_reg_info {
+ };
+ 
+ struct stm32mp_pwr_priv {
+-	struct regmap *regmap;
++	fdt_addr_t base;
+ };
+ 
+ static int stm32mp_pwr_write(struct udevice *dev, uint reg,
+ 			     const uint8_t *buff, int len)
+ {
++#ifndef CONFIG_STM32MP1_TRUSTED
+ 	struct stm32mp_pwr_priv *priv = dev_get_priv(dev);
++#endif
+ 	u32 val = *(u32 *)buff;
+ 
+ 	if (len != 4)
+ 		return -EINVAL;
+ 
+-	return regmap_write(priv->regmap, STM32MP_PWR_CR3, val);
++#ifdef CONFIG_STM32MP1_TRUSTED
++	return stm32_smc_exec(STM32_SMC_PWR, STM32_SMC_REG_WRITE,
++			      STM32MP_PWR_CR3, val);
++#else /* CONFIG_STM32MP1_TRUSTED */
++	writel(val, priv->base + STM32MP_PWR_CR3);
++
++	return 0;
++#endif /* CONFIG_STM32MP1_TRUSTED */
+ }
+ 
+ static int stm32mp_pwr_read(struct udevice *dev, uint reg, uint8_t *buff,
+@@ -49,21 +59,18 @@ static int stm32mp_pwr_read(struct udevice *dev, uint reg, uint8_t *buff,
+ 	if (len != 4)
+ 		return -EINVAL;
+ 
+-	return regmap_read(priv->regmap, STM32MP_PWR_CR3, (u32 *)buff);
++	*(u32 *)buff = readl(priv->base + STM32MP_PWR_CR3);
++
++	return 0;
+ }
+ 
+ static int stm32mp_pwr_ofdata_to_platdata(struct udevice *dev)
+ {
+ 	struct stm32mp_pwr_priv *priv = dev_get_priv(dev);
+-	struct regmap *regmap;
+ 
+-	regmap = syscon_get_regmap_by_driver_data(STM32MP_SYSCON_PWR);
+-	if (IS_ERR(regmap)) {
+-		pr_err("%s: unable to find regmap (%ld)\n", __func__,
+-		       PTR_ERR(regmap));
+-		return PTR_ERR(regmap);
+-	}
+-	priv->regmap = regmap;
++	priv->base = dev_read_addr(dev);
++	if (priv->base == FDT_ADDR_T_NONE)
++		return -EINVAL;
+ 
+ 	return 0;
+ }
+diff --git a/arch/arm/mach-stm32mp/spl.c b/arch/arm/mach-stm32mp/spl.c
+index a3b0d6f..f4b4c3b 100644
+--- a/arch/arm/mach-stm32mp/spl.c
++++ b/arch/arm/mach-stm32mp/spl.c
+@@ -38,6 +38,8 @@ u32 spl_boot_device(void)
+ 		return BOOT_DEVICE_NAND;
+ 	case BOOT_FLASH_NOR_QSPI:
+ 		return BOOT_DEVICE_SPI;
++	case BOOT_FLASH_SPINAND_1:
++		return BOOT_DEVICE_NONE; /* SPINAND not supported in SPL */
+ 	}
+ 
+ 	return BOOT_DEVICE_MMC1;
+@@ -75,40 +77,47 @@ void spl_display_print(void)
+ }
+ #endif
+ 
++__weak int board_vddcore_set(void)
++{
++	return 0;
++}
++
+ void board_init_f(ulong dummy)
+ {
+ 	struct udevice *dev;
+-	int ret;
++	int ret, clk, reset, pinctrl, power;
+ 
+ 	arch_cpu_init();
+ 
+ 	ret = spl_early_init();
+ 	if (ret) {
+-		debug("spl_early_init() failed: %d\n", ret);
++		debug("%s: spl_early_init() failed: %d\n", __func__, ret);
+ 		hang();
+ 	}
+ 
+-	ret = uclass_get_device(UCLASS_CLK, 0, &dev);
+-	if (ret) {
+-		debug("Clock init failed: %d\n", ret);
+-		return;
+-	}
++	clk = uclass_get_device(UCLASS_CLK, 0, &dev);
++	if (clk)
++		debug("%s: Clock init failed: %d\n", __func__, clk);
+ 
+-	ret = uclass_get_device(UCLASS_RESET, 0, &dev);
+-	if (ret) {
+-		debug("Reset init failed: %d\n", ret);
+-		return;
+-	}
++	reset = uclass_get_device(UCLASS_RESET, 0, &dev);
++	if (reset)
++		debug("%s: Reset init failed: %d\n", __func__, reset);
+ 
+-	ret = uclass_get_device(UCLASS_PINCTRL, 0, &dev);
+-	if (ret) {
+-		debug("%s: Cannot find pinctrl device\n", __func__);
+-		return;
+-	}
++	pinctrl = uclass_get_device(UCLASS_PINCTRL, 0, &dev);
++	if (pinctrl)
++		debug("%s: Cannot find pinctrl device: %d\n",
++		      __func__, pinctrl);
+ 
+ 	/* enable console uart printing */
+ 	preloader_console_init();
+ 
++	/* change vddcore if needed after clock tree init */
++	power = board_vddcore_set();
++
++	if (clk || reset || pinctrl || power)
++		printf("%s: probe failed clk=%d reset=%d pinctrl=%d power=%d\n",
++		       __func__, clk, reset, pinctrl, power);
++
+ 	ret = uclass_get_device(UCLASS_RAM, 0, &dev);
+ 	if (ret) {
+ 		printf("DRAM init failed: %d\n", ret);
+diff --git a/arch/arm/mach-stm32mp/syscon.c b/arch/arm/mach-stm32mp/syscon.c
+index 6070837..3e61ce4 100644
+--- a/arch/arm/mach-stm32mp/syscon.c
++++ b/arch/arm/mach-stm32mp/syscon.c
+@@ -9,7 +9,6 @@
+ #include <asm/arch/stm32.h>
+ 
+ static const struct udevice_id stm32mp_syscon_ids[] = {
+-	{ .compatible = "st,stm32mp1-pwr", .data = STM32MP_SYSCON_PWR },
+ 	{ .compatible = "st,stm32mp157-syscfg",
+ 	  .data = STM32MP_SYSCON_SYSCFG },
+ 	{ }
+diff --git a/arch/sandbox/dts/test.dts b/arch/sandbox/dts/test.dts
+index fdb08f2..b69f0da 100644
+--- a/arch/sandbox/dts/test.dts
++++ b/arch/sandbox/dts/test.dts
+@@ -1,5 +1,8 @@
+ /dts-v1/;
+ 
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/gpio/sandbox-gpio.h>
++
+ / {
+ 	model = "sandbox";
+ 	compatible = "sandbox";
+@@ -13,6 +16,7 @@
+ 		eth5 = &eth_5;
+ 		gpio1 = &gpio_a;
+ 		gpio2 = &gpio_b;
++		gpio3 = &gpio_c;
+ 		i2c0 = "/i2c@0";
+ 		mmc0 = "/mmc0";
+ 		mmc1 = "/mmc1";
+@@ -86,11 +90,21 @@
+ 		ping-expect = <0>;
+ 		ping-add = <0>;
+ 		u-boot,dm-pre-reloc;
+-		test-gpios = <&gpio_a 1>, <&gpio_a 4>, <&gpio_b 5 0 3 2 1>,
++		test-gpios = <&gpio_a 1>, <&gpio_a 4>,
++			<&gpio_b 5 GPIO_ACTIVE_HIGH 3 2 1>,
+ 			<0>, <&gpio_a 12>;
+-		test2-gpios = <&gpio_a 1>, <&gpio_a 4>, <&gpio_b 6 1 3 2 1>,
+-			<&gpio_b 7 2 3 2 1>, <&gpio_b 8 4 3 2 1>,
+-			<&gpio_b 9 0xc 3 2 1>;
++		test2-gpios = <&gpio_a 1>, <&gpio_a 4>,
++			<&gpio_b 6 GPIO_ACTIVE_LOW 3 2 1>,
++			<&gpio_b 7 GPIO_IN 3 2 1>,
++			<&gpio_b 8 GPIO_OUT 3 2 1>,
++			<&gpio_b 9 (GPIO_OUT|GPIO_OUT_ACTIVE) 3 2 1>;
++		test3-gpios =
++			<&gpio_c 0 (GPIO_OUT|GPIO_OPEN_DRAIN)>,
++			<&gpio_c 1 (GPIO_OUT|GPIO_OPEN_SOURCE)>,
++			<&gpio_c 2 GPIO_OUT>,
++			<&gpio_c 3 (GPIO_IN|GPIO_PULL_UP)>,
++			<&gpio_c 4 (GPIO_IN|GPIO_PULL_DOWN)>,
++			<&gpio_c 5 GPIO_IN>;
+ 		int-value = <1234>;
+ 		uint-value = <(-1234)>;
+ 	};
+@@ -274,20 +288,32 @@
+ 		};
+ 	};
+ 
+-	gpio_a: base-gpios {
+-		compatible = "sandbox,gpio";
+-		gpio-controller;
+-		#gpio-cells = <1>;
+-		gpio-bank-name = "a";
+-		sandbox,gpio-count = <20>;
+-	};
++	pinctrl-gpio {
++		compatible = "sandbox,pinctrl-gpio";
++
++		gpio_a: base-gpios {
++			compatible = "sandbox,gpio";
++			gpio-controller;
++			#gpio-cells = <1>;
++			gpio-bank-name = "a";
++			sandbox,gpio-count = <20>;
++		};
+ 
+-	gpio_b: extra-gpios {
+-		compatible = "sandbox,gpio";
+-		gpio-controller;
+-		#gpio-cells = <5>;
+-		gpio-bank-name = "b";
+-		sandbox,gpio-count = <10>;
++		gpio_b: extra-gpios {
++			compatible = "sandbox,gpio";
++			gpio-controller;
++			#gpio-cells = <5>;
++			gpio-bank-name = "b";
++			sandbox,gpio-count = <10>;
++		};
++
++		gpio_c: pinmux-gpios {
++			compatible = "sandbox,gpio";
++			gpio-controller;
++			#gpio-cells = <2>;
++			gpio-bank-name = "c";
++			sandbox,gpio-count = <10>;
++		};
+ 	};
+ 
+ 	i2c@0 {
+@@ -851,6 +877,31 @@
+ 
+ 	pinctrl {
+ 		compatible = "sandbox,pinctrl";
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&gpios>;
++
++		gpios: gpios {
++			gpio0 {
++				pins = "GPIO0";
++				bias-pull-up;
++				input-disable;
++			};
++			gpio1 {
++				pins = "GPIO1";
++				output-high;
++				drive-open-drain;
++			};
++			gpio2 {
++				pins = "GPIO2";
++				bias-pull-down;
++				input-enable;
++			};
++			gpio3 {
++				pins = "GPIO3";
++				bias-disable;
++			};
++		};
+ 	};
+ 
+ 	hwspinlock@0 {
+diff --git a/arch/sandbox/include/asm/gpio.h b/arch/sandbox/include/asm/gpio.h
+index de8ac37..df4ba4f 100644
+--- a/arch/sandbox/include/asm/gpio.h
++++ b/arch/sandbox/include/asm/gpio.h
+@@ -43,43 +43,43 @@ int sandbox_gpio_get_value(struct udevice *dev, unsigned int offset);
+ int sandbox_gpio_set_value(struct udevice *dev, unsigned int offset, int value);
+ 
+ /**
+- * Set or reset the simulated open drain mode of a GPIO (used only in sandbox
+- * test code)
++ * Return the simulated direction of a GPIO (used only in sandbox test code)
+  *
+- * @param gp	GPIO number
+- * @param value	value to set (0 for enabled open drain mode, non-zero for
+- * 		disabled)
+- * @return -1 on error, 0 if ok
++ * @param dev		device to use
++ * @param offset	GPIO offset within bank
++ * @return -1 on error, 0 if GPIO is input, >0 if output
+  */
+-int sandbox_gpio_set_open_drain(struct udevice *dev, unsigned offset, int value);
++int sandbox_gpio_get_direction(struct udevice *dev, unsigned int offset);
+ 
+ /**
+- * Return the state of the simulated open drain mode of a GPIO (used only in
+- * sandbox test code)
++ * Set the simulated direction of a GPIO (used only in sandbox test code)
+  *
+- * @param gp	GPIO number
+- * @return -1 on error, 0 if GPIO is input, >0 if output
++ * @param dev		device to use
++ * @param offset	GPIO offset within bank
++ * @param output 	0 to set as input, 1 to set as output
++ * @return -1 on error, 0 if ok
+  */
+-int sandbox_gpio_get_open_drain(struct udevice *dev, unsigned offset);
++int sandbox_gpio_set_direction(struct udevice *dev, unsigned int offset,
++			       int output);
+ 
+ /**
+- * Return the simulated direction of a GPIO (used only in sandbox test code)
++ * Return the simulated flags of a GPIO (used only in sandbox test code)
+  *
+  * @param dev		device to use
+  * @param offset	GPIO offset within bank
+- * @return -1 on error, 0 if GPIO is input, >0 if output
++ * @return dir_flags: bitfield accesses by GPIOD_ defines
+  */
+-int sandbox_gpio_get_direction(struct udevice *dev, unsigned int offset);
++ulong sandbox_gpio_get_dir_flags(struct udevice *dev, unsigned int offset);
+ 
+ /**
+- * Set the simulated direction of a GPIO (used only in sandbox test code)
++ * Set the simulated flags of a GPIO (used only in sandbox test code)
+  *
+  * @param dev		device to use
+  * @param offset	GPIO offset within bank
+- * @param output 	0 to set as input, 1 to set as output
++ * @param flags		dir_flags: bitfield accesses by GPIOD_ defines
+  * @return -1 on error, 0 if ok
+  */
+-int sandbox_gpio_set_direction(struct udevice *dev, unsigned int offset,
+-			       int output);
++int sandbox_gpio_set_dir_flags(struct udevice *dev, unsigned int offset,
++			       ulong flags);
+ 
+ #endif
+-- 
+2.7.4
+

@@ -1,0 +1,25 @@
+From 7c5db44f99c2945b510160269b73d305a4db3c96 Mon Sep 17 00:00:00 2001
+From: "neeraj.dantu" <neeraj.dantu@octavosystems.com>
+Date: Wed, 23 Sep 2020 18:29:52 -0500
+Subject: [PATCH 4/4] Fix Cube programmer GPIO default level
+
+---
+ arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi b/arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi
+index c061308628..38a0458838 100644
+--- a/arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi
+@@ -26,7 +26,7 @@
+ 		u-boot,boot-led = "LED2_GRN";
+ 		u-boot,error-led = "LED2_RED";
+ 		u-boot,mmc-env-partition = "ssbl";
+-		st,stm32prog-gpios = <&gpiod 9 GPIO_ACTIVE_LOW>;
++		st,stm32prog-gpios = <&gpiod 9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+ 	};
+ 
+ 	clocks {
+-- 
+2.17.1
+

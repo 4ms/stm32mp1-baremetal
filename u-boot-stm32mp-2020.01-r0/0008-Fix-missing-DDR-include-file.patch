@@ -1,0 +1,263 @@
+From 067c36c6e425a85113dc279f33174c315272a3ac Mon Sep 17 00:00:00 2001
+From: "neeraj.dantu" <neeraj.dantu@octavosystems.com>
+Date: Wed, 23 Sep 2020 11:48:28 -0500
+Subject: [PATCH 3/4] Fix missing DDR include file
+
+---
+ .../dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi  | 130 ++++++------------
+ 1 file changed, 39 insertions(+), 91 deletions(-)
+
+diff --git a/arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi b/arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi
+index 8f0e39f040..c061308628 100644
+--- a/arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi
++++ b/arch/arm/dts/stm32mp157c-osd32mp1-brk-u-boot.dtsi
+@@ -1,7 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause*/
+ /*
+- * Copyright (C) 2020, STMicroelectronics - All Rights Reserved
+- * Author: STM32CubeMX code generation for STMicroelectronics.
++ * Copyright (C) 2020, Octavo Systems LLC - All Rights Reserved
+  */
+ 
+ /* For more information on Device Tree configuration, please refer to
+@@ -9,18 +8,14 @@
+  */
+ 
+ #include <dt-bindings/clock/stm32mp1-clksrc.h>
+-#include "osd32mp1.dtsi"
++#include "stm32mp15-osd32mp1-ddr3-1x4Gb.dtsi"
+ 
+ #include "stm32mp15-u-boot.dtsi"
+ #include "stm32mp15-ddr.dtsi"
+ 
+-/* USER CODE BEGIN includes */
+-/* USER CODE END includes */
+ 
+ / {
+ 
+-	/* USER CODE BEGIN root */
+-
+ 	aliases{
+ 		i2c0 = &i2c4;
+ 		mmc0 = &sdmmc1;
+@@ -34,47 +29,27 @@
+ 		st,stm32prog-gpios = <&gpiod 9 GPIO_ACTIVE_LOW>;
+ 	};
+ 
+-	/* USER CODE END root */
+-
+ 	clocks {
+ 		u-boot,dm-pre-reloc;
+ 
+-		/* USER CODE BEGIN clocks */
+-		/* USER CODE END clocks */
+-
+ #ifndef CONFIG_STM32MP1_TRUSTED
+ 		clk_lsi: clk-lsi {
+ 			u-boot,dm-pre-reloc;
+-
+-			/* USER CODE BEGIN clk_lsi */
+-			/* USER CODE END clk_lsi */
+ 		};
+ 		clk_hsi: clk-hsi {
+ 			u-boot,dm-pre-reloc;
+-
+-			/* USER CODE BEGIN clk_hsi */
+-			/* USER CODE END clk_hsi */
+ 		};
+ 		clk_csi: clk-csi {
+ 			u-boot,dm-pre-reloc;
+ 			status = "disabled";
+-
+-			/* USER CODE BEGIN clk_csi */
+-			/* USER CODE END clk_csi */
+ 		};
+ 		clk_lse: clk-lse {
+ 			u-boot,dm-pre-reloc;
+ 			st,drive = < LSEDRV_MEDIUM_HIGH >;
+-
+-			/* USER CODE BEGIN clk_lse */
+-			/* USER CODE END clk_lse */
+ 		};
+ 		clk_hse: clk-hse {
+ 			u-boot,dm-pre-reloc;
+ 			st,digbypass;
+-
+-			/* USER CODE BEGIN clk_hse */
+-			/* USER CODE END clk_hse */
+ 		};
+ #endif	/*CONFIG_STM32MP1_TRUSTED*/
+ 	};
+@@ -110,36 +85,41 @@
+ 		0 		/*MCO2*/
+ 	>;
+ 	st,pkcs = <
+-		CLK_CKPER_DISABLED
+-		CLK_ETH_DISABLED
+-		CLK_SDMMC12_PLL4P
+-		CLK_STGEN_HSE
+-		CLK_USBPHY_HSE
+-		CLK_SPI2S1_DISABLED
+-		CLK_SPI2S23_DISABLED
+-		CLK_SPI45_DISABLED
+-		CLK_SPI6_DISABLED
+-		CLK_I2C46_HSI
+-		CLK_SDMMC3_DISABLED
+-		CLK_USBO_USBPHY
+-		CLK_ADC_DISABLED
+-		CLK_CEC_DISABLED
+-		CLK_I2C12_DISABLED
+-		CLK_I2C35_DISABLED
+-		CLK_UART1_DISABLED
+-		CLK_UART24_HSI
+-		CLK_UART35_DISABLED
+-		CLK_UART6_DISABLED
+-		CLK_UART78_DISABLED
+-		CLK_SPDIF_DISABLED
+-		CLK_SAI1_DISABLED
+-		CLK_SAI2_DISABLED
+-		CLK_SAI3_DISABLED
+-		CLK_SAI4_DISABLED
+-		CLK_RNG1_LSI
+-		CLK_LPTIM1_DISABLED
+-		CLK_LPTIM23_DISABLED
+-		CLK_LPTIM45_DISABLED
++    CLK_CKPER_HSE
++    CLK_FMC_ACLK
++    CLK_QSPI_ACLK
++    CLK_ETH_DISABLED
++    CLK_SDMMC12_PLL4P
++    CLK_DSI_DSIPLL
++    CLK_STGEN_HSE
++    CLK_USBPHY_HSE
++    CLK_SPI2S1_PLL3Q
++    CLK_SPI2S23_PLL3Q
++    CLK_SPI45_HSI
++    CLK_SPI6_HSI
++    CLK_I2C46_HSI
++    CLK_SDMMC3_PLL4P
++    CLK_USBO_USBPHY
++    CLK_ADC_CKPER
++    CLK_CEC_LSE
++    CLK_I2C12_HSI
++    CLK_I2C35_HSI
++    CLK_UART1_HSI
++    CLK_UART24_HSI
++    CLK_UART35_HSI
++    CLK_UART6_HSI
++    CLK_UART78_HSI
++    CLK_SPDIF_PLL4P
++    CLK_FDCAN_PLL4R
++    CLK_SAI1_PLL3Q
++    CLK_SAI2_PLL3Q
++    CLK_SAI3_PLL3Q
++    CLK_SAI4_PLL3Q
++    CLK_RNG1_LSI
++    CLK_RNG2_LSI
++    CLK_LPTIM1_PCLK1
++    CLK_LPTIM23_PCLK3
++    CLK_LPTIM45_LSE
+ 	>;
+ 	pll2:st,pll@1 {
+ 		compatible = "st,stm32mp1-pll";
+@@ -151,88 +131,59 @@
+ 	pll3:st,pll@2 {
+ 		compatible = "st,stm32mp1-pll";
+ 		reg = <2>;
+-		cfg = < 1 33 1 16 36 PQR(1,0,0) >;
++		cfg = < 1 33 1 16 36 PQR(1,1,1) >;
+ 		frac = < 0x1a04 >;
+ 		u-boot,dm-pre-reloc;
+ 	};
+ 	pll4:st,pll@3 {
+ 		compatible = "st,stm32mp1-pll";
+ 		reg = <3>;
+-		cfg = < 3 98 5 7 7 PQR(1,0,0) >;
++		cfg = < 3 98 5 7 7 PQR(1,1,1) >;
+ 		u-boot,dm-pre-reloc;
+ 	};
+ };
+ 
+ &i2c4{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN i2c4 */
+-	/* USER CODE END i2c4 */
+ };
+ 
+ &sdmmc1{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN sdmmc1 */
+-	/* USER CODE END sdmmc1 */
+ };
+ 
+ #endif	/*CONFIG_STM32MP1_TRUSTED*/
+ 
+ &cryp1{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN cryp1 */
+-	/* USER CODE END cryp1 */
+ };
+ 
+ &hash1{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN hash1 */
+-	/* USER CODE END hash1 */
+ };
+ 
+ &uart4{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN uart4 */
+-	/* USER CODE END uart4 */
+ };
+ 
+ &usbotg_hs{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN usbotg_hs */
+ 	u-boot,force-b-session-valid;
+ 	hnp-srp-disable;
+ 	dr_mode = "peripheral";
+-	/* USER CODE END usbotg_hs */
+ };
+ 
+ &usbphyc{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN usbphyc */
+-	/* USER CODE END usbphyc */
+ };
+ 
+ &usbphyc_port0{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN usbphyc_port0 */
+-	/* USER CODE END usbphyc_port0 */
+ };
+ 
+ &usbphyc_port1{
+ 	u-boot,dm-pre-reloc;
+-
+-	/* USER CODE BEGIN usbphyc_port1 */
+-	/* USER CODE END usbphyc_port1 */
+ };
+ 
+-/* USER CODE BEGIN addons */
+-
+ &adc{
+ 	status = "okay";
+ };
+@@ -250,6 +201,3 @@
+ 	clocks = <&rcc SAI2>, <&rcc PLL3_Q>, <&rcc PLL3_R>;
+ };
+ #endif /*CONFIG_STM32MP1_TRUSTED*/
+-
+-/* USER CODE END addons */
+-
+-- 
+2.17.1
+

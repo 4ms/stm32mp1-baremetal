@@ -1,0 +1,6 @@
+0001-ARM-v2020.01-stm32mp-r1-MACHINE.patch -p1
+0002-ARM-v2020.01-stm32mp-r1-BOARD.patch -p1
+0003-ARM-v2020.01-stm32mp-r1-MISC-DRIVERS.patch -p1
+0004-ARM-v2020.01-stm32mp-r1-DEVICETREE.patch -p1
+0005-ARM-v2020.01-stm32mp-r1-CONFIG.patch -p1
+0099-Add-external-var-to-allow-build-of-new-devicetree-fi.patch -p1

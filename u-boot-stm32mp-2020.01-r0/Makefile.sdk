@@ -1,0 +1,76 @@
+LDFLAGS=
+CFLAGS=
+CPPFLAGS=
+
+LOCAL_PATH=$(PWD)
+
+
+UBOOT_LOCALVERSION=
+
+UBOOT_CONFIGS ?=  stm32mp15_trusted_defconfig,trusted,u-boot.stm32 stm32mp15_trusted_defconfig,optee,u-boot.stm32 stm32mp15_basic_defconfig,basic,u-boot.img
+DEVICE_TREE ?=   stm32mp157a-dk1 stm32mp157d-dk1 stm32mp157c-dk2 stm32mp157f-dk2   stm32mp157c-ed1 stm32mp157f-ed1   stm32mp157a-ev1 stm32mp157c-ev1 stm32mp157d-ev1 stm32mp157f-ev1 stm32mp157c-osd32mp1-brk 
+
+help:
+	@echo
+	@echo "Configured U-Boot config(s):"
+	@for config in $(UBOOT_CONFIGS); do \
+		defconfig=$$(echo $$config | cut -d',' -f1) ; \
+		type=$$(echo $$config | cut -d',' -f2) ; \
+		binary=$$(echo $$config | cut -d',' -f3) ; \
+		echo "  $$defconfig config ($$type type) for $$binary binary" ; \
+		for devicetree in $(DEVICE_TREE); do \
+			echo "    with device tree: $$devicetree" ; \
+		done ; \
+	done
+	@echo
+	@echo "Available targets:"
+	@echo "  all   : build U-Boot binaries for defined config(s)"
+	@echo "  clean : clean build directories from generated files"
+
+version:
+	@if test ! -e .scmversion ; then echo $(UBOOT_LOCALVERSION) > $(LOCAL_PATH)/.scmversion; fi
+
+all: version
+	for config in $(UBOOT_CONFIGS); do \
+		uboot_config=$$(echo $$config | cut -d',' -f1) ; \
+		uboot_type=-$$(echo $$config | cut -d',' -f2) ; \
+		uboot_binary=$$(echo $$config | cut -d',' -f3) ; \
+		uboot_suffix=$$(echo $$uboot_binary | cut -d'.' -f2) ; \
+		if test -z "$$uboot_config" -o -z "$$uboot_type" -o -z "$$uboot_binary"; then \
+			echo ; \
+			echo "[ERROR] UBOOT_CONFIGS wrongly configured. It should be space separated list of element <defconfig>,<type>,<binary>" ; \
+			echo ; \
+			exit 1 ; \
+		fi ; \
+		if [ ! -d $(LOCAL_PATH)/../build$$uboot_type ]; then \
+			mkdir -p $(LOCAL_PATH)/../build$$uboot_type ; \
+			echo $(UBOOT_LOCALVERSION) > $(LOCAL_PATH)/../build$$uboot_type/.scmversion ; \
+			$(MAKE) -C $(LOCAL_PATH) O=$(LOCAL_PATH)/../build$$uboot_type $$uboot_config ; \
+		fi ; \
+		if [ -z "$(DEVICE_TREE)" ]; then \
+			$(MAKE) -C $(LOCAL_PATH) O=$(LOCAL_PATH)/../build$$uboot_type all ; \
+			cp -f $(LOCAL_PATH)/../build$$uboot_type/$$uboot_binary $(LOCAL_PATH)/../build$$uboot_type/u-boot$$uboot_type.$$uboot_suffix ; \
+			cp -f $(LOCAL_PATH)/../build$$uboot_type/u-boot $(LOCAL_PATH)/../build$$uboot_type/u-boot$$uboot_type.elf ; \
+			if [ -f $(LOCAL_PATH)/../build$$uboot_type/spl/u-boot-spl.stm32 ]; then \
+				cp -f $(LOCAL_PATH)/../build$$uboot_type/spl/u-boot-spl.stm32 $(LOCAL_PATH)/../build$$uboot_type/u-boot-spl.stm32$$uboot_type ; \
+				cp -f $(LOCAL_PATH)/../build$$uboot_type/spl/u-boot-spl $(LOCAL_PATH)/../build$$uboot_type/u-boot-spl.elf$$uboot_type ; \
+			fi ; \
+		else \
+			for devicetree in $(DEVICE_TREE); do \
+				$(MAKE) -C $(LOCAL_PATH) O=$(LOCAL_PATH)/../build$$uboot_type all DEVICE_TREE=$$devicetree DEVICE_TREE_EXT=$$devicetree.dtb; \
+				cp -f $(LOCAL_PATH)/../build$$uboot_type/$$uboot_binary $(LOCAL_PATH)/../build$$uboot_type/u-boot-$$devicetree$$uboot_type.$$uboot_suffix ; \
+				cp -f $(LOCAL_PATH)/../build$$uboot_type/u-boot $(LOCAL_PATH)/../build$$uboot_type/u-boot-$$devicetree$$uboot_type.elf ; \
+				if [ -f $(LOCAL_PATH)/../build$$uboot_type/spl/u-boot-spl.stm32 ]; then \
+					cp -f $(LOCAL_PATH)/../build$$uboot_type/spl/u-boot-spl.stm32 $(LOCAL_PATH)/../build$$uboot_type/u-boot-spl.stm32-$$devicetree$$uboot_type ; \
+					cp -f $(LOCAL_PATH)/../build$$uboot_type/spl/u-boot-spl $(LOCAL_PATH)/../build$$uboot_type/u-boot-spl.elf-$$devicetree$$uboot_type ; \
+				fi ; \
+			done ; \
+		fi ; \
+	done
+
+clean:
+	@for config in $(UBOOT_CONFIGS); do \
+		uboot_type=-$$(echo $$config | cut -d',' -f2) ; \
+		echo "Removing $(LOCAL_PATH)/../build$$uboot_type ..." ; \
+		rm -rf $(LOCAL_PATH)/../build$$uboot_type ; \
+	done

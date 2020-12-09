@@ -1,0 +1,29 @@
+From 641d3282b8df04bf1a23c9ded96d01e2381d4e38 Mon Sep 17 00:00:00 2001
+From: Romuald JEANNE <romuald.jeanne@st.com>
+Date: Tue, 26 May 2020 15:03:11 +0200
+Subject: [PATCH] Add external var to allow build of new devicetree file
+
+Signed-off-by: Romuald JEANNE <romuald.jeanne@st.com>
+---
+ arch/arm/dts/Makefile | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 29eb949..718e454 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -1,5 +1,11 @@
+ # SPDX-License-Identifier: GPL-2.0+
+ 
++DEVICE_TREE_EXT ?=
++
++ifneq ($(DEVICE_TREE_EXT),)
++dtb-y += $(DEVICE_TREE_EXT)
++endif
++
+ dtb-$(CONFIG_TARGET_SMARTWEB) += at91sam9260-smartweb.dtb
+ dtb-$(CONFIG_TARGET_TAURUS) += at91sam9g20-taurus.dtb
+ dtb-$(CONFIG_TARGET_CORVUS) += at91sam9g45-corvus.dtb
+-- 
+2.7.4
+
