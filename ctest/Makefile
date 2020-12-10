@@ -1,7 +1,7 @@
 STARTUP = startup.s
 LINKSCR = linkscript.ld
 
-UBOOTDIR =../u-boot-stm32mp-2020.01-r0/build_baremetal 
+UBOOTDIR =../u-boot-stm32mp-2020.01-r0/build_baremetal
 BUILDDIR = build
 
 PHONY: all
