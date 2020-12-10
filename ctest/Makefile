@@ -1,10 +1,13 @@
-STARTUP = startup_stm32mp157caax.s
-LINKSCR = stm32mp15xx_m4.ld
+STARTUP = startup.s
+LINKSCR = linkscript.ld
+
+UBOOTDIR =../u-boot-stm32mp-2020.01-r0/build_baremetal 
 BUILDDIR = build
 
 PHONY: all
 
 all: $(BUILDDIR)/app.bin
+	$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a 0xC2000040 -e 0xC2000040 -d build/app.elf bare-arm.uimg
 
 $(BUILDDIR)/startup.o: $(STARTUP)
 	@mkdir -p $(BUILDDIR)
