@@ -1,6 +1,7 @@
 .equ MODE_FIQ, 0x11
 .equ MODE_IRQ, 0x12
 .equ MODE_SVC, 0x13
+.equ UART4_TDR, 0x40010028
 
 .section .vector_table, "x"
 .global _Reset
@@ -17,6 +18,16 @@ _Reset:
 
 .section .text
 Reset_Handler:
+	/* A */
+	ldr r1, =UART4_TDR
+	mov r0, #65
+	str r0, [r1]
+
+	/* B */
+	ldr r4, =UART4_TDR
+	mov r5, #66
+	str r5, [r4]
+
     /* FIQ stack */
     msr cpsr_c, MODE_FIQ
     ldr r1, =_fiq_stack_start
@@ -24,10 +35,18 @@ Reset_Handler:
     movw r0, #0xFEFE
     movt r0, #0xFEFE
 
+	/* C */
+	mov r5, #67
+	str r5, [r4]
+
 fiq_loop:
     cmp r1, sp
     strlt r0, [r1], #4
     blt fiq_loop
+
+	/* D */
+	mov r5, #68
+	str r5, [r4]
 
     /* IRQ stack */
     msr cpsr_c, MODE_IRQ
@@ -39,6 +58,10 @@ irq_loop:
     strlt r0, [r1], #4
     blt irq_loop
 
+	/* E */
+	mov r5, #69
+	str r5, [r4]
+
     /* Supervisor mode */
     msr cpsr_c, MODE_SVC
     ldr r1, =_stack_start
@@ -48,6 +71,10 @@ stack_loop:
     cmp r1, sp
     strlt r0, [r1], #4
     blt stack_loop
+
+	/* F */
+	mov r5, #70
+	str r5, [r4]
 
     /* Start copying data */
     ldr r0, =_text_end
@@ -65,10 +92,18 @@ data_loop:
     ldr r1, =_bss_start
     ldr r2, =_bss_end
 
+	/* G */
+	mov r5, #71
+	str r5, [r4]
+
 bss_loop:
     cmp r1, r2
     strlt r0, [r1], #4
     blt bss_loop
+
+	/* H */
+	mov r5, #72
+	str r5, [r4]
 
     bl main
     b Abort_Exception
