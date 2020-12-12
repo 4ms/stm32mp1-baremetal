@@ -14,15 +14,20 @@ SECTIONS
         build/startup.o (.vector_table)
         *(.text*)
         *(.rodata*)
+        . = ALIGN(8);
      } > ROM
+
     _text_end = .;
+
     .data : AT(ADDR(.text) + SIZEOF(.text))
     {
+        . = ALIGN(8);
         _data_start = .;
         *(.data)
         . = ALIGN(8);
         _data_end = .;
     } > RAM
+
     .bss : {
         _bss_start = .;
         *(.bss)

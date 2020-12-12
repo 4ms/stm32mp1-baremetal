@@ -13,9 +13,10 @@ int main() {
 	*uart0 = 'X';
 	*uart0 = 'Y';
 	*uart0 = 'Z';
+	*uart0 = '\r';
 	*uart0 = '\n';
 
-	const char *s = "Hello world from bare-metal!\n";
+	const char *s = "Hello world from bare-metal!\r\n";
 	write(s);
 	while (*s != '\0') {
 		*uart0 = *s;
