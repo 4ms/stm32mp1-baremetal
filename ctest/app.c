@@ -8,6 +8,19 @@ const uint32_t TXFE = (1 << 23); //FIFO Empty
 const uint32_t TXFNF = (1 << 7); //TX FIFO Not Full
 const uint32_t TC = (1 << 6);	 //Tx Complete
 
+#define GPIO1 0x4804C000
+/* .equ GPIO1, 0x4804C000 */
+/* .equ GPIO_OE, 0x134 */
+/* .equ CM_PER, 0x44E00000 */
+/* .equ CM_PER_GPIO1_CLKCTRL, 0xAC */
+/* .equ GPIO_DATAOUT, 0x13C */
+
+/* GPIO I, pin 8 = red D2 */
+/* GPIO I, pin 9 = green D2 */
+/* GPIO Z, pin 6 = red D1 */
+/* GPIO Z, pin 7 = green D1 */
+/* all LEDs are active low */
+
 void delay_for_uart(void) {
 	int i = 255;
 	while (i--)
