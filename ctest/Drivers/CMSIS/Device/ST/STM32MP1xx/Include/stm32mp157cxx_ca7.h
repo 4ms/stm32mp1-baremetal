@@ -270,7 +270,7 @@
 #define GIC_INTERFACE_BASE   (GIC_BASE+0x1000)
 
 #include "core_ca.h"
-#include "system_stm32mp1xx_A7.h"
+//#include "system_stm32mp1xx_A7.h"
 
 
 
