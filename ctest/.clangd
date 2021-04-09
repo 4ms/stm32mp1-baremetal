@@ -1,0 +1,7 @@
+CompileFlags:
+	Add: [ "--target=arm-none-eabi",
+		"-I.",
+		"-IDrivers/STM32MP1xx_HAL_Driver/Inc",
+		"-IDrivers/CMSIS/Core_A/Include",
+		"-IDrivers/CMSIS/Device/ST/STM32MP1xx/Include"
+	]

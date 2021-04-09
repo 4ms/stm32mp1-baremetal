@@ -2,3 +2,5 @@
 *.uimg
 *.bin
 *.elf
+
+ctest/dis.txt
