@@ -6,6 +6,7 @@ BUILDDIR = build
 
 PHONY: all
 
+#Todo: need a .uimg target. Seems like mkimage converts elf to uimg
 all: $(BUILDDIR)/app.bin
 	$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a 0xC2000040 -e 0xC2000040 -d build/app.elf bare-arm.uimg
 
@@ -17,6 +18,7 @@ $(BUILDDIR)/app.o: app.c
 	@mkdir -p $(BUILDDIR)
 	arm-none-eabi-gcc -c -nostdlib -nostartfiles -o $(BUILDDIR)/app.o app.c
 
+#Todo: this should be .elf, then objcopy creates the .bin target
 $(BUILDDIR)/app.bin: $(BUILDDIR)/app.o $(BUILDDIR)/startup.o $(LINKSCR)
 	@mkdir -p $(BUILDDIR)
 	arm-none-eabi-ld -T $(LINKSCR) -o $(BUILDDIR)/app.elf $(BUILDDIR)/startup.o $(BUILDDIR)/app.o
