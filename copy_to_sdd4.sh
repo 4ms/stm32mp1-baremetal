@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+[ "$#" -eq 1 ] || { echo "Usage: ./copy_to_sdd4.sh path/to/bare-arm.uimg" >&2; exit 1; }
+
+if [ ! -f $1 ]; then
+	echo "File $1 does not exist";
+	exit 1;
+fi
+
 if [ -b "/dev/sdd4" ] 
 then
     echo "Device /dev/sdd4 exists." 
