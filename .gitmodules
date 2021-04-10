@@ -1,0 +1,3 @@
+[submodule "u-boot-stm32mp-2020.01-r0/u-boot-stm32mp1-baremetal"]
+	path = u-boot-stm32mp-2020.01-r0/u-boot-stm32mp1-baremetal
+	url = git@github.com:4ms/u-boot-stm32mp1-baremetal.git
