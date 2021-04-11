@@ -1,5 +1,7 @@
 BINARYNAME = app
 UIMAGENAME = bare-arm.uimg
+LOADADDR 	= 0xC2000040
+ENTRYPOINT 	= 0xC2000040
 
 STARTUP = startup.s
 LINKSCR = linkscript.ld
@@ -78,8 +80,8 @@ PHONY: all
 
 all: Makefile $(ELF) $(UIMAGENAME)
 
-$(UIMAGENAME): $(ELF)
-	$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a 0xC2000040 -e 0xC2000040 -d $< $@
+$(UIMAGENAME): $(BIN)
+	$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a $(LOADADDR) -e $(ENTRYPOINT) -d $< $@
 
 $(BUILDDIR)/%.o: %.s
 	@mkdir -p $(dir $@)
