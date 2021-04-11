@@ -1,5 +1,6 @@
 #include "stm32mp157cxx_ca7.h"
 #include "stm32mp1xx_ll_gpio.h"
+#include "stm32mp1xx_ll_usart.h"
 
 #include <stdint.h>
 
@@ -23,6 +24,12 @@ const uint32_t TC = (1 << 6);    // Tx Complete
 /* GPIO Z, pin 7 = green D1 */
 /* all LEDs are active low */
 
+void delay_long() {
+  uint32_t i = 0x100000;
+  while (i--)
+    ;
+}
+
 void delay_for_uart(void) {
   int i = 255;
   while (i--)
@@ -39,50 +46,66 @@ uint32_t uart_ready() {
 
 void write(const char *str) {
   while (*str) {
-    *uart0 = *str++;
+    UART4->TDR = *str++;
     delay_for_uart();
   }
 }
 
 int main() {
+  UART4->TDR = 'X';
+  UART4->TDR = 'Y';
+  UART4->TDR = 'Z';
+  UART4->TDR = '\r';
+  UART4->TDR = '\n';
+
   RCC->MC_AHB4ENSETR |= RCC_MC_AHB4ENSETR_GPIOIEN;
   RCC->MC_AHB5ENSETR |= RCC_MC_AHB5ENSETR_GPIOZEN;
 
   LL_GPIO_SetPinMode(GPIOI, LL_GPIO_PIN_8, LL_GPIO_MODE_OUTPUT);
   LL_GPIO_SetPinOutputType(GPIOI, LL_GPIO_PIN_8, LL_GPIO_OUTPUT_PUSHPULL);
   LL_GPIO_SetPinSpeed(GPIOI, LL_GPIO_PIN_8, LL_GPIO_SPEED_FREQ_MEDIUM);
-
   LL_GPIO_SetPinMode(GPIOI, LL_GPIO_PIN_9, LL_GPIO_MODE_OUTPUT);
   LL_GPIO_SetPinOutputType(GPIOI, LL_GPIO_PIN_9, LL_GPIO_OUTPUT_PUSHPULL);
   LL_GPIO_SetPinSpeed(GPIOI, LL_GPIO_PIN_9, LL_GPIO_SPEED_FREQ_MEDIUM);
 
   LL_GPIO_SetOutputPin(GPIOI, LL_GPIO_PIN_8);
   LL_GPIO_ResetOutputPin(GPIOI, LL_GPIO_PIN_8);
+
   LL_GPIO_SetOutputPin(GPIOI, LL_GPIO_PIN_9);
   LL_GPIO_ResetOutputPin(GPIOI, LL_GPIO_PIN_9);
 
   LL_GPIO_SetOutputPin(GPIOZ, LL_GPIO_PIN_6);
   LL_GPIO_ResetOutputPin(GPIOZ, LL_GPIO_PIN_6);
+
   LL_GPIO_SetOutputPin(GPIOZ, LL_GPIO_PIN_7);
   LL_GPIO_ResetOutputPin(GPIOZ, LL_GPIO_PIN_7);
-
-  *uart0 = 'X';
-  *uart0 = 'Y';
-  *uart0 = 'Z';
-  *uart0 = '\r';
-  *uart0 = '\n';
 
   const char *s = "Hello world from bare-metal!\r\n";
   write(s);
 
   const char *s2 = "And hi to you too!\r\n";
   while (*s2 != '\0') {
-    *uart0 = *s2;
+    UART4->TDR = *s2;
     s2++;
     delay_for_uart();
   }
 
   while (1) {
+    LL_GPIO_SetOutputPin(GPIOI, LL_GPIO_PIN_8);
+    delay_long();
+    LL_GPIO_ResetOutputPin(GPIOI, LL_GPIO_PIN_8);
+
+    LL_GPIO_SetOutputPin(GPIOI, LL_GPIO_PIN_9);
+    delay_long();
+    LL_GPIO_ResetOutputPin(GPIOI, LL_GPIO_PIN_9);
+
+    LL_GPIO_SetOutputPin(GPIOZ, LL_GPIO_PIN_6);
+    delay_long();
+    LL_GPIO_ResetOutputPin(GPIOZ, LL_GPIO_PIN_6);
+
+    LL_GPIO_SetOutputPin(GPIOZ, LL_GPIO_PIN_7);
+    delay_long();
+    LL_GPIO_ResetOutputPin(GPIOZ, LL_GPIO_PIN_7);
   };
 
   return 0;
