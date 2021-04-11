@@ -1,39 +1,114 @@
+BINARYNAME = app
+UIMAGENAME = bare-arm.uimg
+
 STARTUP = startup.s
 LINKSCR = linkscript.ld
 
 UBOOTDIR =../u-boot-stm32mp-2020.01-r0/build_baremetal
 BUILDDIR = build
 
+SOURCES = $(STARTUP) \
+		  app.c
+
+OBJECTS   = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
+DEPS   	  = $(addprefix $(BUILDDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
+
 INCLUDES = -I. \
 		   -IDrivers/STM32MP1xx_HAL_Driver/Inc \
 		   -IDrivers/CMSIS/Core_A/Include \
 		   -IDrivers/CMSIS/Device/ST/STM32MP1xx/Include \
 
-CFLAGS = -nostdlib \
-		 -nostartfiles \
+MCU = 
 
-DEFS = -DCORE_CA7 \
-	   -DSTM32MP157Cxx \
+ARCH_CFLAGS = -DCORE_CA7 \
+			  -DSTM32MP157Cxx \
+
+OPTFLAG = -O0
+
+AFLAGS = $(MCU)
+
+CFLAGS = -g2 \
+		 -nostdlib \
+		 -nostartfiles \
+		 $(ARCH_CFLAGS) \
+		 $(MCU) \
+		 $(INCLUDES) \
+		 -fno-common \
+		 -fdata-sections -ffunction-sections \
+
+CXXFLAGS = $(CFLAGS) \
+		-std=c++2a \
+		-fno-rtti \
+		-fno-exceptions \
+		-fno-unwind-tables \
+		-ffreestanding \
+		-fno-threadsafe-statics \
+		-Werror=return-type \
+		-Wdouble-promotion \
+		-Wno-register \
+		-Wno-volatile \
+
+
+LFLAGS = -T $(LINKSCR) \
+	-Wl,--gc-sections \
+	-Wl,-Map,$(BUILDDIR)/$(BINARYNAME).map,--cref \
+	$(MCU)  \
+	-nostdlib \
+	-nostartfiles \
+
+DEPFLAGS = -MMD -MP -MF $(BUILDDIR)/$(basename $<).d
+
+ARCH 	= arm-none-eabi
+CC 		= $(ARCH)-gcc
+CXX 	= $(ARCH)-g++
+LD 		= $(ARCH)-g++
+AS 		= $(ARCH)-as
+OBJCPY 	= $(ARCH)-objcopy
+OBJDMP 	= $(ARCH)-objdump
+GDB 	= $(ARCH)-gdb
+SZ 		= $(ARCH)-size
+
+SZOPTS 	= -d
+
+ELF 	= $(BUILDDIR)/$(BINARYNAME).elf
+HEX 	= $(BUILDDIR)/$(BINARYNAME).hex
+BIN 	= $(BUILDDIR)/$(BINARYNAME).bin
 
 PHONY: all
 
-#Todo: need a .uimg target. Seems like mkimage converts elf to uimg
-all: $(BUILDDIR)/app.bin
-	$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a 0xC2000040 -e 0xC2000040 -d build/app.elf bare-arm.uimg
+all: Makefile $(ELF) $(UIMAGENAME)
 
-$(BUILDDIR)/startup.o: $(STARTUP)
-	@mkdir -p $(BUILDDIR)
-	arm-none-eabi-as -o $(BUILDDIR)/startup.o $(STARTUP)
+$(UIMAGENAME): $(ELF)
+	$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a 0xC2000040 -e 0xC2000040 -d $< $@
 
-$(BUILDDIR)/app.o: app.c
-	@mkdir -p $(BUILDDIR)
-	arm-none-eabi-gcc -c $(CFLAGS) $(DEFS) $(INCLUDES) -o $(BUILDDIR)/app.o app.c
+$(BUILDDIR)/%.o: %.s
+	@mkdir -p $(dir $@)
+	$(info Building $< at $(OPTFLAG))
+	$(AS) $(AFLAGS) $< -o $@ > $(addprefix $(BUILDDIR)/, $(addsuffix .lst, $(basename $<)))
 
-#Todo: this should be .elf, then objcopy creates the .bin target
-$(BUILDDIR)/app.bin: $(BUILDDIR)/app.o $(BUILDDIR)/startup.o $(LINKSCR)
-	@mkdir -p $(BUILDDIR)
-	arm-none-eabi-ld -T $(LINKSCR) -o $(BUILDDIR)/app.elf $(BUILDDIR)/startup.o $(BUILDDIR)/app.o
-	arm-none-eabi-objcopy -O binary $(BUILDDIR)/app.elf $(BUILDDIR)/app.bin
+$(BUILDDIR)/%.o: %.c $(BUILDDIR)/%.d
+	@mkdir -p $(dir $@)
+	$(info Building $< at $(OPTFLAG))
+	$(CC) -c $(DEPFLAGS) $(OPTFLAG) $(CFLAGS) $< -o $@
 
+$(ELF): $(OBJECTS) $(LINKSCR)
+	$(info Linking...)
+	$(LD) $(LFLAGS) -o $@ $(OBJECTS)
 
+$(BIN): $(ELF)
+	$(OBJCPY) -O binary $< $@
+
+%.d: ;
+
+clean:
+	rm -rf build
+	rm $(UIMAGENAME)
+
+ifneq "$(MAKECMDGOALS)" "clean"
+-include $(DEPS)
+endif
+
+.PRECIOUS: $(DEPS) $(OBJECTS) $(ELF)
+
+#Todo: add card commands
 #./create-sd.sh sdcard.img bare-arm.uimg
