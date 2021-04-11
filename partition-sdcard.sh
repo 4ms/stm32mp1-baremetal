@@ -6,12 +6,14 @@
 # The fourth partition is left empty.
 #
 # This script is meant to be run once when using a new SD Card.
+#
 # 
 # After running this script, you must load your application
 # code on the card using the copy_to_sdcard.sh script
 
 [ "$#" -eq 1 ] || { 
-	echo "Usage: ./create-sd.sh /dev/{sdcard device name}" >&2; 
+	echo "Usage: ./partition-sdcard.sh /dev/sdX" >&2; 
+	echo "Where /dev/sdX is the sd card device, e.g. /dev/sdc"
 	exit 1; 
 }
 
@@ -21,7 +23,8 @@ if [ ! -b $1 ]; then
 fi
 
 echo "Device $2 found."
-echo "Formatting and partitioning..."
+echo "Partitioning..."
+
 sudo sgdisk -o $1 
 sudo sgdisk --resize-table=128 -a 1 \ 
 -n 1:34:545 -c 1:fsbl1 \

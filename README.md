@@ -28,7 +28,7 @@ brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`
 ```
 
-# 1) Build U-boot:
+# 1) Build and load U-boot:
 
 ```
 # Set CROSS_COMPILE and KBUILD_OUTPUT environment vars
@@ -45,30 +45,38 @@ ls -l $KBUILD_OUTPUT/u-boot-spl.stm32
 ls -l $KBUILD_OUTPUT/u-boot.img
 ```
 
-Now you need to format and partition an SD Card. The `create_sd.sh` script will do this for you:
+Now you need to format and partition an SD Card. 
+All SD Card actions are hard to do on macOS, so I use a virtual machine. Vagrant and ubunutu are easy to set up.
+
+To format and create the necessary partitions, insert a card and do (from a virtual or real linux box):
 ```
-./create_sd.sh /dev/disk#
+mkfs.ext2 /dev/sd#
+./partition-sdcard.sh /dev/sd#
 ```
-...where /dev/disk# is the SD card. The script assumes the card is inserted, but not yet mounted.
+...where /dev/sd# is the SD Card device name such as /dev/sdc
 
 # 2) Power up OSD board
 
 Attach a USB-to-UART device to the UART pins on the OSD board (use UART4 if you've got a custom board-- only TX/RX and GND are needed).
-Start a terminal session that connects to the USB driver (I use miniterm, there are many alternatives also).
+Start a terminal session that connects to the USB driver (I use minicom; there are many fine alternatives).
 
-Insert the card into the OSD board and power it on. You should see the boot log, and then finally an error when it can't find
+Insert the card into the OSD board and power it on. You should see boot messages, and then finally an error when it can't find
 bare-arm.uimg. Now it's time to build that file.
 
 # 3) Build the application
 ```
 cd ctest
 make 
+ls -l build/app.elf
 ls -l bare-arm.uimg
 ```
-You should see the bare-arm.uimg file after building. This is the compiled application, which must be loaded
-in SDRAM at 0xC2000040. You can do this by using a debugger/programmer such as J-link connected to the SWD pins,
-or by copying the file to the SD Card in the fourth partition. In the latter method, the bootloader will load the application into 
-0xC2000040 on boot. Of course, the former method is only temporary, requires a debugger to be attached, and will not persist after power down.
+You should see the app.elf and the bare-arm.uimg files after building. Each of these is the compiled application, and either one must be loaded
+in SDRAM at 0xC2000040. You can load the app.elf file by using a debugger/programmer such as J-link connected to the SWD pins.
+Or, you can copy bare-arm.uimg to the SD Card in the fourth partition using normal linux cp commands. 
+The former method is only temporary, requires a debugger to be attached, and will not persist after power down. However, it's much more convenient so it's preferred for Debug builds.
+In the latter method, the application firmware is stored on the SD Card, so this is the method for production or long-term testing. The bootloader will load the application into 0xC2000040 on boot.
+
+//Todo: Test if you have to copy bare-arm.uimg once, in order to get the debugger to work.//
 
 # 4) Debug application
 
@@ -79,15 +87,19 @@ file that gets created when you run `make` in ctest.
 
 When you want to have a version of the application load even without a debugger attached, you can load the application onto the SD Card.
 
-You can insert the SD Card into your computer, but if you have the UART connected and your particular OS happens to be compatibble, then you might be able to mount the SD Card directly over UART without having to physically touch the card. 
-//Todo: Describe process here
+You can move the SD Card from the OSD board and into your computer, but if you have the UART connected and your particular OS happens to be compatible with usb-gadget, then you might be able to mount the SD Card directly over UART without having to physically touch the card. Do this:
+1) When the board is booting, up look for the message `Hit any key to stop autoboot`, and press a key.
+2) You will see a UBOOT> prompt. Type the command: `ums 0 mmc 0`
+3) In another terminal window, look to see that there's a new device, e.g. /dev/sdX 
+
+If you're using a virtual machine you'll have too fiddle with the virtual machine host settings to get it to see the new device.
 
 The `copy_to_sdcard.sh` script takes two arguments:
 ```
-./copy_to_sdcard.sh filname devicename
+./copy_to_sdcard.sh filname /dev/sdXX
 ```
-Where `filename` is the path to the bare-arm.uimg file (probably ctest/bare-arm.uimg) and `devicename` is the SD Card device.
-The script will mount the SD Card, remove the old bare-arm.uimg file, and copy the one you provided onto the correct place.
+Where `filename` is the path to the bare-arm.uimg file (probably ctest/bare-arm.uimg) and `/dev/sdXX` is the SD Card's fourth partition, e.g. `/dev/sdc4`.
+The script will mount the SD Card partition, remove the old bare-arm.uimg file, and copy the one you provided onto the correct place.
 
 You can also take a look at the script and just do it manually or as part of your build process.
 
