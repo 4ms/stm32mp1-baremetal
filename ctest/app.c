@@ -5,9 +5,6 @@
 #include <stdint.h>
 
 const uint32_t *UART4_ISR = (uint32_t *)0x40010028;
-const uint32_t TXFE = (1 << 23); // FIFO Empty
-const uint32_t TXFNF = (1 << 7); // TX FIFO Not Full
-const uint32_t TC = (1 << 6);	 // Tx Complete
 
 /* GPIO I, pin 8 = red D2 */
 /* GPIO I, pin 9 = green D2 */
@@ -32,14 +29,6 @@ void delay_for_uart(void) {
 	int i = 255;
 	while (i--)
 		;
-}
-
-uint32_t uart_ready() {
-	uint32_t isr = (*UART4_ISR);
-	if (isr & TC)
-		return 1;
-	else
-		return 0;
 }
 
 void write(const char *str) {
