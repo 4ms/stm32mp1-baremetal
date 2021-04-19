@@ -1,5 +1,6 @@
 BINARYNAME = app
-UIMAGENAME = bare-arm.uimg
+BUILDDIR = build
+UIMAGENAME = $(BUILDDIR)/bare-arm.uimg
 LOADADDR 	= 0xC2000040
 ENTRYPOINT 	= 0xC2000040
 
@@ -7,7 +8,6 @@ STARTUP = startup.s
 LINKSCR = linkscript.ld
 
 UBOOTDIR =../u-boot-stm32mp-2020.01-r0/build_baremetal
-BUILDDIR = build
 
 SOURCES = $(STARTUP) \
 		  app.c
@@ -76,8 +76,6 @@ ELF 	= $(BUILDDIR)/$(BINARYNAME).elf
 HEX 	= $(BUILDDIR)/$(BINARYNAME).hex
 BIN 	= $(BUILDDIR)/$(BINARYNAME).bin
 
-PHONY: all
-
 all: Makefile $(ELF) $(UIMAGENAME)
 
 $(UIMAGENAME): $(BIN)
@@ -104,13 +102,11 @@ $(BIN): $(ELF)
 
 clean:
 	rm -rf build
-	rm $(UIMAGENAME)
 
 ifneq "$(MAKECMDGOALS)" "clean"
 -include $(DEPS)
 endif
 
 .PRECIOUS: $(DEPS) $(OBJECTS) $(ELF)
+.PHONY: all
 
-#Todo: add card commands
-#./create-sd.sh sdcard.img bare-arm.uimg

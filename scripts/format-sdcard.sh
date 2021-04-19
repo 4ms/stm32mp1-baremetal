@@ -1,5 +1,7 @@
+#!/usr/bin/env bash
+
 [ "$#" -eq 1 ] || { 
-	echo "Usage: ./format-sdcard.sh /dev/sdX" >&2; 
+	echo "Usage: scripts/format-sdcard.sh /dev/sdX" >&2; 
 	echo "Where /dev/sdX is the sd card device, e.g. /dev/sdc"
 	exit 1; 
 }
@@ -9,9 +11,8 @@ if [ ! -b $1 ]; then
 	exit 1;
 fi
 
-echo "Device $2 found."
+echo "Device $1 found."
 echo "Formatting..."
 
-mkfs.ext2 $1
-
+mkfs.fat32 $1 || diskutil eraseDisk FAT32 BAREMETA $1
 echo "Done"
