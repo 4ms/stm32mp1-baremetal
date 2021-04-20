@@ -1,10 +1,7 @@
 #include "stm32mp157cxx_ca7.h"
 #include "stm32mp1xx_ll_gpio.h"
 #include "stm32mp1xx_ll_usart.h"
-
 #include <stdint.h>
-
-const uint32_t *UART4_ISR = (uint32_t *)0x40010028;
 
 /* GPIO I, pin 8 = red D2 */
 /* GPIO I, pin 9 = green D2 */
@@ -38,6 +35,11 @@ void write(const char *str) {
 	}
 }
 
+// Todo:
+// - Test IRQ handler: UART RX ISR, or HSEM ISR
+// - Test static initialization of cpp objects: create a data structure, then output it via the UART
+// - Test SysTick (do we have HAL_Tick()?)
+// - Get USE_HAL_DRIVER working
 int main() {
 	// Test UART
 	UART4->TDR = 'X';
