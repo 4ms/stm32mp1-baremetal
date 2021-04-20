@@ -17,7 +17,7 @@ You can easily include this repo as a submodule into your project, or just copy 
 
 ## Building:
 
-# 0) Setup:
+# 1) Setup:
 
 Make sure to clone the submodule (4ms's u-boot fork):
 `git submodule update --init`
@@ -29,7 +29,7 @@ brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`
 ```
 
-# 1) Build and load U-boot:
+# 2) Build and load U-boot:
 
 Build u-boot, putting the files in the build/ dir:
 ```
@@ -39,8 +39,8 @@ Ignore warnings about "format string is not a string literal" (TODO: patch u-boo
 
 Verify the output files were created:
 ```
-ls -l build/u-boot-spl.stm32
-ls -l build/u-boot.img
+ls -l u-boot/build/u-boot-spl.stm32
+ls -l u-boot/build/u-boot.img
 ```
 
 Now you need to format and partition an SD Card.  Insert a card and do:
@@ -57,32 +57,25 @@ If you need to find out what the device is, you can type `ls -l /dev/sd` or `ls 
 Or, on macOS you can type `mount` instead of `ls -l /dev/disk<TAB>`
 Take note of what it lists. Then remove (or insert) the SD Card, and repeat the command. Whatever changed is the SD Card's device name(s). Use the base name, e.g. /dev/sdc, not /dev/sdc3.
 
-Then run the script to partition the drive and copy the bootloader images:
+You also could use the script `format-sdcard.sh`, though it's just a heavy wrapper around the above commands.
+
+
+Then run the script to partition the drive 
 ```
-scripts/partition-sdcard-and-copy-bootloader.sh /dev/XXX build/
+scripts/partition-sdcard.sh /dev/XXX 
 ```
 ...where /dev/XXX is the SD Card device name such as /dev/sdc or /dev/disk2
-This script will create four partitions and copy the bootloader images onto the first three.
-You may need to change the path `build/` if the u-boot-spl.stm32 and u-boot.img files are somewhere else.
+This script will create four partitions, and format the fourth to FAT32.
 
-
-# 2) Format the application partition
-
-Format partition 4 as FAT32. In macOS do this by:
-````
-diskutil eraseVolume FAT32 MYAPP /dev/disk#s4
+Then run the script to copy the bootloader (u-boot and spl) to the first three partitions:
 ```
-
-Where MYAPP is just some name you can give your volume so that when you insert it, it'll show up at /Volumes/MYAPP
-
-On linux:
+scripts/copy-bootloader.sh u-boot/build/
 ```
-mkfs.fat32 /dev/sdX4
-```
+You may need to change the path `u-boot/build/` if the u-boot-spl.stm32 and u-boot.img files are somewhere else.
 
 # 3) Power up OSD board
 
-This is a good moment to test your setup. You can skip this step if you've done this before.
+This is a good moment to test your hardware setup. You can skip this step if you've done this before.
 Remove the SD card from the computer and insert into the OSD board.
 Attach a USB-to-UART device to the UART pins on the OSD board (use UART4 if you've got a custom board-- only TX/RX and GND are needed).
 Start a terminal session that connects to the USB driver (I use minicom; there are many fine alternatives).
@@ -92,7 +85,7 @@ bare-arm.uimg. Now it's time to build that file.
 
 # 4) Build the application
 ```
-cd ctest    # or the application directory if you're using this in another app
+cd ctest    # or the application directory if you're using this as a template in another app
 make 
 ls -l build/*.elf
 ls -l build/*.uimg
@@ -133,10 +126,11 @@ or use some other path where you mount things. Then copy the file as above.
 
 There's also a handy script to automatically mount and copy and unmount the drive. 
 ```
-scripts/partition-sdcard-and-copy-bootloader.sh build/myapp.uimg /dev/sdXX
+scripts/copy-app-to-sdcard.sh build/myapp.uimg /dev/sdXX
 ```
 Where `build/myapp.uimg` is the path to the app uimg file (perhaps ctest/bare-arm.uimg) and `/dev/sdXX` is the SD Card's fourth partition, e.g. `/dev/sdc4`.
-The script will mount the SD Card partition, remove the old bare-arm.uimg file, and copy the one you provided onto the correct place.
+The script will mount the SD Card partition, remove the old bare-arm.uimg file, and copy the one you provided onto the correct place. It's not a fool-proof script,
+you may need to view the source and run commands manually if it's not working on your OS.
 
 # 6) Debug application
 
