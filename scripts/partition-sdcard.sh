@@ -40,11 +40,13 @@ case "$(uname -s)" in
 		echo "diskutil eraseVolume FAT32 BAREAPP ${1}s4"
 		diskutil eraseVolume FAT32 BAREAPP ${1}s4
 		echo "diskutil unmountDisk $1"
+		sleep 1
 		diskutil unmountDisk $1
 		;;
 	Linux)
 		echo "mkfs.fat -F 32 ${1}4"
 		mkfs.fat -F 32 ${1}4
+		sleep 1
 		sudo umount $1
 		;;
 	*)

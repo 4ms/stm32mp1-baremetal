@@ -19,33 +19,54 @@ if [ ! -b $2 ]; then
 	exit 1;
 fi
 
+case "$(uname -s)" in
+	Darwin)
+		UNMOUNTCMD="sudo diskutil unmount $2"
+		MOUNTCMD="sudo diskutil mount -mountPoint /tmp/sdcard_root $2"
+		;;
+	Linux)
+		UNMOUNTCMD="sudo unmount $2"
+		MOUNTCMD="sudo mount -o user -t FAT32 $2 /tmp/sdcard_root"
+		;;
+	*)
+		echo 'OS not supported'
+		;;
+esac
+
 echo ""
 echo "Device $2 found, unmounting..."
-sudo umount $2 || diskutil unmountVolume $2
+echo $UNMOUNTCMD 
+eval $UNMOUNTCMD
 
 echo ""
 echo "Mounting on /tmp/sdcard_root"
 rm -rf /tmp/sdcard_root
 mkdir -p /tmp/sdcard_root
-sudo mount -o user $2 /tmp/sdcard_root/
+eval $MOUNTCMD || (echo "ERROR: can't mount" && exit 0)
 
 echo ""
 echo "Current contents of sdcard:"
 echo "ls -l /tmp/sdcard_root/"
 ls -l /tmp/sdcard_root/
 
-echo "Deleting bare-arm.uimg"
-echo "sudo rm /tmp/sdcard_root/bare-arm.uimg"
-sudo rm /tmp/sdcard_root/bare-arm.uimg
+if [ -e /tmp/sdcard_root/bare-arm.uimg ]; then
+	echo "";
+	echo "Deleting bare-arm.uimg";
+	echo "sudo rm /tmp/sdcard_root/bare-arm.uimg";
+	sudo rm /tmp/sdcard_root/bare-arm.uimg;
+fi
 
+echo ""
 echo "Copying $1 to bare-arm.uimg on sdcard"
 echo "sudo cp $1 /tmp/sdcard_root/bare-arm.uimg"
 sudo cp $1 /tmp/sdcard_root/bare-arm.uimg
 
+echo ""
 echo "New contents of sdcard:"
 ls -l /tmp/sdcard_root/
 
+echo ""
 echo "Unmounting sdcard..."
-sudo umount $2 || diskutil unmountVolume $2
+eval $UNMOUNTCMD
 
 echo "Done!"
