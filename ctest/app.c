@@ -108,7 +108,3 @@ int main() {
 
 	return 0;
 }
-
-void SystemInit(void) {
-	return;
-}

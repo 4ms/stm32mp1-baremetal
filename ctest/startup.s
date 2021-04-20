@@ -1,3 +1,8 @@
+.syntax unified
+.cpu cortex-a7
+/* .fpu softvfp */
+/* .thumb */
+
 .equ MODE_FIQ, 0x11
 .equ MODE_IRQ, 0x12
 .equ MODE_SVC, 0x13
@@ -9,24 +14,34 @@
 _Reset:
     b Reset_Handler
     b Abort_Exception /* 0x4  Undefined Instruction */
-    b . /* 0x8  Software Interrupt */
+    b SVC_Handler /* Software Interrupt */
     b Abort_Exception  /* 0xC  Prefetch Abort */
     b Abort_Exception /* 0x10 Data Abort */
     b . /* 0x14 Reserved */
-    b . /* 0x18 IRQ */
-    b . /* 0x1C FIQ */
+    b IRQ_Handler /* 0x18 IRQ */
+    b FIQ_Handler /* 0x1C FIQ */
 
 .section .text
 Reset_Handler:
-	/* A */
-	ldr r1, =UART4_TDR
-	mov r0, #65
-	str r0, [r1]
-
-	/* B */
+	/* UART: print 'A' */
 	ldr r4, =UART4_TDR
-	mov r5, #66
-	str r5, [r4]
+	mov r0, #65
+	str r0, [r4]
+
+	CPSID   if 										/* Mask Interrupts */
+
+	MRC     p15, 0, R0, c1, c0, 0                   /* Read CP15 System Control register*/
+	BIC     R0, R0, #(0x1 << 12)                    /* Clear I bit 12 to disable I Cache*/
+	BIC     R0, R0, #(0x1 <<  2)                    /* Clear C bit  2 to disable D Cache*/
+	BIC     R0, R0, #0x1                            /* Clear M bit  0 to disable MMU*/
+	BIC     R0, R0, #(0x1 << 11)                    /* Clear Z bit 11 to disable branch prediction*/
+	BIC     R0, R0, #(0x1 << 13)                    /* Clear V bit 13 to disable hivecs*/
+	MCR     p15, 0, R0, c1, c0, 0                   /* Write value back to CP15 System Control register*/
+	ISB                                             
+
+	// Set Vector Base Address Register (VBAR) to point to this application's vector table
+	LDR    R0, =0xC2000040
+	MCR    p15, 0, R0, c12, c0, 0
 
     /* FIQ stack */
     msr cpsr_c, MODE_FIQ
@@ -35,18 +50,10 @@ Reset_Handler:
     movw r0, #0xFEFE
     movt r0, #0xFEFE
 
-	/* C */
-	mov r5, #67
-	str r5, [r4]
-
 fiq_loop:
     cmp r1, sp
     strlt r0, [r1], #4
     blt fiq_loop
-
-	/* D */
-	mov r5, #68
-	str r5, [r4]
 
     /* IRQ stack */
     msr cpsr_c, MODE_IRQ
@@ -58,10 +65,6 @@ irq_loop:
     strlt r0, [r1], #4
     blt irq_loop
 
-	/* E */
-	mov r5, #69
-	str r5, [r4]
-
     /* Supervisor mode */
     msr cpsr_c, MODE_SVC
     ldr r1, =_stack_start
@@ -71,10 +74,6 @@ stack_loop:
     cmp r1, sp
     strlt r0, [r1], #4
     blt stack_loop
-
-	/* F */
-	mov r5, #70
-	str r5, [r4]
 
     /* Start copying data */
     ldr r0, =_text_end
@@ -92,22 +91,27 @@ data_loop:
     ldr r1, =_bss_start
     ldr r2, =_bss_end
 
-	/* G */
-	mov r5, #71
-	str r5, [r4]
-
 bss_loop:
     cmp r1, r2
     strlt r0, [r1], #4
     blt bss_loop
 
-	/* H */
-	mov r5, #72
+	/* UART: print 'B' */
+	mov r5, #66
 	str r5, [r4]
 
+	bl SystemInit
+    bl __libc_init_array
+
+	/* UART: print 'C' */
+	mov r5, #67
+	str r5, [r4]
+
+run_main:
     bl main
     b Abort_Exception
 
 Abort_Exception:
-    swi 0xFF
+	b .
+    /*swi 0xFF*/
 
