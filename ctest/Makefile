@@ -7,10 +7,15 @@ ENTRYPOINT 	= 0xC2000040
 STARTUP = startup.s
 LINKSCR = linkscript.ld
 
-UBOOTDIR =../u-boot-stm32mp-2020.01-r0/build_baremetal
+UBOOTDIR =../u-boot/build
 
 SOURCES = $(STARTUP) \
-		  app.c
+		  app.c \
+		  Drivers/mdrivlib/interrupt.cc \
+		  Drivers/system/libc_stub.c \
+		  Drivers/system/libcpp_stub.cc \
+		  Drivers/system/irq_ctrl.c \
+		  Drivers/system/system_ca7.c
 
 OBJECTS   = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
 DEPS   	  = $(addprefix $(BUILDDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
@@ -19,24 +24,29 @@ INCLUDES = -I. \
 		   -IDrivers/STM32MP1xx_HAL_Driver/Inc \
 		   -IDrivers/CMSIS/Core_A/Include \
 		   -IDrivers/CMSIS/Device/ST/STM32MP1xx/Include \
+		   -IDrivers/mdrivlib \
+		   -IDrivers/system \
 
-MCU = 
+MCU =  -mcpu=cortex-a7 -mfpu=fpv5-d16 -mlittle-endian -mfloat-abi=hard
 
-ARCH_CFLAGS = -DCORE_CA7 \
+ARCH_CFLAGS += -DUSE_FULL_LL_DRIVER \
 			  -DSTM32MP157Cxx \
+			  -DSTM32MP1 \
+			  -DCORE_CA7 \
 
 OPTFLAG = -O0
 
 AFLAGS = $(MCU)
 
 CFLAGS = -g2 \
-		 -nostdlib \
-		 -nostartfiles \
+		 -fno-common \
 		 $(ARCH_CFLAGS) \
 		 $(MCU) \
 		 $(INCLUDES) \
-		 -fno-common \
 		 -fdata-sections -ffunction-sections \
+		 -nostartfiles \
+		 -nostdlib \
+		 -ffreestanding
 
 CXXFLAGS = $(CFLAGS) \
 		-std=c++2a \
@@ -51,12 +61,13 @@ CXXFLAGS = $(CFLAGS) \
 		-Wno-volatile \
 
 
-LFLAGS = -T $(LINKSCR) \
-	-Wl,--gc-sections \
+LFLAGS = -Wl,--gc-sections \
 	-Wl,-Map,$(BUILDDIR)/$(BINARYNAME).map,--cref \
 	$(MCU)  \
+	-T $(LINKSCR) \
 	-nostdlib \
 	-nostartfiles \
+	-ffreestanding
 
 DEPFLAGS = -MMD -MP -MF $(BUILDDIR)/$(basename $<).d
 
@@ -78,25 +89,36 @@ BIN 	= $(BUILDDIR)/$(BINARYNAME).bin
 
 all: Makefile $(ELF) $(UIMAGENAME)
 
-$(UIMAGENAME): $(BIN)
-	$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a $(LOADADDR) -e $(ENTRYPOINT) -d $< $@
-
 $(BUILDDIR)/%.o: %.s
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
-	$(AS) $(AFLAGS) $< -o $@ > $(addprefix $(BUILDDIR)/, $(addsuffix .lst, $(basename $<)))
+	@$(AS) $(AFLAGS) $< -o $@ > $(addprefix $(BUILDDIR)/, $(addsuffix .lst, $(basename $<)))
 
 $(BUILDDIR)/%.o: %.c $(BUILDDIR)/%.d
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
-	$(CC) -c $(DEPFLAGS) $(OPTFLAG) $(CFLAGS) $< -o $@
+	@$(CC) -c $(DEPFLAGS) $(OPTFLAG) $(CFLAGS) $< -o $@
+
+$(BUILDDIR)/%.o: %.cc $(BUILDDIR)/%.d
+	@mkdir -p $(dir $@)
+	$(info Building $< at $(OPTFLAG))
+	@$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
+
+$(BUILDDIR)/%.o: %.cpp $(BUILDDIR)/%.d
+	@mkdir -p $(dir $@)
+	$(info Building $< at $(OPTFLAG))
+	@$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
 
 $(ELF): $(OBJECTS) $(LINKSCR)
 	$(info Linking...)
-	$(LD) $(LFLAGS) -o $@ $(OBJECTS)
+	@$(LD) $(LFLAGS) -o $@ $(OBJECTS)
 
 $(BIN): $(ELF)
 	$(OBJCPY) -O binary $< $@
+
+$(UIMAGENAME): $(BIN)
+	$(info Creating uimg file)
+	@$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a $(LOADADDR) -e $(ENTRYPOINT) -d $< $@
 
 %.d: ;
 
