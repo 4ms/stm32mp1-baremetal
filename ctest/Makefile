@@ -7,25 +7,26 @@ ENTRYPOINT 	= 0xC2000040
 STARTUP = startup.s
 LINKSCR = linkscript.ld
 
-UBOOTDIR =../u-boot/build
+UBOOTDIR = ../u-boot/build
+DRIVERDIR = ../Drivers
 
 SOURCES = $(STARTUP) \
 		  app.c \
-		  Drivers/mdrivlib/interrupt.cc \
-		  Drivers/system/libc_stub.c \
-		  Drivers/system/libcpp_stub.cc \
-		  Drivers/system/irq_ctrl.c \
-		  Drivers/system/system_ca7.c
+		  $(DRIVERDIR)/mdrivlib/interrupt.cc \
+		  $(DRIVERDIR)/mdrivlib/irq_ctrl.c \
+		  $(DRIVERDIR)/system/libc_stub.c \
+		  $(DRIVERDIR)/system/libcpp_stub.cc \
+		  $(DRIVERDIR)/system/system_ca7.c
 
 OBJECTS   = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
 DEPS   	  = $(addprefix $(BUILDDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
 
 INCLUDES = -I. \
-		   -IDrivers/STM32MP1xx_HAL_Driver/Inc \
-		   -IDrivers/CMSIS/Core_A/Include \
-		   -IDrivers/CMSIS/Device/ST/STM32MP1xx/Include \
-		   -IDrivers/mdrivlib \
-		   -IDrivers/system \
+		   -I$(DRIVERDIR)/STM32MP1xx_HAL_Driver/Inc \
+		   -I$(DRIVERDIR)/CMSIS/Core_A/Include \
+		   -I$(DRIVERDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
+		   -I$(DRIVERDIR)/mdrivlib \
+		   -I$(DRIVERDIR)/system \
 
 MCU =  -mcpu=cortex-a7 -mfpu=fpv5-d16 -mlittle-endian -mfloat-abi=hard
 
