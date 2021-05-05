@@ -151,6 +151,8 @@ Remember, any file you load using a debugger will only get loaded into RAM. As s
 
 # Resources:
 
+Required reading: [The ARM Cortex-A Programmer's Guide](https://developer.arm.com/documentation/den0013/d)
+
 This guide is very helpful, although geared for a different platform:
 http://umanovskis.se/files/arm-baremetal-ebook.pdf
 
