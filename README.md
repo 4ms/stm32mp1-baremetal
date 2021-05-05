@@ -1,25 +1,30 @@
 # STM32MP1 Cortex-A7 baremetal basic project
 
-This is a template project for a baremetal application on the Cortex A7 core of an STM32MP1 microprocessor. It also is a useful introduction to what's needed for a baremetal Cortex-A7 application.
-Presently, all only a single A7 core is used; the M4 core or second A7 core are not used (yet).
+This is a set of template projects for baremetal applications on the Cortex A7 core of an STM32MP1 microprocessor. It also is a useful introduction to what's needed for a baremetal Cortex-A7 application.
+Presently, all only a single A7 core is used; the M4 core or second A7 core are not used (yet-- but I'm working on it).
 
-I welcome any issues, questions, bug reports or pull requests! Please note that this project assumes you are familiar with embedded programming, toolchains, and support hardware (programmers, debuggers, etc).
+I welcome any issues, questions, bug reports or pull requests, high-fives, or even just a "Hi I'm curious about this, kthxbye!" Please note that this project assumes you are familiar with embedded programming, the gcc toolchain, and support hardware (programmers, debuggers, etc). There are lots of resources online to get cquanted with that stuff, and I want this project to pick up where existing knowledge bases leave off. I've found almost no support or example projects for using this powerful chip in a baremetal (or ven RTOS) context, so I'm figuring this out as I go along and would appreciate knowing if anyone else finds this interesting too!
 
-This will build and run on an OSD32MP1 BRK board. To adapt to a different STM32MP15x chip, some minor changes to the u-boot build will be required.
+## Overview
+The project has three parts: bootloaders in `u-boot/` helper scripts in `scripts/` and the rest of the directories are example projects (`ctest/`, `minimal_boot/`)
 
-Debugging with gdb can be done via the SWD header on the OSD board (using a 10-pin pogo adaptor, such as [this one](https://www.tag-connect.com/product/tc2050-idc-nl-10-pin-no-legs-cable-with-ribbon-connector) from Tag-Connect [or Digikey](https://www.digikey.com/en/products/detail/tag-connect-llc/TC2050-IDC-NL/2605367) and these helpful accessories [clip](https://www.tag-connect.com/product/tc2050-clip-3pack-retaining-clip) [adaptor](https://www.tag-connect.com/product/tc2050-arm2010-arm-20-pin-to-tc2050-adapter) and an SWD programmer like the SEGGER J-link).
-
-The project has two parts: bootloaders in `u-boot-stm32mp-2020/` and application in `ctest/`
-
-The bootloader must be built once, and loaded once onto an SD Card, which is inserted into the OSD board. 
-
-The application ultimately needs to live on the SD Card as well, but it can be flashed into RAM using a J-Link flasher, making debugging much easier than having to copy files to an SD Card each time the code is changed.
+The u-boot bootloader must be built once, and loaded once onto an SD Card, which is inserted into the OSD board. You probably won't need to think about it ever again after that, unless your hardware changes substantially.
+:
+The application ultimately needs to live on the SD Card as well, but it can be flashed into RAM using an SWD flasher, making debugging much easier than having to copy files to an SD Card each time the code is changed.
 
 You can easily include this repo as a submodule into your project, or just copy it in.
 
+## Requirements
+
+These projects will build and run on an [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board, which is just a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/), which is just an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html) + SDRAM + PMIC in a BGA package. I think it would be trivial to get these projects to work on another PCB with an STM32MP15x chip, probably just changing a few lines in the device tree files of u-boot, if anything.
+
+You'll need an SD-card to insert into the OSD board.
+
+You'll probably also want an SWD programmer, like the SEGGER J-Link, or an ST-LINK.  Debugging with gdb can be done via the SWD header on the OSD board (using a 10-pin pogo adaptor, such as [this one](https://www.tag-connect.com/product/tc2050-idc-nl-10-pin-no-legs-cable-with-ribbon-connector) from Tag-Connect [or Digikey](https://www.digikey.com/en/products/detail/tag-connect-llc/TC2050-IDC-NL/2605367) and these helpful accessories [clip](https://www.tag-connect.com/product/tc2050-clip-3pack-retaining-clip) [adaptor](https://www.tag-connect.com/product/tc2050-arm2010-arm-20-pin-to-tc2050-adapter) and an SWD programmer like the SEGGER J-link).
+
 ## 1) Setup:
 
-Make sure to clone the submodule (4ms's u-boot fork):
+Make sure to clone the submodule (which is 4ms's u-boot fork):
 ```
 git submodule update --init
 ```
@@ -48,17 +53,16 @@ Now you need to format and partition an SD Card.  Insert a card and do:
 (TODO: Is this neccessary or does sgdisk -o wipe it?)
 ```
 ## Linux:
-mkfs.fat32 /dev/sdX
+mkfs.fat -F 32 /dev/sdX
 
 ## MacOS:
 diskutil eraseDisk FAT32 BAREMETA /dev/disk#
 ```
 Where /dev/sdX or /dev/disk# is the actual device name, such as /dev/sdc or /dev/disk3. 
 
-///If you need to find out what the device is, you can type `ls -l /dev/sd` or `ls -l /dev/disk` and then hit Tab.
+_If you need to find out what the device is, you can type `ls -l /dev/sd` or `ls -l /dev/disk` and then hit Tab.
 Or, on macOS you can type `mount` instead of `ls -l /dev/disk<TAB>`
-Take note of what it lists. Then remove (or insert) the SD Card, and repeat the command. Whatever changed is the SD Card's device name(s). Use the base name, e.g. /dev/sdc, not /dev/sdc3.
-///
+Take note of what it lists. Then remove (or insert) the SD Card, and repeat the command. Whatever changed is the SD Card's device name(s). Use the base name, e.g. /dev/sdc, not /dev/sdc3._
 
 You also could use the script `format-sdcard.sh`, though it's just a heavy wrapper around the above commands.
 
