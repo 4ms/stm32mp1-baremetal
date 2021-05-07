@@ -1,13 +1,10 @@
-#include "drivers/interrupt.hh"
+#include "interrupt.hh"
 
 extern "C" /*__attribute__((interrupt))*/ void ISRHandler(unsigned irqnum) {
 	InterruptManager::callISR(irqnum);
 }
 
 extern "C" {
-void __attribute__((interrupt)) SVC_Handler() {
-	__BKPT();
-}
 
 void __attribute__((interrupt)) __attribute__((section(".irqhandler"))) IRQ_Handler() {
 	asm volatile(
@@ -75,6 +72,9 @@ void __attribute__((interrupt)) __attribute__((section(".irqhandler"))) IRQ_Hand
 }
 
 void __attribute__((interrupt)) FIQ_Handler() {
-	__BKPT();
+	while(1);
+}
+void __attribute__((interrupt)) SVC_Handler() {
+	while(1);
 }
 }

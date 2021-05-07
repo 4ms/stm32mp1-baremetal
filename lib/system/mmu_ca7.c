@@ -1,7 +1,6 @@
 /****************************************************************************
  * @file     mmu_ARMCA7.c
- * @brief    MMU Configuration for Arm
- *Cortex-A7 Device Series
+ * @brief    MMU Configuration for Arm Cortex-A7 Device Series
  * @version  V1.2.0
  * @date     15. May 2019
  *
@@ -10,6 +9,8 @@
  ******************************************************************************/
 /*
  * Copyright (c) 2009-2019 Arm Limited. All rights reserved.
+ * 
+ * Modified by Dan Green, 2021
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -50,7 +51,7 @@
 #define __ROM_SIZE 0x00100000 /* 1M */
 
 #define __RAM_BASE 0xC0200000
-#define __RAM_SIZE (0xC2000000 - __RAM_BASE)
+#define __RAM_SIZE (__ROM_BASE - __RAM_BASE)
 
 #define __RAM2_BASE 0xC2100000
 #define __RAM2_SIZE (0xD0000000 - __RAM2_BASE)
@@ -99,7 +100,7 @@ static uint32_t Page_64k_Device_RW; // Shared device, not executable, rw, domain
 void MMU_CreateTranslationTable(void) {
 	mmu_region_attributes_Type region;
 
-	// Create 4GB of faulting entries
+	// Make entire memory area 0x00000000 to 0xFFFFFFFF faulting (invalid), unless we specify otherwise
 	MMU_TTSection(TTB_BASE, 0, 4096, DESCRIPTOR_FAULT);
 
 	section_normal(Sect_Normal, region);
@@ -111,29 +112,37 @@ void MMU_CreateTranslationTable(void) {
 	page64k_device_rw(Page_L1_64k, Page_64k_Device_RW, region);
 	page4k_device_rw(Page_L1_4k, Page_4k_Device_RW, region);
 
-	// ROM should be Cod (RO), but that seems to interere with debugger loading an elf file, so setting it to Normal:
-	// Todo: Investigate this
+	// Set access and cache for 1MB sections:
+	
+	// ROM should be Sect_Normal_Cod (RO), but that seems to interere with debugger loading an elf file
+	// Setting it to Normal works better
+	// Todo: Investigate this!
 	MMU_TTSection(TTB_BASE, __ROM_BASE, __ROM_SIZE / 0x100000, Sect_Normal);
 
+	//RAM is RW, cacheable
 	MMU_TTSection(TTB_BASE, __RAM_BASE, __RAM_SIZE / 0x100000, Sect_Normal_RW);
 	MMU_TTSection(TTB_BASE, __RAM2_BASE, __RAM2_SIZE / 0x100000, Sect_Normal_RW);
 	MMU_TTSection(TTB_BASE, __HEAP_BASE, __HEAP_SIZE / 0x100000, Sect_Normal_RW);
 
-	MMU_TTSection(TTB_BASE, A7_SRAM1_BASE, 1, Sect_Normal_RW); // 1MB RAM (actually is only 384kB)
+	//SRAM1-4, used by Cortex-M4 MCU for code execution and stack
+	// It's actually is only 384kB, but we can set the whole 1MB section
+	MMU_TTSection(TTB_BASE, A7_SRAM1_BASE, 1, Sect_Normal); 
 
 	// Peripheral memory
-	// For better security: be more specific and use 4k tables to cover only actual peripherals, as in example file in
-	// CMSIS
 	MMU_TTSection(TTB_BASE, 0x40000000, 0x10000000 / 0x100000, Sect_Device_RW);
 	MMU_TTSection(TTB_BASE, 0x50000000, 0x10000000 / 0x100000, Sect_Device_RW);
 
+	// SYSRAM (256kB MCU RAM)
 	MMU_TTSection(TTB_BASE, A7_SYSRAM_1MB_SECTION_BASE, 1, Sect_Normal_RW);
 
 	// GIC
-	// Only need: 0xA002 0000 - 0xA002 8000, but set 0xA002 0000 - 0XA0012 0000
+	// Only need: 0xA0020000 - 0xA0028000, but set 0xA0020000 - 0XA0120000
 	MMU_TTSection(TTB_BASE, __get_CBAR(), 1, Sect_Device_RW);
 
-	// Example of using 4k pages:
+	// ARM Cortex-A Series Programmer's Guide v4.0, section 17.2.8:
+	// "use large MMU mappings (supersections or sections in preference to 4KB pages) as this reduces the cost of individual translation table walks"
+	
+	// But you may need to create 4k pages, so here how:
 	// First, create the 1M space (256 pages of 4k each = 1MB), and set it to Fault:
 	// Example here uses the top 1MB of the Heap
 	// MMU_TTPage4k(TTB_BASE, 0xDFF00000, 256, Page_L1_4k, (uint32_t *)SYNC_FLAGS_TABLE_L2_BASE_4k, DESCRIPTOR_FAULT);

@@ -1,8 +1,9 @@
 #pragma once
 #include <cstdint>
 #include <functional>
+#include "interrupt_control.hh"
 
-using IRQType = unsigned;
+using IRQType = uint32_t;
 
 // Interrupt Handler Manager class
 // 

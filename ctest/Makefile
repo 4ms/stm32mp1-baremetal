@@ -9,25 +9,26 @@ STARTUP = startup.s
 LINKSCR = linkscript.ld
 
 UBOOTDIR = ../u-boot/build
-DRIVERDIR = ../Drivers
+LIBDIR = ../lib
 
 SOURCES = $(STARTUP) \
 		  app.c \
-		  $(DRIVERDIR)/mdrivlib/interrupt.cc \
-		  $(DRIVERDIR)/mdrivlib/irq_ctrl.c \
-		  $(DRIVERDIR)/system/libc_stub.c \
-		  $(DRIVERDIR)/system/libcpp_stub.cc \
-		  $(DRIVERDIR)/system/system_ca7.c
+		  $(LIBDIR)/mdrivlib/interrupt.cc \
+		  $(LIBDIR)/system/irq_ctrl.c \
+		  $(LIBDIR)/system/libc_stub.c \
+		  $(LIBDIR)/system/libcpp_stub.cc \
+		  $(LIBDIR)/system/system_ca7.c \
+		  $(LIBDIR)/system/mmu_ca7.c \
 
-OBJECTS   = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
-DEPS   	  = $(addprefix $(BUILDDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
+OBJECTS   = $(addprefix $(OBJDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
+DEPS   	  = $(addprefix $(OBJDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
 
 INCLUDES = -I. \
-		   -I$(DRIVERDIR)/STM32MP1xx_HAL_Driver/Inc \
-		   -I$(DRIVERDIR)/CMSIS/Core_A/Include \
-		   -I$(DRIVERDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
-		   -I$(DRIVERDIR)/mdrivlib \
-		   -I$(DRIVERDIR)/system \
+		   -I$(LIBDIR)/STM32MP1xx_HAL_Driver/Inc \
+		   -I$(LIBDIR)/CMSIS/Core_A/Include \
+		   -I$(LIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
+		   -I$(LIBDIR)/mdrivlib \
+		   -I$(LIBDIR)/system \
 
 MCU =  -mcpu=cortex-a7 -mfpu=fpv5-d16 -mlittle-endian -mfloat-abi=hard
 
@@ -60,7 +61,6 @@ CXXFLAGS = $(CFLAGS) \
 		-Werror=return-type \
 		-Wdouble-promotion \
 		-Wno-register \
-		-Wno-volatile \
 
 
 LFLAGS = -Wl,--gc-sections \
@@ -71,7 +71,7 @@ LFLAGS = -Wl,--gc-sections \
 	-nostartfiles \
 	-ffreestanding
 
-DEPFLAGS = -MMD -MP -MF $(BUILDDIR)/$(basename $<).d
+DEPFLAGS = -MMD -MP -MF $(OBJDIR)/$(basename $<).d
 
 ARCH 	= arm-none-eabi
 CC 		= $(ARCH)-gcc
@@ -91,22 +91,22 @@ BIN 	= $(BUILDDIR)/$(BINARYNAME).bin
 
 all: Makefile $(ELF) $(UIMAGENAME)
 
-$(BUILDDIR)/%.o: %.s
+$(OBJDIR)/%.o: %.s
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
 	@$(AS) $(AFLAGS) $< -o $@ > $(addprefix $(BUILDDIR)/, $(addsuffix .lst, $(basename $<)))
 
-$(BUILDDIR)/%.o: %.c $(BUILDDIR)/%.d
+$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
 	@$(CC) -c $(DEPFLAGS) $(OPTFLAG) $(CFLAGS) $< -o $@
 
-$(BUILDDIR)/%.o: %.cc $(BUILDDIR)/%.d
+$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
 	@$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
 
-$(BUILDDIR)/%.o: %.cpp $(BUILDDIR)/%.d
+$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
 	@$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@

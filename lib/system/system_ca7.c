@@ -2,7 +2,6 @@
 #include "mmu_ca7.h"
 #include "stm32mp1xx.h"
 
-uint32_t SystemCoreClock = HSE_VALUE;
 
 void SystemInit(void)
 {
@@ -57,3 +56,8 @@ void SystemInit(void)
 
 	IRQ_Initialize();
 }
+
+#ifndef HSE_VALUE
+#define HSE_VALUE 24000000
+#endif
+uint32_t SystemCoreClock = HSE_VALUE;
