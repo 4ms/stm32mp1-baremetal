@@ -49,17 +49,17 @@ echo "Current contents of sdcard:"
 echo "ls -l /tmp/sdcard_root/"
 ls -l /tmp/sdcard_root/
 
-if [ -e /tmp/sdcard_root/bare-arm.uimg ]; then
+if [ -e /tmp/sdcard_root/a7-main.uimg ]; then
 	echo "";
-	echo "Deleting bare-arm.uimg";
-	echo "sudo rm /tmp/sdcard_root/bare-arm.uimg";
-	sudo rm /tmp/sdcard_root/bare-arm.uimg;
+	echo "Deleting a7-main.uimg";
+	echo "sudo rm /tmp/sdcard_root/a7-main.uimg";
+	sudo rm /tmp/sdcard_root/a7-main.uimg;
 fi
 
 echo ""
-echo "Copying $1 to bare-arm.uimg on sdcard"
-echo "sudo cp $1 /tmp/sdcard_root/bare-arm.uimg"
-sudo cp $1 /tmp/sdcard_root/bare-arm.uimg
+echo "Copying $1 to a7-main.uimg on sdcard"
+echo "sudo cp $1 /tmp/sdcard_root/a7-main.uimg"
+sudo cp $1 /tmp/sdcard_root/a7-main.uimg
 
 echo ""
 echo "New contents of sdcard:"
