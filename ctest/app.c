@@ -5,9 +5,9 @@
 
 void delay_long();
 void soft_breakpoint();
-inline void delay_for_uart(void);
 void write(const char *str);
-inline void init_leds();
+static inline void delay_for_uart(void);
+static inline void init_leds();
 
 // OSD32MP1 board:
 // GPIO I, pin 8 = red D2
@@ -83,6 +83,13 @@ void delay_long() {
 		;
 }
 
+void write(const char *str) {
+	while (*str) {
+		UART4->TDR = *str++;
+		delay_for_uart();
+	}
+}
+
 // Handy utility when using a debugger
 void soft_breakpoint() {
 	volatile int stop = 1;
@@ -92,21 +99,14 @@ void soft_breakpoint() {
 }
 
 // Inline because we don't want to assume function calling and returning works yet!
-inline void delay_for_uart(void) {
+static inline void delay_for_uart(void) {
 	int i = 255;
 	while (i--)
 		;
 }
 
-void write(const char *str) {
-	while (*str) {
-		UART4->TDR = *str++;
-		delay_for_uart();
-	}
-}
-
 // Inline because we don't want to assume function calling and returning works yet!
-inline void init_leds() {
+static inline void init_leds() {
 	// Enable RCC for GPIO I and GPIO Z (for the LEDs on the OSD32 board)
 	RCC->MC_AHB4ENSETR |= RCC_MC_AHB4ENSETR_GPIOIEN;
 	RCC->MC_AHB5ENSETR |= RCC_MC_AHB5ENSETR_GPIOZEN;
