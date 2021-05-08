@@ -118,3 +118,7 @@ void soft_breakpoint() {
 		// Attach a debugger and manually change the value at the address of `stop` in RAM from 1 to 0
 	}
 }
+
+void IRQ_Initialize(void) {
+	// do nothing, just a stub
+}

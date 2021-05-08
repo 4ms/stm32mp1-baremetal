@@ -80,7 +80,6 @@ SECTIONS
 
     _text_end = .;
 
-    /* .data : AT(ADDR(.text) + SIZEOF(.text)) */
     .data : AT(_text_end)
     {
         . = ALIGN(8);
@@ -106,28 +105,21 @@ SECTIONS
 		_sheap = .;
 		. += __HEAP_SIZE;
 		_eheap = .;
+		. = ALIGN(256);
+		_ram_aligned_end = .;
 	} > RAM
 
-    _fiq_stack_start = ADDR(.heap) + SIZEOF(.heap);
-    _fiq_stack_end = _fiq_stack_start + 0x1000; /* 64 KB */
+    _user_stack_start = _ram_aligned_end; 
+    _user_stack_end = _user_stack_start + 0x10000;
 
-    _irq_stack_start = _fiq_stack_end;
-    _irq_stack_end = _irq_stack_start + 0x1000; /* 64 KB */
+    _svc_stack_start = _user_stack_end;
+    _svc_stack_end = _svc_stack_start + 0x100;
 
-    _stack_start = _irq_stack_end;
-    _stack_end = _stack_start + 0x1000; /* 64 KB */
+    _irq_stack_start = _svc_stack_end;
+    _irq_stack_end = _irq_stack_start + 0x100; 
 
-    _irq_stack_size = _irq_stack_end - _irq_stack_start;
-    _fiq_stack_size = _fiq_stack_end - _fiq_stack_start;
-
-	.dma_buffer (NOLOAD) :
-	{
-		. = ALIGN(8);
-		*(.dma_buffer)
-		*(.dma_buffer*)
-		. = ALIGN(8);
-	} > SRAM3
-	
+    _fiq_stack_start = _irq_stack_end;
+    _fiq_stack_end = _fiq_stack_start + 0x100;
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :

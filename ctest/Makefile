@@ -1,3 +1,5 @@
+# Makefile for stm32mp1-baremetal ctest project
+
 BINARYNAME = app
 BUILDDIR = build
 OBJDIR = $(BUILDDIR)/obj
@@ -13,8 +15,6 @@ LIBDIR = ../lib
 
 SOURCES = $(STARTUP) \
 		  app.c \
-		  $(LIBDIR)/mdrivlib/interrupt.cc \
-		  $(LIBDIR)/system/irq_ctrl.c \
 		  $(LIBDIR)/system/libc_stub.c \
 		  $(LIBDIR)/system/libcpp_stub.cc \
 		  $(LIBDIR)/system/system_ca7.c \
