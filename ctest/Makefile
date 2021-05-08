@@ -91,6 +91,11 @@ BIN 	= $(BUILDDIR)/$(BINARYNAME).bin
 
 all: Makefile $(ELF) $(UIMAGENAME)
 
+install:
+	@read -p "What is the device name of the SD card's 4th partition? (example: /dev/disk4s4) " DISK; \
+	../scripts/copy-app-to-sdcard.sh $(UIMAGENAME) $$DISK
+	$(info Check the above for error messages! Reboot your board if all is well)
+
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
