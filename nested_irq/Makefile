@@ -13,6 +13,7 @@ LIBDIR = ../lib
 
 SOURCES = $(STARTUP) \
 		  main.c \
+		  new.cc \
 		  $(LIBDIR)/mdrivlib/interrupt.cc \
 		  $(LIBDIR)/system/irq_ctrl.c \
 		  $(LIBDIR)/system/libc_stub.c \

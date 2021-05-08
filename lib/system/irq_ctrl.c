@@ -44,7 +44,7 @@ int32_t IRQ_Initialize(void) {
 
 	GIC_SetInterfacePriorityMask(0xFF); // gic arch v2.0 specification: section 3.3.2: Writing 255 to GICC_PMR always
 										// sets it to the largest supported priority field value.
-	GIC_SetBinaryPoint(3);
+	GIC_SetBinaryPoint(4);
 
 	return (0);
 }
