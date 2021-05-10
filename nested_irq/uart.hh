@@ -19,11 +19,9 @@ public:
 	}
 
 private:
-	// Todo: poll registers to see if TX is possible, instead of hard delay
 	void delay_for_write(void)
 	{
-		int i = 255;
-		while (i--)
+		while ((UART4->ISR & USART_ISR_TXFT) == 0)
 			;
 	}
 };
