@@ -9,7 +9,15 @@ void enable_pin_change_isr(uint8_t GPIOnum, uint8_t pin_num, bool rising, bool f
 {
 	if (GPIOnum > 12 || pin_num > 15)
 		return;
-	EXTI->EXTICR[pin_num / 4] = EXTI->EXTICR[pin_num / 4] | GPIOnum;
+	// CR[2] &= 0xFFFFFF00
+	// CR[2] |= 0x00000008
+	// CR[2] &= 0xFFFF00FF
+	uint32_t tmp = EXTI->EXTICR[pin_num / 4];
+	uint32_t shift = (pin_num % 4) * 8;
+	uint32_t mask = 0xFFUL << shift;
+	tmp &= ~mask;
+	tmp |= (uint32_t)GPIOnum << shift;
+	EXTI->EXTICR[pin_num / 4] = tmp;
 
 	if (rising)
 		EXTI->RTSR1 = EXTI->RTSR1 | (1 << pin_num);
