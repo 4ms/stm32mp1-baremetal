@@ -27,24 +27,17 @@ _Reset:
 Reset_Handler:
 	cpsid   if 										// Mask Interrupts
 
-													// Put any cores other than 0 to sleep
-	mrc     p15, 0, R0, c0, c0, 5					//Read MPIDR
-	ands    R0, R0, #3 								// ??? what is this? 
-goToSleep:
-	wfine
-	bne goToSleep
-	
 	ldr r4, =UART4_TDR 								// UART: print 'A'
 	mov r0, #65
 	str r0, [r4]
 
-	mrc     p15, 0, R0, c1, c0, 0					// Read CP15 System Control register
-	bic     R0, R0, #(0x1 << 12) 					// Clear I bit 12 to disable I Cache
-	bic     R0, R0, #(0x1 <<  2) 					// Clear C bit  2 to disable D Cache
-	bic     R0, R0, #0x1 							// Clear M bit  0 to disable MMU
-	bic     R0, R0, #(0x1 << 11) 					// Clear Z bit 11 to disable branch prediction
-	bic     R0, R0, #(0x1 << 13) 					// Clear V bit 13 to disable hivecs
-	mcr     p15, 0, R0, c1, c0, 0 					// Write value back to CP15 System Control register
+	mrc     p15, 0, r0, c1, c0, 0					// Read System Control register (SCTLR)
+	bic     r0, r0, #(0x1 << 12) 					// Clear I bit 12 to disable I Cache
+	bic     r0, r0, #(0x1 <<  2) 					// Clear C bit  2 to disable D Cache
+	bic     r0, r0, #0x1 							// Clear M bit  0 to disable MMU
+	bic     r0, r0, #(0x1 << 11) 					// Clear Z bit 11 to disable branch prediction
+	bic     r0, r0, #(0x1 << 13) 					// Clear V bit 13 to disable High Vector Table Base Address
+	mcr     p15, 0, r0, c1, c0, 0 					// Write System Control register (SCTLR)
 	isb
 													// Configure ACTLR
 	mrc     p15, 0, r0, c1, c0, 1 					// Read CP15 Auxiliary Control Register
