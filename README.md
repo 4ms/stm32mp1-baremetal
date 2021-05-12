@@ -1,26 +1,72 @@
 # STM32MP1 Cortex-A7 baremetal basic project
 
-This is a set of template projects for baremetal applications on the Cortex A7 core of an STM32MP1 microprocessor. It also is a useful introduction to what's needed for a baremetal Cortex-A7 application.
-Presently, all only a single A7 core is used; the M4 core or second A7 core are not used (yet-- but I'm working on it).
+This is a set of template projects for baremetal applications on the Cortex A7
+core of an STM32MP1 microprocessor. It also is a useful introduction to what's
+needed for a baremetal Cortex-A7 application.
 
-I welcome any issues, questions, bug reports or pull requests, high-fives, or even just a "Hi I'm curious about this, kthxbye!" Please note that this project assumes you are familiar with embedded programming, the gcc toolchain, and support hardware (programmers, debuggers, etc). There are lots of resources online to get cquanted with that stuff, and I want this project to pick up where existing knowledge bases leave off. I've found almost no support or example projects for using this powerful chip in a baremetal (or ven RTOS) context, so I'm figuring this out as I go along and would appreciate knowing if anyone else finds this interesting too!
+## Motivation
+There are lots of resources for using a Cortex-A with Linux. Why am I using it
+for a bare-metal project? The answer is simple: real-time audio processing.
+Typically the A series are not used for real-time systems, but I wanted to find
+out if it can be done. And so far, the answer is yes: you can use a Cortex-A as
+a powerful real-time processor.
+
+The STM32MP157 is a powerful chip, with two Cortex-A cores running at 650MHz,
+L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite of
+peripherals. There's a large gap between this and the next chip down in ST's
+lineup: the STM32H755, which is has two cores (480MHz M7 + 240MHz M4) and can
+only use SDRAM at 143MHz, which is terribly slow.
 
 ## Overview
-The project has three parts: bootloaders in `u-boot/` helper scripts in `scripts/` and the rest of the directories are example projects (`ctest/`, `minimal_boot/`)
 
-The u-boot bootloader must be built once, and loaded once onto an SD Card, which is inserted into the OSD board. You probably won't need to think about it ever again after that, unless your hardware changes substantially.
-:
-The application ultimately needs to live on the SD Card as well, but it can be flashed into RAM using an SWD flasher, making debugging much easier than having to copy files to an SD Card each time the code is changed.
+The project has three parts: bootloaders in `u-boot/` helper scripts in
+`scripts/` and the rest of the directories are example projects (`ctest/`,
+`minimal_boot/`, `nested_irq/`) and library code shared between projects
+(`lib/`)
 
-You can easily include this repo as a submodule into your project, or just copy it in.
+The u-boot bootloader must be built once, and loaded once onto an SD Card,
+which is inserted into the OSD32 board. You probably won't need to think about it
+ever again after that, unless your hardware changes substantially.  :
+The application ultimately needs to live on the SD Card as well, but it can be
+flashed into RAM using an SWD flasher, making debugging much easier than having
+to copy files to an SD Card each time the code is changed.
+
+You can include this repo as a submodule into your project, or just copy it in.
+
+In these example projects so far, only a single A7 core is used; the M4 core or
+second A7 core are not used (yet-- but I'm working on some examples).
 
 ## Requirements
 
-These projects will build and run on an [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board, which is just a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/), which is just an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html) + SDRAM + PMIC in a BGA package. I think it would be trivial to get these projects to work on another PCB with an STM32MP15x chip, probably just changing a few lines in the device tree files of u-boot, if anything.
+![Image of OSD32MP1-BRK board](https://octavosystems.com/octavosystems.com/wp-content/uploads/2020/02/OSD32MP1-BRK-Features-product-carousel.png)
 
-You'll need an SD-card to insert into the OSD board.
+These projects will build and run on an
+[OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board,
+which is just a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/), 
+which is just an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
++ SDRAM + PMIC in a BGA package. To port these projects to work on another PCB
+with an STM32MP15x chip, you may need to modify the device tree files of u-boot
+to match your hardware.
 
-You'll probably also want an SWD programmer, like the SEGGER J-Link, or an ST-LINK.  Debugging with gdb can be done via the SWD header on the OSD board (using a 10-pin pogo adaptor, such as [this one](https://www.tag-connect.com/product/tc2050-idc-nl-10-pin-no-legs-cable-with-ribbon-connector) from Tag-Connect [or Digikey](https://www.digikey.com/en/products/detail/tag-connect-llc/TC2050-IDC-NL/2605367) and these helpful accessories [clip](https://www.tag-connect.com/product/tc2050-clip-3pack-retaining-clip) [adaptor](https://www.tag-connect.com/product/tc2050-arm2010-arm-20-pin-to-tc2050-adapter) and an SWD programmer like the SEGGER J-link).
+You'll need an SD-card to insert into the OSD32 board. Any one will do.
+
+You'll probably also want an SWD programmer, like the SEGGER J-Link, or an
+ST-LINK.  Debugging with gdb can be done via the SWD header on the OSD32 board
+(using a 10-pin pogo adaptor, such as [this one](https://www.tag-connect.com/product/tc2050-idc-nl-10-pin-no-legs-cable-with-ribbon-connector)
+from Tag-Connect [or Digikey](https://www.digikey.com/en/products/detail/tag-connect-llc/TC2050-IDC-NL/2605367)
+and these helpful accessories [clip](https://www.tag-connect.com/product/tc2050-clip-3pack-retaining-clip)
+[adaptor](https://www.tag-connect.com/product/tc2050-arm2010-arm-20-pin-to-tc2050-adapter)
+and an SWD programmer like the SEGGER J-link).
+
+Finally, a USB-to-UART cable is very helpful. The OSD32 board has UART pins
+exposed, and you can solder header pins and connect such a cable. The
+bootloader makes use of the UART and you can issue commands and peek around if
+you have issues. You also need it to use the USB gadget feature, which allows
+you to mount the SD card onto your host computer over the USB cable (using the
+UART connection to control it).  FTDI makes the TTL-232R-3V3, available from
+[Digikey](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/TTL-232R-3V3/1836393),
+or there are other options like a host adaptor such as the [Binho
+Nova](https://binho.io/#shopify-section-1550985341560).
 
 ## 1) Setup:
 
@@ -29,7 +75,9 @@ Make sure to clone the submodule (which is 4ms's u-boot fork):
 git submodule update --init
 ```
 
-On macOS, you may need to install gsed and set your PATH to use it instead of sed. See Caveats section in `brew info gnu-sed` for details.
+On macOS, you may need to install gsed and set your PATH to use it instead of
+sed. See Caveats section in `brew info gnu-sed` for details.  
+
 ```
 brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`
@@ -80,14 +128,14 @@ scripts/copy-bootloader.sh u-boot/build/
 ```
 You may need to change the path `u-boot/build/` if the u-boot-spl.stm32 and u-boot.img files are somewhere else.
 
-## 3) Power up the OSD board
+## 3) Power up the OSD32 board
 
 This is a good moment to test your hardware setup. You can skip this step if you've done this before.
-Remove the SD card from the computer and insert into the OSD board.
-Attach a USB-to-UART device to the UART pins on the OSD board (use UART4 if you've got a custom board-- only TX/RX and GND are needed).
+Remove the SD card from the computer and insert into the OSD32 board.
+Attach a USB-to-UART device to the UART pins on the OSD32 board (use UART4 if you've got a custom board-- only TX/RX and GND are needed).
 Start a terminal session that connects to the USB driver (I use minicom; there are many fine alternatives).
 
-Insert the card into the OSD board and power it on. You should see boot messages, and then finally an error when it can't find
+Insert the card into the OSD32 board and power it on. You should see boot messages, and then finally an error when it can't find
 bare-arm.uimg. Now it's time to build that file. 
 
 ## 4) Build the application
@@ -110,9 +158,11 @@ Or, if you want to have the application load even without a debugger attached, u
 
 There are two ways to do this:
 
-The easiest way is just to physically insert the SD card into your computer. If the SD Card is still in the OSD board, power down the OSD board, remove the SD Card, and put it back into the computer.
+The easiest way is just to physically insert the SD card into your computer. If the SD Card is still in the OSD32 board, power down the OSD32 board, remove the SD Card, and put it back into the computer.
 
-The more convenient way (if it works) is to use the USB gadget function. If you have the UART connected and your particular OS happens to be compatible with usb-gadget, then you might be able to mount the SD Card directly over UART without having to physically touch the card. Do this:
+The more convenient way (if it works) is to use the USB gadget function. If you have the UART and USB cable connected (and your particular OS happens to be compatible with usb-gadget) then you might be able to mount the SD Card directly over the USB connection without having to physically touch the card. It works for me on macOS and an Ubuntu box, but YMMV.
+
+Do this:
 1) When the board is booting, up look for the message `Hit any key to stop autoboot`, and press a key.
 2) You will see a UBOOT> prompt. Type the command: `ums 0 mmc 0`
 3) In another terminal window, look to see that there's a new device, e.g. /dev/sdX or /dev/disk#
@@ -156,3 +206,14 @@ Required reading: [The ARM Cortex-A Programmer's Guide](https://developer.arm.co
 This guide is very helpful, although geared for a different platform:
 http://umanovskis.se/files/arm-baremetal-ebook.pdf
 
+## Feedback
+
+I welcome any issues, questions, bug reports or pull requests, high-fives, or
+even just a "Hi I'm curious about this, kthxbye!" Please note that this project
+assumes you are familiar with embedded programming, the gcc toolchain, and
+support hardware (programmers, debuggers, etc). There are plenty of tutorials
+online to get acquanted with that stuff, and I want this project to pick up
+where existing resources leave off. I've found almost no support or example
+projects for using this powerful chip in a baremetal (or even RTOS) context, so
+I'm figuring this out as I go along and would appreciate knowing if anyone else
+finds this interesting too!
