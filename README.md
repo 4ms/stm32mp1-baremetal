@@ -7,9 +7,12 @@ needed for a baremetal Cortex-A7 application.
 ## Motivation
 There are lots of resources for using a Cortex-A with Linux. Why am I using it
 for a bare-metal project? The answer is simple: real-time audio processing.
-Typically the A series are not used for real-time systems, but I wanted to find
-out if it can be done. And so far, the answer is yes: you can use a Cortex-A as
-a powerful real-time processor.
+Lots of fast RAM and a fast processor make this a great platform for real-time
+processing, but everything I've read about Cortex-A series chips say they're
+not for real-time ssystems. Why not? I wanted to find out if it can be done.
+And so far, the answer is yes: you can use a Cortex-A as a powerful real-time
+processor (but it's not easy and of course you don't get all the benefits of
+having Linux.)
 
 The STM32MP157 is a powerful chip, with two Cortex-A cores running at 650MHz,
 L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite of
@@ -26,10 +29,11 @@ The project has three parts: bootloaders in `u-boot/` helper scripts in
 
 The u-boot bootloader must be built once, and loaded once onto an SD Card,
 which is inserted into the OSD32 board. You probably won't need to think about it
-ever again after that, unless your hardware changes substantially.  :
-The application ultimately needs to live on the SD Card as well, but it can be
-flashed into RAM using an SWD flasher, making debugging much easier than having
-to copy files to an SD Card each time the code is changed.
+ever again after that, unless your hardware changes substantially (or you start
+to use the M4 core).  The application ultimately needs to live on the SD Card
+as well, but it can be flashed into RAM using an SWD flasher, making debugging
+much easier than having to copy files to an SD Card each time the code is
+changed.
 
 You can include this repo as a submodule into your project, or just copy it in.
 
