@@ -5,14 +5,14 @@ core of an STM32MP1 microprocessor. It also is a useful introduction to what's
 needed for a baremetal Cortex-A7 application.
 
 ## Motivation
-There are lots of resources for using a Cortex-A with Linux. Why am I using it
+There are plenty of resources for using a Cortex-A with Linux. Why am I using it
 for a bare-metal project? The answer is simple: real-time audio processing.
 Lots of fast RAM and a fast processor make this a great platform for real-time
 processing, but everything I've read about Cortex-A series chips say they're
-not for real-time ssystems. Why not? I wanted to find out if it can be done.
-And so far, the answer is yes: you can use a Cortex-A as a powerful real-time
-processor (but it's not easy and of course you don't get all the benefits of
-having Linux.)
+not for real-time systems. Why not? I wanted to find out if it can be done
+(whether it _should_ be done is another question!) And so far, the answer is
+yes: you can use a Cortex-A as a powerful real-time processor (but it's not
+easy, and of course you don't get all the benefits of having Linux.)
 
 The STM32MP157 is a powerful chip, with two Cortex-A cores running at 650MHz,
 L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite of
@@ -48,7 +48,7 @@ These projects will build and run on an
 [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board,
 which is just a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/), 
 which is just an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
-+ SDRAM + PMIC in a BGA package. To port these projects to work on another PCB
+plus SDRAM and PMIC in a BGA package. To port these projects to work on another PCB
 with an STM32MP15x chip, you may need to modify the device tree files of u-boot
 to match your hardware.
 
