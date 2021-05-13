@@ -31,7 +31,7 @@ INCLUDES = -I. \
 		   -I$(LIBDIR)\
 		   -I$(LIBDIR)\
 
-MCU =  -mcpu=cortex-a7 -mfpu=fpv5-d16 -mlittle-endian -mfloat-abi=hard
+MCU =  -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mlittle-endian -mfloat-abi=hard
 
 ARCH_CFLAGS += -DUSE_FULL_LL_DRIVER \
 			  -DSTM32MP157Cxx \
