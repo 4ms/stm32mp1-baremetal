@@ -15,12 +15,12 @@ void __attribute__((interrupt)) __attribute__((section(".irqhandler"))) IRQ_Hand
 											// that was about to be executed
 		"srsdb sp!, MODE_SYS 			\n" // Save LR_irq and SPSR_irq onto the System mode stack, (decrement SP_sys)
 		"cps MODE_SYS 		 			\n" // Switch to system mode
-		"push {r0-r3, r12, lr} 			\n" // Store remaining AAPCS registers on the System mode stack
+		"push {r0-r12, lr} 			\n" // Store remaining AAPCS registers on the System mode stack
 		"and r3, sp, #4  	 			\n" // Ensure stack is 8-byte aligned.
 		"sub sp, sp, r3  				\n" //
 		"push {r3}  					\n" // Store adjustment to stack
 											//////////FPU
-		"vmrs r1, FPSCR 				\n" // Copy FPU status reg to r1
+		"vmrs r1, FPSCR 				\n" // Copy FPU status reg to r1: __builtin_arm_get_fpscr()
 		// "vpush {d0-d15} 				\n" // Push all double and single registers
 		// "vpush {d16-d31} 				\n"
 		"vpush {s0-s15} 				\n"
@@ -60,12 +60,12 @@ void __attribute__((interrupt)) __attribute__((section(".irqhandler"))) IRQ_Hand
 		"vpop {s0-s15} 					\n"
 		// "vpop {d16-d31} 				\n"
 		// "vpop {d0-d15} 					\n" // Push all double and single registers
-		"vmsr FPSCR, r1 				\n" // Restore FPU status reg from popped r1
+		"vmsr FPSCR, r1 				\n" // Restore FPU status reg from popped r1: __builtin_arm_set_fpscr()
 											////////////
 
 		"pop {r3} 						\n" // Pop the stack adjustment
 		"add sp, sp, r3  				\n" // Restore previous stack pointer
-		"pop {r0-r3, r12, lr} 			\n" //
+		"pop {r0-r12, lr} 			\n" //
 		"rfeia sp! 						\n" // Return to address on stack, and pop SPSR (which restores the en/disable
 											// state of IRQs)
 	);

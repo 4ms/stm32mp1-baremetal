@@ -51,17 +51,24 @@ void pin_change_isr_stop(uint8_t pin_num)
 }
 
 constexpr uint8_t GPIO_I = 8; // GPIOA = 0, GPIOB = 1, etc..
+// constexpr auto red_led1_irqnum = HSEM_IT1_IRQn;
+
+// IRQn = 98, PRIORITYR24:PRIORITY2, CFGR16:CONGIG2, ENABLE3:bit2
+constexpr auto red_led1_irqnum = EXTI8_IRQn;
 constexpr uint8_t red_led1_gpio = GPIO_I;
 constexpr uint8_t red_led1_pin = 8;
-// constexpr auto red_led1_irqnum = HSEM_IT1_IRQn;
-constexpr auto red_led1_irqnum = EXTI8_IRQn;
+
+// IRQn = 99, PRIORITYR24:PRIORITY3, CFGR16:CONGIG3, ENABLE3:bit3
+constexpr auto green_led1_irqnum = EXTI9_IRQn;
 constexpr uint8_t green_led1_gpio = GPIO_I;
 constexpr uint8_t green_led1_pin = 9;
-constexpr auto green_led1_irqnum = EXTI9_IRQn;
 
 constexpr uint32_t SemaphoreID = 0;
 void main()
 {
+	volatile bool softbreak = true;
+	while (softbreak)
+		;
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nTesting nested interrupts\r\n");
 

@@ -44,8 +44,6 @@ Reset_Handler:
 	orr     r0, r0, #(1 <<  1) 						// Enable L2 prefetch hint (UNK/WI since r4p1)
 	mcr     p15, 0, r0, c1, c0, 1 					// Write CP15 Auxiliary Control Register
 
-	mov r0, #69 									//UART 'E'
-	str r0, [r4]
 													// Set Vector Base Address Register (VBAR) to point to this application's vector table
 	ldr    R0, =0xC2000040
 	mcr    p15, 0, R0, c12, c0, 0
@@ -94,9 +92,6 @@ usrsys_loop:
     strlt r0, [r1], #4
     blt usrsys_loop
 
-	mov r0, #70 									//UART: 'F'
-	str r0, [r4]
-
     												// Copying initialization values (.data)
     ldr r0, =_text_end
     ldr r1, =_data_start
@@ -108,15 +103,10 @@ data_loop:
     strlt r3, [r1], #4
     blt data_loop
 
-	mov r0, #71 									//UART: 'G'
-	str r0, [r4]
     												// Initialize .bss
     mov r0, #0
     ldr r1, =_bss_start
     ldr r2, =_bss_end
-
-	mov r3, #68              						//UART: 'D'
-	str r3, [r4]
 
 bss_loop:
     cmp r1, r2
