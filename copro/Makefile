@@ -27,9 +27,12 @@ _embedm4:
 embedm4:
 	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk
 	arm-none-eabi-objcopy \
-		--dump-section .text=$(BUILDDIR_M4)/firmware.bin \
+		--dump-section .text=$(BUILDDIR_M4)/text.bin \
+		--dump-section .rodata=$(BUILDDIR_M4)/rodata.bin \
 		--dump-section .isr_vector=$(BUILDDIR_M4)/vectors.bin \
 		$(BUILDDIR_M4)/$(BINARYNAME).elf
+	cat $(BUILDDIR_M4)/text.bin >> $(BUILDDIR_M4)/firmware.bin
+	cat $(BUILDDIR_M4)/rodata.bin >> $(BUILDDIR_M4)/firmware.bin
 	xxd -i $(BUILDDIR_M4)/firmware.bin firmware_m4.h
 	xxd -i $(BUILDDIR_M4)/vectors.bin firmware_m4_vectors.h
 	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all
@@ -45,3 +48,6 @@ combo: a7 m4
 	awk 'BEGIN {} END {print ":00000001FF"} /^:00000001FF/{$$0 = ""} {if ($$0 != ""){ print } }' > build/combo.hex
 	@ ls -l build/combo.hex
 
+clean:
+	rm -rf $(BUILDDIR_A7)
+	rm -rf $(BUILDDIR_M4)

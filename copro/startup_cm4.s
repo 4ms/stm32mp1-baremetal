@@ -45,7 +45,7 @@ defined in linker script */
 /* end address for the .bss section. defined in linker script */
 .word _ebss
 
-  .section .startup_copro_fw.Reset_Handler,"ax"
+  .section .text.Reset_Handler,"ax"
   .weak Reset_Handler
   .type Reset_Handler, %function
 Reset_Handler:

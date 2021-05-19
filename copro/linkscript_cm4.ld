@@ -19,7 +19,7 @@ _params_ptr = ORIGIN(SHAREDMEM) + LENGTH(SHAREDMEM);
 
 SECTIONS
 {
-  .isr_vector : AT(0x38000000)
+  .isr_vector :
   {
     . = ALIGN(4);
     KEEP(*(.isr_vector))

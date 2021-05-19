@@ -20,14 +20,6 @@ __HEAP_SIZE = 0x40000;
 
 SECTIONS
 {
-	.firmware_m4_vectors : {
-		KEEP (*firmware_m4_vectors.o)
-	} > RETRAM
-
-	.firmware_m4 : {
-		KEEP (*firmware_m4.o)
-	} > SRAM1
-
     .text : {
         *(.vector_table)
 		*(.resethandler)
@@ -55,13 +47,9 @@ SECTIONS
 		. = ALIGN(8);
 	} > ROM
 
-	/* used for unwinding (probably not used, but is ignored if your app doens't use exceptions */
+	/* used for unwinding (probably not used, but is ignored if your app doesn't use exceptions */
 	.ARM.extab	 : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >ROM
-	.ARM : {
-		__exidx_start = .;
-		*(.ARM.exidx*)
-		__exidx_end = .;
-	} >ROM
+	.ARM : { __exidx_start = .; *(.ARM.exidx*) __exidx_end = .; } >ROM
 
 	.preinit_array :
 	{
