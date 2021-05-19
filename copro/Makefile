@@ -5,38 +5,43 @@ export BUILDDIR_A7 = build/corea7
 export BUILDDIR_M4 = build/corem4
 export LIBDIR = ../lib
 
-all: a7 m4
+# This compiles and links the m4 firmware to an .elf file,
+# then splits up and re-combines the sections based on contigious memory blocks,
+# and converts those binary files to .h files containing C-style arrays.
+# Then, it builds the a7 firmware, which loads the arrays into the proper memory
+# locations for running the m4 firmware. Whan a7 is ready, it resets and runs the m4 firmware.
+# Todo: Find a better way of dumping and combining sections.
+# Todo: Use the linker to directly embed m4 sections into the right place -- but we'll need
+# to make sure u-boot knows how to translate those addresses in the .uimg file correctly.
 
-_embedm4:
-	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk
-	@# Convert .elf to .bin for each section
-	@# Note: maybe can use objcopy to convert sections to .o?
-	arm-none-eabi-objcopy \
-		--dump-section .text=$(BUILDDIR_M4)/firmware.bin \
-		--dump-section .isr_vector=$(BUILDDIR_M4)/vectors.bin \
-		$(BUILDDIR_M4)/$(BINARYNAME).elf
-	arm-none-eabi-objcopy -I binary -B armv7 -O elf32-littlearm $(BUILDDIR_M4)/firmware.bin $(BUILDDIR_M4)/firmware_m4.o
-	arm-none-eabi-objcopy -I binary -B armv7 -O elf32-littlearm $(BUILDDIR_M4)/vectors.bin $(BUILDDIR_M4)/firmware_m4_vectors.o
-	@# Convert .bin files to c arrays
-	@#xxd -i $(BUILDDIR_M4)/firmware.bin firmware_m4.c
-	@#xxd -i $(BUILDDIR_M4)/vectors.bin firmware_m4_vectors.c
-	@# Build a7 firmware, which converts firmware_m4*.c files to .o files
-	@# and links them into the proper sections
-	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all
+all: firmware_m4.h firmware_m4_vectors.h
+	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all image
 
-embedm4:
-	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk
-	arm-none-eabi-objcopy \
-		--dump-section .text=$(BUILDDIR_M4)/text.bin \
-		--dump-section .rodata=$(BUILDDIR_M4)/rodata.bin \
-		--dump-section .isr_vector=$(BUILDDIR_M4)/vectors.bin \
-		$(BUILDDIR_M4)/$(BINARYNAME).elf
-	cat $(BUILDDIR_M4)/text.bin >> $(BUILDDIR_M4)/firmware.bin
-	cat $(BUILDDIR_M4)/rodata.bin >> $(BUILDDIR_M4)/firmware.bin
-	xxd -i $(BUILDDIR_M4)/firmware.bin firmware_m4.h
-	xxd -i $(BUILDDIR_M4)/vectors.bin firmware_m4_vectors.h
-	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all
+$(BUILDDIR_M4)/$(BINARYNAME).elf: m4
 
+firmware_m4.h: $(BUILDDIR_M4)/firmware.bin
+	xxd -i $< $@
+
+firmware_m4_vectors.h: $(BUILDDIR_M4)/vectors.bin
+	xxd -i $< $@
+
+$(BUILDDIR_M4)/vectors.bin: $(BUILDDIR_M4)/$(BINARYNAME).elf
+	arm-none-eabi-objcopy --dump-section .isr_vector=$(BUILDDIR_M4)/vectors.bin $<
+
+$(BUILDDIR_M4)/firmware.bin: $(BUILDDIR_M4)/$(BINARYNAME).elf
+	arm-none-eabi-objcopy --dump-section .text=$(BUILDDIR_M4)/text.bin --dump-section .rodata=$(BUILDDIR_M4)/rodata.bin $<
+	cat $(BUILDDIR_M4)/text.bin >> $@
+	cat $(BUILDDIR_M4)/rodata.bin >> $@
+
+clean:
+	rm -rf $(BUILDDIR_A7)
+	rm -rf $(BUILDDIR_M4)
+
+
+# Below here isn't used by this project, but it's another way to create a file with a7 and m4 firmware.
+# Run `make combo` and it'll produce a combo.hex file, which you can load using a flasher.
+# Resetting and starting the m4 copro will still need to be done by the a7, but the a7 won't need to copy fw data.
+# Then you could convert the combo.hex to a .bin and then .uimg file, which u-boot can load.
 a7:
 	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all image
 
@@ -48,6 +53,3 @@ combo: a7 m4
 	awk 'BEGIN {} END {print ":00000001FF"} /^:00000001FF/{$$0 = ""} {if ($$0 != ""){ print } }' > build/combo.hex
 	@ ls -l build/combo.hex
 
-clean:
-	rm -rf $(BUILDDIR_A7)
-	rm -rf $(BUILDDIR_M4)
