@@ -2,8 +2,8 @@ ENTRY(Reset_Handler)
 
 _estack = 0x10040000;
 
-_Min_Heap_Size  = 0x1000;  /* required amount of heap  */
-_Min_Stack_Size = 0x400; /* required amount of stack */
+_Min_Heap_Size  = 0x1000;
+_Min_Stack_Size = 0x400;
 __SHARED_PTR_SIZE = 256;
 
 MEMORY
@@ -19,7 +19,7 @@ _params_ptr = ORIGIN(SHAREDMEM) + LENGTH(SHAREDMEM);
 
 SECTIONS
 {
-  .isr_vector :
+  .isr_vector : AT(0x38000000)
   {
     . = ALIGN(4);
     KEEP(*(.isr_vector))
@@ -115,12 +115,12 @@ SECTIONS
   text_end = ORIGIN(m_text) + LENGTH(m_text);
   ASSERT(__DATA_END <= text_end, "region m_text overflowed with text and data")
 
-  .resource_table :
-  {
-    . = ALIGN(4);
-    KEEP (*(.resource_table*))
-    . = ALIGN(4);
-  } > m_data
+  /* .resource_table : */
+  /* { */
+  /*   . = ALIGN(4); */
+  /*   KEEP (*(.resource_table*)) */
+  /*   . = ALIGN(4); */
+  /* } > m_data */
   
 
   /* Uninitialized data section into RAM memory */

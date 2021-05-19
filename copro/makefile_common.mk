@@ -20,6 +20,10 @@ OBJDIR = $(BUILDDIR)/obj
 OBJECTS   = $(addprefix $(OBJDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
 DEPS   	  = $(addprefix $(OBJDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
 
+EXTRA_OBJECTS ?= 
+
+OBJECTS += $(EXTRA_OBJECTS)
+
 CFLAGS = -g2 -fno-common \
 	$(ARCH_CFLAGS) $(MCU) \
 	$(INCLUDES) \
@@ -65,7 +69,7 @@ $(HEX): $(ELF)
 
 $(ELF): $(OBJECTS) $(LOADFILE)
 	$(info Linking...)
-	@$(LD) $(LFLAGS) -o $@ $(OBJECTS)
+	$(LD) $(LFLAGS) -o $@ $(OBJECTS)
 
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)

@@ -11,6 +11,7 @@ MEMORY
 	SRAM2 (rwx) : ORIGIN = 0x10020000, LENGTH = 128K
 	SRAM3 (rwx) : ORIGIN = 0x10040000, LENGTH = 64K
 	SRAM4 (rwx) : ORIGIN = 0x10050000, LENGTH = 64K
+	RETRAM (rwx): ORIGIN = 0x38000000, LENGTH = 64K
 	SYSRAM (rw) : ORIGIN = 0x2FFC0000, LENGTH = 256K
 
 }
@@ -19,6 +20,14 @@ __HEAP_SIZE = 0x40000;
 
 SECTIONS
 {
+	.firmware_m4_vectors : {
+		KEEP (*firmware_m4_vectors.o)
+	} > RETRAM
+
+	.firmware_m4 : {
+		KEEP (*firmware_m4.o)
+	} > SRAM1
+
     .text : {
         *(.vector_table)
 		*(.resethandler)

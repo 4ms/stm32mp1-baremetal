@@ -134,7 +134,7 @@ bss_loop:
 	mov r5, #67
 	str r5, [r4]
 
-	CPSIE  i 										// enable irq interrupts
+	//CPSIE  i 										// enable irq interrupts
 
 run_main:
     bl main
@@ -152,3 +152,11 @@ PAbt_Handler:
 DAbt_Handler:
 	b .
  
+IRQ_Handler:
+	b .
+
+FIQ_Handler:
+	b .
+
+SVC_Handler:
+	b .

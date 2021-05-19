@@ -1,4 +1,4 @@
-# Makefile by Dan Green <danngreen1@gmail.com>, public domain
+# Makefile by Dan Green <danngreen1@gmail.com>
 
 $(info --------------------)
 $(info Building for MP1 M4 core)

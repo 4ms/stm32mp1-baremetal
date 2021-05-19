@@ -17,7 +17,12 @@ SOURCES = $(STARTUP) \
 		  $(LIBDIR)/system/libcpp_stub.cc \
 		  $(LIBDIR)/system/system_ca7.c \
 		  $(LIBDIR)/system/mmu_ca7.c \
-		  $(LIBDIR)/mdrivlib/interrupt.cc \
+		  # firmware_m4.c \
+		  # firmware_m4_vectors.c \
+		  # $(LIBDIR)/mdrivlib/interrupt.cc \
+
+# EXTRA_OBJECTS = $(BUILDDIR_M4)/firmware_m4.o \
+# 				$(BUILDDIR_M4)/firmware_m4_vectors.o \
 
 INCLUDES = -I. \
 		   -I$(LIBDIR)/STM32MP1xx_HAL_Driver/Inc \
