@@ -9,7 +9,7 @@
  ******************************************************************************/
 /*
  * Copyright (c) 2009-2019 Arm Limited. All rights reserved.
- * 
+ *
  * Modified by Dan Green, 2021
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -62,13 +62,15 @@
 #define __TTB_BASE 0xC0100000
 
 #define A7_SYSRAM_BASE 0x2FFC0000
-#define A7_SYSRAM_SIZE 0x00040000 /* 256kB */
+#define A7_SYSRAM_SIZE 0x00040000			  /* 256kB */
 #define A7_SYSRAM_1MB_SECTION_BASE 0x2FF00000 /* 1M below top of SYSRAM */
 
 #define A7_SRAM1_BASE (0x10000000UL)
 #define A7_SRAM2_BASE (0x10020000UL)
 #define A7_SRAM3_BASE (0x10040000UL)
 #define A7_SRAM4_BASE (0x10050000UL)
+
+#define M4_VECTORS_BASE (0x38000000UL)
 
 // TTB base address
 #define TTB_BASE ((uint32_t *)__TTB_BASE)
@@ -84,6 +86,7 @@
 
 //"Private" peripherals is just the GIC on STM32MP15x
 #define PRIVATE_TABLE_L2_BASE_4k (__TTB_BASE + TTB_L1_SIZE)
+#define M4_VECTORS_TABLE_L2_BASE_64K (__TTB_BASE + TTB_L1_SIZE + 0x400) // Map 64k
 
 static uint32_t Sect_Normal;	 // outer & inner wb/wa, non-shareable, executable, rw, domain 0, base addr 0
 static uint32_t Sect_Normal_Cod; // outer & inner wb/wa, non-shareable, executable, ro, domain 0, base addr 0
@@ -97,7 +100,8 @@ static uint32_t Page_L1_64k = 0x0;	// generic
 static uint32_t Page_4k_Device_RW;	// Shared device, not executable, rw, domain 0
 static uint32_t Page_64k_Device_RW; // Shared device, not executable, rw, domain 0
 
-void MMU_CreateTranslationTable(void) {
+void MMU_CreateTranslationTable(void)
+{
 	mmu_region_attributes_Type region;
 
 	// Make entire memory area 0x00000000 to 0xFFFFFFFF faulting (invalid), unless we specify otherwise
@@ -113,20 +117,20 @@ void MMU_CreateTranslationTable(void) {
 	page4k_device_rw(Page_L1_4k, Page_4k_Device_RW, region);
 
 	// Set access and cache for 1MB sections:
-	
+
 	// ROM should be Sect_Normal_Cod (RO), but that seems to interere with debugger loading an elf file
 	// Setting it to Normal works better
 	// Todo: Investigate this!
 	MMU_TTSection(TTB_BASE, __ROM_BASE, __ROM_SIZE / 0x100000, Sect_Normal);
 
-	//RAM is RW, cacheable
+	// RAM is RW, cacheable
 	MMU_TTSection(TTB_BASE, __RAM_BASE, __RAM_SIZE / 0x100000, Sect_Normal_RW);
 	MMU_TTSection(TTB_BASE, __RAM2_BASE, __RAM2_SIZE / 0x100000, Sect_Normal_RW);
 	MMU_TTSection(TTB_BASE, __HEAP_BASE, __HEAP_SIZE / 0x100000, Sect_Normal_RW);
 
-	//SRAM1-4, used by Cortex-M4 MCU for code execution and stack
+	// SRAM1-4, used by Cortex-M4 MCU for code execution and stack
 	// It's actually is only 384kB, but we can set the whole 1MB section
-	MMU_TTSection(TTB_BASE, A7_SRAM1_BASE, 1, Sect_Normal); 
+	MMU_TTSection(TTB_BASE, A7_SRAM1_BASE, 1, Sect_Device_RW);
 
 	// Peripheral memory
 	MMU_TTSection(TTB_BASE, 0x40000000, 0x10000000 / 0x100000, Sect_Device_RW);
@@ -140,14 +144,26 @@ void MMU_CreateTranslationTable(void) {
 	MMU_TTSection(TTB_BASE, __get_CBAR(), 1, Sect_Device_RW);
 
 	// ARM Cortex-A Series Programmer's Guide v4.0, section 17.2.8:
-	// "use large MMU mappings (supersections or sections in preference to 4KB pages) as this reduces the cost of individual translation table walks"
-	
+	// "use large MMU mappings (supersections or sections in preference to 4KB pages) as this reduces the cost of
+	// individual translation table walks"
+
 	// But you may need to create 4k pages, so here how:
 	// First, create the 1M space (256 pages of 4k each = 1MB), and set it to Fault:
 	// Example here uses the top 1MB of the Heap
 	// MMU_TTPage4k(TTB_BASE, 0xDFF00000, 256, Page_L1_4k, (uint32_t *)SYNC_FLAGS_TABLE_L2_BASE_4k, DESCRIPTOR_FAULT);
 	// Then, set individual 4k pages to whatever memory type you want (Device_RW in this example:)
 	// MMU_TTPage4k(TTB_BASE, 0xDFFFF000, 1, Page_L1_4k, (uint32_t *)SYNC_FLAGS_TABLE_L2_BASE_4k, Page_4k_Device_RW);
+	//
+	// From A7's perspective, the M4 vectors are at 0x38000000 (form M4's perspective, they're at 0x00000000)
+	MMU_TTSection(TTB_BASE, M4_VECTORS_BASE, 1, Sect_Device_RW);
+
+	// Create (16 * 64k)=1MB faulting entries
+	/* MMU_TTPage64k( */
+	/* 	TTB_BASE, M4_VECTORS_BASE, 16, Page_L1_64k, (uint32_t *)M4_VECTORS_TABLE_L2_BASE_64K, DESCRIPTOR_FAULT); */
+
+	// Create one 64k RW entry
+	/* MMU_TTPage64k( */
+	/* 	TTB_BASE, M4_VECTORS_BASE, 1, Page_L1_64k, (uint32_t *)M4_VECTORS_TABLE_L2_BASE_64K, Page_64k_Device_RW); */
 
 	/* Set location of level 1 page table
 	; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
