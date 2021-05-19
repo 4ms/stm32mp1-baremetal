@@ -4,7 +4,5 @@
 *.elf
 *.d
 build/
-
-copro/firmware_m4.h
-
-copro/firmware_m4_vectors.h
+firmware_m4.h
+firmware_m4_vectors.h
