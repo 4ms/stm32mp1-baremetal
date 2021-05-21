@@ -69,6 +69,7 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 
 		"str r0, [r3, #0x10] 			\n" // +0x10 = EOIR: Write IRQ num to End Interrupt Register
 
+		"InvalidIRQNum: 				\n"
 		"pop {r0-r4, r12} 				\n" // Restore the registers of SVC mode
 		"cps MODE_IRQ 					\n" // Go back to IRQ mode and pop the LR and SPSR so we can return
 		"pop {lr} 						\n"
