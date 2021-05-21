@@ -31,7 +31,7 @@ INCLUDES = -I. \
 		   -I$(LIBDIR)\
 		   -I$(LIBDIR)\
 
-MCU =  -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mlittle-endian -mfloat-abi=hard
+MCU =  -mcpu=cortex-a7 -march=armv7ve -mfpu=neon-vfpv4 -mlittle-endian -mfloat-abi=hard
 
 ARCH_CFLAGS += -DUSE_FULL_LL_DRIVER \
 			  -DSTM32MP157Cxx \
@@ -91,6 +91,11 @@ HEX 	= $(BUILDDIR)/$(BINARYNAME).hex
 BIN 	= $(BUILDDIR)/$(BINARYNAME).bin
 
 all: Makefile $(ELF) $(UIMAGENAME)
+
+install:
+	cp $(UIMAGENAME) /Volumes/BAREAPP/
+	diskutil unmount /Volumes/BAREAPP
+	#../scripts/copy-app-to-sdcard.sh $(UIMAGENAME) /dev/disk3s4
 
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(dir $@)
