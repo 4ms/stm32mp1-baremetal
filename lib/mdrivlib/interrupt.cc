@@ -40,10 +40,10 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 
 		"push {r0-r4, lr} 				\n" // r0 = IRQnum, r2 = stack alignment, r3 = GICCPU base address
 											// r1, r4 might not be needed (?) why lr?
-		/* "vmrs r1, FPSCR 				\n" // Push all FPU regs and FPU status reg */
-		/* "vpush {d0-d15} 				\n" */
-		/* "vpush {d16-d31} 				\n" */
-		/* "push {r1} 						\n" */
+		"vmrs r1, FPSCR 				\n" // Push all FPU regs and FPU status reg
+		"vpush {d0-d15} 				\n"
+		"vpush {d16-d31} 				\n"
+		"push {r1} 						\n"
 
 		"cpsie i 						\n"
 		"dsb 							\n"
@@ -54,10 +54,10 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 											// TODO: Check that all regs really are restored, and see if that includes
 											// FPU regs (so we don't have to pop them ourselves
 
-		/* "pop {r1} 						\n" // Pop all FPU regs and FPU status reg */
-		/* "vpop {d16-d31} 				\n" */
-		/* "vpop {d0-d15} 					\n" */
-		/* "vmsr FPSCR, r1 				\n" */
+		"pop {r1} 						\n" // Pop all FPU regs and FPU status reg
+		"vpop {d16-d31} 				\n"
+		"vpop {d0-d15} 					\n"
+		"vmsr FPSCR, r1 				\n"
 
 		"pop {r0-r4, lr} 				\n"
 
