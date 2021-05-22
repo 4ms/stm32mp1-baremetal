@@ -104,9 +104,8 @@ void main()
 	// Trigger the outer ISR, which should trigger the inner ISR
 	uart.write("1) Triggering outer ISR: Red LED 1 turning off (PI8 rising edge)\r\n");
 
-	// Fill Pattern 1: skip R2, R3, R11
-	asm volatile("mov r0, #0x0000\n movt r0, #0x5678\n");
-	asm volatile("mov r1, #0x1111\n movt r1, #0x5678\n");
+	// Fill Pattern 1: skip R0-R3, R11 (we've verified separately that R0, R1 R2 are preserved, and if R11 wasn't, the
+	// rest of the code would crash Haven't proven that R3 is preserved, but it seems likely
 	asm volatile("mov r4, #0x4444\n movt r4, #0x5678\n");
 	asm volatile("mov r5, #0x5555\n movt r5, #0x5678\n");
 	asm volatile("mov r6, #0x6666\n movt r6, #0x5678\n");
@@ -115,16 +114,22 @@ void main()
 	asm volatile("mov r9, #0x9999\n movt r9, #0x5678\n");
 	asm volatile("mov r10, #0xaaaa\n movt r10, #0x5678\n");
 	asm volatile("mov r12, #0xcccc\n movt r12, #0x5678\n");
-	asm volatile("vmov s1, r1\n");
+	asm volatile("vmov s0, r10\n");
+	asm volatile("vmov s1, r10\n");
+	asm volatile("vmov s2, r12\n");
+	asm volatile("vmov s3, r12\n");
 	asm volatile("vmov s4, r4\n");
+	asm volatile("vmov s14, r4\n");
+	asm volatile("vmov s15, r5\n");
+	asm volatile("vmov s16, r6\n");
 	asm volatile("vmov s31, r12\n");
 
-	// red_led1.off();
-	asm volatile("mov r2, #0x0100\n movt r2, #0x0000\n");
-	asm volatile("mov r3, #0xA000\n movt r3, #0x5000\n");
-	asm volatile("str r2, [r3]\n");
+	red_led1.off();
+	// asm volatile("mov r2, #0x0100\n movt r2, #0x0000\n");
+	// asm volatile("mov r3, #0xA000\n movt r3, #0x5000\n");
+	// asm volatile("str r2, [r3]\n");
 
-	// Big assumption made, we only need R3 and R11 after here:
+	// Big assumption made, we only need R0-R3 and R11 after here:
 
 	int i = 0;
 
