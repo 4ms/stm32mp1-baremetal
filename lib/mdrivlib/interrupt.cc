@@ -1,6 +1,6 @@
 #include "interrupt.hh"
 
-extern "C" /*__attribute__((interrupt))*/ void ISRHandler(unsigned irqnum)
+extern "C" /*__attribute__((interrupt("IRQ")))*/ void ISRHandler(unsigned irqnum)
 {
 	InterruptManager::callISR(irqnum);
 }
@@ -45,14 +45,18 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 		"vpush {d16-d31} 				\n"
 		"push {r1} 						\n"
 
-		"cpsie i 						\n"
 		"dsb 							\n"
 		"isb 							\n"
+		"cpsie i 						\n"
 
 		"bl ISRHandler 					\n" // Call the ISR Handler. compiler should make sure all registers are
 											// restored
 											// TODO: Check that all regs really are restored, and see if that includes
 											// FPU regs (so we don't have to pop them ourselves
+
+		"cpsid i 						\n" // Disable interrupts so we can exit
+		"dsb 							\n"
+		"isb 							\n"
 
 		"pop {r1} 						\n" // Pop all FPU regs and FPU status reg
 		"vpop {d16-d31} 				\n"
@@ -63,10 +67,7 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 
 		"add sp, sp, r2 				\n"
 
-		"cpsid i 						\n" // Disable interrupts so we can exit
-		"dsb 							\n"
-		"isb 							\n"
-
+		//"dsb 							\n" //From zephyr
 		"str r0, [r3, #0x10] 			\n" // +0x10 = EOIR: Write IRQ num to End Interrupt Register
 
 		"InvalidIRQNum: 				\n"
