@@ -21,11 +21,11 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 											// that was about to be executed
 
 		"push {lr} 						\n" // Push corrected LR and SPSR to IRQ-mode stack
-		"mrs lr, spsr					\n" // SPSR_irq contains mode bits of mode that was interupted
+		"mrs lr, spsr					\n" // SPSR_irq contains mode bits indicating which mode was interrupted
 		"push {lr} 						\n"
 
 		"cps MODE_SVC 		 			\n" // Switch to SVC mode to handle IRQ
-		"push {r0-r4, r12} 		 		\n" // Push everything we use in this routine, to allow re-entry.
+		"push {r0-r12, lr} 	 			\n" // Push everything we use in this routine, to allow re-entry.
 
 		"mov r3, #GICCPU_BASE_low		\n" // Acknowledge interrupt with a read to the Interrupt Acknowledge Register
 		"movt r3, #GICCPU_BASE_high		\n"
@@ -71,7 +71,7 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 		"str r0, [r3, #0x10] 			\n" // +0x10 = EOIR: Write IRQ num to End Interrupt Register
 
 		"InvalidIRQNum: 				\n"
-		"pop {r0-r4, r12} 				\n" // Restore the registers of SVC mode
+		"pop {r0-r12, lr} 				\n" // Restore the registers of the interrupted context
 		"cps MODE_IRQ 					\n" // Go back to IRQ mode and pop the LR and SPSR so we can return
 		"pop {lr} 						\n"
 		"msr spsr_cxsf, lr				\n"
