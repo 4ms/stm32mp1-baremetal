@@ -21,7 +21,7 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 											// that was about to be executed
 
 		"push {lr} 						\n" // Push corrected LR and SPSR to IRQ-mode stack
-		"mrs lr, spsr					\n"
+		"mrs lr, spsr					\n" // SPSR_irq contains mode bits of mode that was interupted
 		"push {lr} 						\n"
 
 		"cps MODE_SVC 		 			\n" // Switch to SVC mode to handle IRQ
@@ -76,7 +76,8 @@ void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler(
 		"pop {lr} 						\n"
 		"msr spsr_cxsf, lr				\n"
 		"pop {lr} 						\n"
-		"movs pc, lr 					\n");
+		"movs pc, lr 					\n" // Return, switching to previous mode (because CPSR_irq contains mode bits set to the previous mode)
+		);
 }
 
 void __attribute__((interrupt)) FIQ_Handler()
