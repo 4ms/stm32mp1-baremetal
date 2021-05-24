@@ -10,23 +10,18 @@ constexpr uint8_t GPIO_I = 8; // GPIOA = 0, GPIOB = 1, etc..
 // IRQn = 0x62 (98) | PRIORITY: Reg 24 bit 2 | CFGR: Reg 16, bit 2 | ENABLE Reg 3, bit2
 // IRQn = 0x63 (99) | PRIORITY: Reg 24 bit 3 | CFGR: Reg 16, bit 3 | ENABLE Reg 3, bit3
 
-double do_some_big_calculation(double x)
-{
-	double xx = x * x;
-	double yy = xx + 1239.1234923994423;
-	xx = yy * xx;
-	for (int i = 1; i < 100; i++) {
-		xx = xx / (11234.12341234 / (11234.5 - yy));
-		yy += 19.4 - xx * xx;
-	}
-	return xx;
-}
-
 void main()
 {
 	// UART
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nTesting nested interrupts\r\n");
+	uart.write("Make sure this is compiled with -O1 to test register clobbering (Makefile, OPTFLAG on "
+			   "line 41)\r\n");
+	uart.write("To see the floating-point register test fail, ");
+	uart.write("comment out the #define STASH_FPU_REGS in interrupt.cc\r\n");
+	uart.write("To see the integer register test fail, ");
+	uart.write("comment out the #define STASH_R5_R11_LR in interrupt.cc\r\n");
+	uart.write("\r\n");
 	uart.write("You should see steps 1-6 occur in order:\r\n");
 
 	// LEDs
@@ -66,9 +61,7 @@ void main()
 	InterruptManager::registerISR(red_led1_irqnum, [&]() {
 		uart.write(" 2) Entering outer ISR (red LED 1)\r\n");
 		red_led_pinchange.clear_falling_isr_flag();
-		uart.write("  3) Triggering Inner ISR: Green LED 1 turning off (PI9 rising edge)\r\n");
 
-		// Calculate Fibonacci sum
 		volatile uint32_t x0 = 1;
 		uint32_t x1 = 1;
 		uint32_t x2 = x0 + x1;
@@ -103,12 +96,40 @@ void main()
 		double d14 = d12 + d13;
 		double d15 = d13 + d14;
 		double d16 = d14 + d15;
-		asm("mov r5, #0x5555\n");
-		asm("mov r6, #0x6666\n");
-		asm("mov r7, #0x7777\n");
-		if (d16 > 2.75) // Force compiler to not calc d16 after the inner ISR is triggered
-			green_led1.off();
-		uint32_t x17 = x15 + x16;
+		double d17 = d15 + d16;
+		double d18 = d16 + d17;
+		double d19 = d17 + d18;
+		double d20 = d18 + d19;
+		double d21 = d19 + d20;
+		double d22 = d20 + d21;
+		double d23 = d21 + d22;
+		double d24 = d22 + d23;
+		double d25 = d23 + d24;
+		double d26 = d24 + d25;
+		double d27 = d25 + d26;
+		double d28 = d26 + d27;
+		double d29 = d27 + d28;
+		double d30 = d28 + d29;
+		double d31 = d29 + d30;
+
+		// Force compiler to calc d31 before triggering the inner ISR
+		if (d31 > d1 * x1) { // always true
+			uart.write("  3) Triggering Inner ISR: Green LED 1 turning off (PI9 rising edge)\r\n");
+			green_led1.off(); // trigger the inner ISR
+			// Kill some time to ensure the GIC has time to propagate the request to the inner ISR
+			long i = 0x1000;
+			while (i--)
+				;
+		} else {
+			d31 -= 1.; // this won't be called, but the compiler doesn't know that, so it won't do the calculations out
+					   // of order
+		}
+		// These use all available registers (FPU and normal)
+		// If the inner ISR clobbered the registers, then we'll get an incorrect sum
+		double d32 = d31 + d30 + d29 + d28 + d27 + d26 + d25 + d24 + d23 + d22 + d21 + d20 + d19 + d18 + d17 + d16 +
+					 d15 + d14 + d13 + d12 + d11 + d10 + d9 + d8 + d7 + d6 + d5 + d4 + d3 + d2 + d1 + d0;
+		uint32_t x17 = x16 + x15 + x14 + x13 + x12 + x11 + x10 + x9 + x8 + x7 + x6 + x5 + x4 + x3 + x2 + x1 + x0;
+
 		uint32_t x18 = x16 + x17;
 		uint32_t x19 = x17 + x18;
 		uint32_t x20 = x18 + x19;
@@ -132,27 +153,6 @@ void main()
 		uint32_t x38 = x36 + x37;
 		uint32_t x39 = x37 + x38;
 		uint32_t x40 = x38 + x39;
-		uint32_t x41 = x39 + x40;
-		uint32_t x42 = x40 + x41;
-		uint32_t x43 = x41 + x42;
-		uint32_t x44 = x42 + x43;
-		uint32_t x45 = x43 + x44;
-		double d17 = d15 + d16;
-		double d18 = d16 + d17;
-		double d19 = d17 + d18;
-		double d20 = d18 + d19;
-		double d21 = d19 + d20;
-		double d22 = d20 + d21;
-		double d23 = d21 + d22;
-		double d24 = d22 + d23;
-		double d25 = d23 + d24;
-		double d26 = d24 + d25;
-		double d27 = d25 + d26;
-		double d28 = d26 + d27;
-		double d29 = d27 + d28;
-		double d30 = d28 + d29;
-		double d31 = d29 + d30;
-		double d32 = d30 + d31;
 		double d33 = d31 + d32;
 		double d34 = d32 + d33;
 		double d35 = d33 + d34;
@@ -217,21 +217,22 @@ void main()
 		double d94 = d92 + d93;
 		double d95 = d93 + d94;
 		double d96 = d94 + d95;
-		uint32_t r5, r6, r7;
-		asm volatile("mov %0, r5 \n mov %1, r6 \n mov %2, r7 \n" : "=r"(r5), "=r"(r6), "=r"(r7)::);
-		uart.write("     6) ");
-		if (r5 != 0x5555 || r6 != 0x6666 || r7 != 0x7777)
-			uart.write("Registers r5-r7 were clobbered! ");
-		else
-			uart.write("Registers r5-r7 not clobbered. ");
 
-		if (x45 != 0x6D73E55F)
-			uart.write("--- Int sum is incorrect! ");
-		else if (d96 < 117446606576020000000. || d96 > 117446606576030000000.)
-			uart.write("--- Double sum is incorrect! ");
-		else
-			uart.write("Sums are correct. ");
-		uart.write("Exiting outer ISR (red LED 1)\r\n");
+		bool int_sum_ok = true;
+		bool float_sum_ok = true;
+		uart.write("     6) Outer ISR: ");
+		if (x40 != 0x0E47C0ED) {
+			int_sum_ok = false;
+			uart.write("--- integer sum is incorrect! ");
+		}
+		if (d96 < 1.69e+20 || d96 > 1.71e+20) {
+			float_sum_ok = false;
+			uart.write("--- floating-point sum is incorrect! ");
+		}
+		if (int_sum_ok && float_sum_ok)
+			uart.write("both sums are OK. ");
+
+		uart.write("...Exiting ISR\r\n");
 	});
 
 	GIC_SetTarget(red_led1_irqnum, 1);
@@ -246,7 +247,7 @@ void main()
 		green_led_pinchange.clear_falling_isr_flag();
 		uart.write("   4) Entering inner ISR (green LED 1)\r\n");
 		volatile uint32_t x0 = 1;
-		uint32_t x1 = 1;
+		volatile uint32_t x1 = 1;
 		uint32_t x2 = x0 + x1;
 		uint32_t x3 = x1 + x2;
 		uint32_t x4 = x2 + x3;
@@ -262,6 +263,7 @@ void main()
 		uint32_t x14 = x12 + x13;
 		uint32_t x15 = x13 + x14;
 		uint32_t x16 = x14 + x15;
+		uint32_t x17 = x16 + x15 + x14 + x13 + x12 + x11 + x10 + x9 + x8 + x7 + x6 + x5 + x4 + x3 + x2 + x1 + x0;
 		volatile double d0 = 1.25;
 		volatile double d1 = 1.5;
 		double d2 = d0 + d1;
@@ -279,39 +281,6 @@ void main()
 		double d14 = d12 + d13;
 		double d15 = d13 + d14;
 		double d16 = d14 + d15;
-		asm("mov r5, #0x1111\n");
-		asm("mov r6, #0x2222\n");
-		asm("mov r7, #0x3333\n");
-		green_led1.off();
-		uint32_t x17 = x15 + x16;
-		uint32_t x18 = x16 + x17;
-		uint32_t x19 = x17 + x18;
-		uint32_t x20 = x18 + x19;
-		uint32_t x21 = x19 + x20;
-		uint32_t x22 = x20 + x21;
-		uint32_t x23 = x21 + x22;
-		uint32_t x24 = x22 + x23;
-		uint32_t x25 = x23 + x24;
-		uint32_t x26 = x24 + x25;
-		uint32_t x27 = x25 + x26;
-		uint32_t x28 = x26 + x27;
-		uint32_t x29 = x27 + x28;
-		uint32_t x30 = x28 + x29;
-		uint32_t x31 = x29 + x30;
-		uint32_t x32 = x30 + x31;
-		uint32_t x33 = x31 + x32;
-		uint32_t x34 = x32 + x33;
-		uint32_t x35 = x33 + x34;
-		uint32_t x36 = x34 + x35;
-		uint32_t x37 = x35 + x36;
-		uint32_t x38 = x36 + x37;
-		uint32_t x39 = x37 + x38;
-		uint32_t x40 = x38 + x39;
-		uint32_t x41 = x39 + x40;
-		uint32_t x42 = x40 + x41;
-		uint32_t x43 = x41 + x42;
-		uint32_t x44 = x42 + x43;
-		uint32_t x45 = x43 + x44;
 		double d17 = d15 + d16;
 		double d18 = d16 + d17;
 		double d19 = d17 + d18;
@@ -327,27 +296,24 @@ void main()
 		double d29 = d27 + d28;
 		double d30 = d28 + d29;
 		double d31 = d29 + d30;
-		double d32 = d30 + d31;
-		double d33 = d31 + d32;
-		double d34 = d32 + d33;
-		double d35 = d33 + d34;
-		double d36 = d34 + d35;
-		double d37 = d35 + d36;
-		double d38 = d36 + d37;
-		double d39 = d37 + d38;
-		double d40 = d38 + d39;
-		double d41 = d39 + d40;
-		double d42 = d40 + d41;
-		double d43 = d41 + d42;
-		double d44 = d42 + d43;
-		double d45 = d43 + d44;
-		if (x45 != 0x6D73E55F)
-			uart.write("    5) --- Int sum is incorrect! ");
-		else if (d45 != 2579115671.25)
-			uart.write("    5) --- Double sum is incorrect ");
-		else
-			uart.write("    5) Sums are correct, ");
-		uart.write("Exiting inner ISR (green LED 1)\r\n");
+		double d32 = d30 + d31 + d29 + d28 + d27 + d26 + d25 + d24 + d23 + d22 + d21 + d20 + d19 + d18 + d17 + d16 +
+					 d15 + d14 + d13 + d12 + d11 + d10 + d9 + d8 + d7 + d6 + d5 + d4 + d3 + d2 + d1 + d0;
+		uart.write("    5) Inner ISR: ");
+
+		bool int_sum_ok = true;
+		bool float_sum_ok = true;
+		if (x17 != 4180) {
+			int_sum_ok = false;
+			uart.write("--- integer sum is incorrect! ");
+		}
+		if (d32 < 8009751. || d32 > 8009752.) {
+			float_sum_ok = false;
+			uart.write("--- floating-point sum is incorrect! ");
+		}
+		if (int_sum_ok && float_sum_ok)
+			uart.write("both sums are OK. ");
+
+		uart.write("...Exiting inner ISR\r\n");
 	});
 
 	GIC_SetTarget(green_led1_irqnum, 1);
@@ -363,43 +329,85 @@ void main()
 	// Trigger the outer ISR, which should trigger the inner ISR
 	uart.write("1) Triggering outer ISR: Red LED 1 turning off (PI8 rising edge)\r\n");
 
-	// Fill Pattern 1: skip R0-R3, R11 (we've verified separately that R0, R1 R2 are preserved, and if R11 wasn't, the
-	// rest of the code would crash Haven't proven that R3 is preserved, but it seems likely
-	asm volatile("mov r4, #0x4444\n movt r4, #0x5678\n");
-	asm volatile("mov r5, #0x5555\n movt r5, #0x5678\n");
-	asm volatile("mov r6, #0x6666\n movt r6, #0x5678\n");
-	asm volatile("mov r7, #0x7777\n movt r7, #0x5678\n");
-	asm volatile("mov r8, #0x8888\n movt r8, #0x5678\n");
-	asm volatile("mov r9, #0x9999\n movt r9, #0x5678\n");
-	asm volatile("mov r10, #0xaaaa\n movt r10, #0x5678\n");
-	asm volatile("mov r12, #0xcccc\n movt r12, #0x5678\n");
-	asm volatile("vmov s0, r10\n");
-	asm volatile("vmov s1, r10\n");
-	asm volatile("vmov s2, r12\n");
-	asm volatile("vmov s3, r12\n");
-	asm volatile("vmov s4, r4\n");
-	asm volatile("vmov s14, r4\n");
-	asm volatile("vmov s15, r5\n");
-	asm volatile("vmov s16, r6\n");
-	asm volatile("vmov s31, r12\n");
+	volatile uint32_t x0 = 2;
+	volatile uint32_t x1 = 3;
+	uint32_t x2 = x0 + x1;
+	uint32_t x3 = x1 + x2;
+	uint32_t x4 = x2 + x3;
+	uint32_t x5 = x3 + x4;
+	uint32_t x6 = x4 + x5;
+	uint32_t x7 = x5 + x6;
+	uint32_t x8 = x6 + x7;
+	uint32_t x9 = x7 + x8;
+	uint32_t x10 = x8 + x9;
+	uint32_t x11 = x9 + x10;
+	uint32_t x12 = x10 + x11;
+	uint32_t x13 = x11 + x12;
+	uint32_t x14 = x12 + x13;
+	uint32_t x15 = x13 + x14;
+	uint32_t x16 = x14 + x15;
+	volatile double d0 = 1.75;
+	volatile double d1 = 1.55;
+	double d2 = d0 + d1;
+	double d3 = d1 + d2;
+	double d4 = d2 + d3;
+	double d5 = d3 + d4;
+	double d6 = d4 + d5;
+	double d7 = d5 + d6;
+	double d8 = d6 + d7;
+	double d9 = d7 + d8;
+	double d10 = d8 + d9;
+	double d11 = d9 + d10;
+	double d12 = d10 + d11;
+	double d13 = d11 + d12;
+	double d14 = d12 + d13;
+	double d15 = d13 + d14;
+	double d16 = d14 + d15;
+	double d17 = d15 + d16;
+	double d18 = d16 + d17;
+	double d19 = d17 + d18;
+	double d20 = d18 + d19;
+	double d21 = d19 + d20;
+	double d22 = d20 + d21;
+	double d23 = d21 + d22;
+	double d24 = d22 + d23;
+	double d25 = d23 + d24;
+	double d26 = d24 + d25;
+	double d27 = d25 + d26;
+	double d28 = d26 + d27;
+	double d29 = d27 + d28;
+	double d30 = d28 + d29;
+	double d31 = d29 + d30;
 
-	// red_led1.off();
-	asm volatile("mov r2, #0x0100\n");
-	asm volatile("mov r3, #0xA000\n movt r3, #0x5000\n");
-	asm volatile("str r2, [r3, #24]\n");
-
-	// Big assumption made, we only need R0-R3 and R11 after here:
+	red_led1.off();
+	// asm volatile("mov r2, #0x0100\n");
+	// asm volatile("mov r3, #0xA000\n movt r3, #0x5000\n");
+	// asm volatile("str r2, [r3, #24]\n");
 
 	int i = 0;
-	double x = 9999999999499500.;
 	while (1) {
 		i++;
-		x = x + i;
-		if (i == 1000) {
-			// check register pattern, check x = original x + 1 + 2 + ... 1000 = 500500 = 9 999 999 999 999 999
-			__BKPT();
+		if (i == 1000) { // plenty of time for ISRs to complete
+			uart.write("Reached main context: ");
+			uint32_t x17 = x16 + x15 + x14 + x13 + x12 + x11 + x10 + x9 + x8 + x7 + x6 + x5 + x4 + x3 + x2 + x1 + x0;
+			double d32 = d30 + d31 + d29 + d28 + d27 + d26 + d25 + d24 + d23 + d22 + d21 + d20 + d19 + d18 + d17 + d16 +
+						 d15 + d14 + d13 + d12 + d11 + d10 + d9 + d8 + d7 + d6 + d5 + d4 + d3 + d2 + d1 + d0;
+
+			bool int_sum_ok = true;
+			bool float_sum_ok = true;
+			if (x17 != 10943) {
+				int_sum_ok = false;
+				uart.write("--- Main loop integer sum is incorrect! ");
+			}
+			if (d32 < 9275135. || d32 > 9275136.) {
+				float_sum_ok = false;
+				uart.write("--- Main loop floating-point sum is incorrect! ");
+			}
+			if (int_sum_ok && float_sum_ok)
+				uart.write(" both sums are OK ");
+
+			while (1)
+				;
 		}
-		if (x == 9999999999999999.)
-			__BKPT();
 	};
 }
