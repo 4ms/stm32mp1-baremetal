@@ -1,7 +1,5 @@
 #include "delay.hh"
 #include "leds.hh"
-/* #include "mdrivlib/interrupt.hh" */
-/* #include "mdrivlib/interrupt_control.hh" */
 #include "stm32mp157cxx_ca7.h"
 #include "uart.hh"
 #include <stdint.h>

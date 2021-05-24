@@ -17,7 +17,6 @@ SOURCES = $(STARTUP) \
 		  $(LIBDIR)/system/libcpp_stub.cc \
 		  $(LIBDIR)/system/system_ca7.c \
 		  $(LIBDIR)/system/mmu_ca7.c \
-		  $(LIBDIR)/mdrivlib/interrupt.cc \
 
 INCLUDES = -I. \
 		   -I$(LIBDIR)/STM32MP1xx_HAL_Driver/Inc \
