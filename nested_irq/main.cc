@@ -32,12 +32,12 @@ void main()
 	// LEDs
 	Led<GPIOI_BASE, 8, LedActive::Low> red_led1;
 	Led<GPIOI_BASE, 9, LedActive::Low> green_led1;
-	Led<GPIOZ_BASE, 6, LedActive::Low> red_led2;
-	Led<GPIOZ_BASE, 7, LedActive::Low> green_led2;
+	Led<GPIOE_BASE, 15, LedActive::Low> debug_pin2;
+	Led<GPIOG_BASE, 15, LedActive::Low> debug_pin3;
 	red_led1.init();
 	green_led1.init();
-	red_led2.init();
-	green_led2.init();
+	debug_pin2.init();
+	debug_pin3.init();
 
 	// Pin Change interrupts
 	PinChangeISR red_led_pinchange{GPIO_I, 8};
@@ -49,8 +49,14 @@ void main()
 	// Initial conditions:
 	red_led1.on();
 	green_led1.on();
-	red_led2.off();
-	green_led2.off();
+
+	debug_pin2.off();
+	debug_pin2.on();
+	debug_pin2.off();
+
+	debug_pin3.off();
+	debug_pin3.on();
+	debug_pin3.off();
 
 	// Setup outer interrupt = red LED 1 turning off
 	// Set to low priority (so it can be interrupted by the inner interrupt)
@@ -58,9 +64,9 @@ void main()
 	red_led_pinchange.enable_isr_on_rising_falling_edges(true, false);
 
 	InterruptManager::registerISR(red_led1_irqnum, [&]() {
-		uart.write("2) Entering outer ISR (red LED 1)\r\n");
+		uart.write(" 2) Entering outer ISR (red LED 1)\r\n");
 		red_led_pinchange.clear_falling_isr_flag();
-		uart.write("3) Triggering Inner ISR: Green LED 1 turning off (PI9 rising edge)\r\n");
+		uart.write("  3) Triggering Inner ISR: Green LED 1 turning off (PI9 rising edge)\r\n");
 
 		// Calculate Fibonacci sum
 		volatile uint32_t x0 = 1;
@@ -100,7 +106,8 @@ void main()
 		asm("mov r5, #0x5555\n");
 		asm("mov r6, #0x6666\n");
 		asm("mov r7, #0x7777\n");
-		green_led1.off();
+		if (d16 > 2.75) // Force compiler to not calc d16 after the inner ISR is triggered
+			green_led1.off();
 		uint32_t x17 = x15 + x16;
 		uint32_t x18 = x16 + x17;
 		uint32_t x19 = x17 + x18;
@@ -212,7 +219,7 @@ void main()
 		double d96 = d94 + d95;
 		uint32_t r5, r6, r7;
 		asm volatile("mov %0, r5 \n mov %1, r6 \n mov %2, r7 \n" : "=r"(r5), "=r"(r6), "=r"(r7)::);
-		uart.write("6) ");
+		uart.write("     6) ");
 		if (r5 != 0x5555 || r6 != 0x6666 || r7 != 0x7777)
 			uart.write("Registers r5-r7 were clobbered! ");
 		else
@@ -220,7 +227,7 @@ void main()
 
 		if (x45 != 0x6D73E55F)
 			uart.write("--- Int sum is incorrect! ");
-		else if (d96 != 117446606576026000000.)
+		else if (d96 < 117446606576020000000. || d96 > 117446606576030000000.)
 			uart.write("--- Double sum is incorrect! ");
 		else
 			uart.write("Sums are correct. ");
@@ -237,7 +244,7 @@ void main()
 	green_led_pinchange.enable_isr_on_rising_falling_edges(true, false);
 	InterruptManager::registerISR(green_led1_irqnum, [&]() {
 		green_led_pinchange.clear_falling_isr_flag();
-		uart.write("4) Entering inner ISR (green LED 1)\r\n");
+		uart.write("   4) Entering inner ISR (green LED 1)\r\n");
 		volatile uint32_t x0 = 1;
 		uint32_t x1 = 1;
 		uint32_t x2 = x0 + x1;
@@ -335,13 +342,12 @@ void main()
 		double d44 = d42 + d43;
 		double d45 = d43 + d44;
 		if (x45 != 0x6D73E55F)
-			uart.write("5) --- Int sum is incorrect! ");
+			uart.write("    5) --- Int sum is incorrect! ");
 		else if (d45 != 2579115671.25)
-			uart.write("5) --- Double sum is incorrect ");
+			uart.write("    5) --- Double sum is incorrect ");
 		else
-			uart.write("5) Sums are correct, ");
+			uart.write("    5) Sums are correct, ");
 		uart.write("Exiting inner ISR (green LED 1)\r\n");
-		green_led2.on();
 	});
 
 	GIC_SetTarget(green_led1_irqnum, 1);
@@ -377,20 +383,23 @@ void main()
 	asm volatile("vmov s16, r6\n");
 	asm volatile("vmov s31, r12\n");
 
-	red_led1.off();
-	// asm volatile("mov r2, #0x0100\n movt r2, #0x0000\n");
-	// asm volatile("mov r3, #0xA000\n movt r3, #0x5000\n");
-	// asm volatile("str r2, [r3]\n");
+	// red_led1.off();
+	asm volatile("mov r2, #0x0100\n");
+	asm volatile("mov r3, #0xA000\n movt r3, #0x5000\n");
+	asm volatile("str r2, [r3, #24]\n");
 
 	// Big assumption made, we only need R0-R3 and R11 after here:
 
 	int i = 0;
-
+	double x = 9999999999499500.;
 	while (1) {
 		i++;
-		if (i == 50) {
-			// check register pattern
+		x = x + i;
+		if (i == 1000) {
+			// check register pattern, check x = original x + 1 + 2 + ... 1000 = 500500 = 9 999 999 999 999 999
 			__BKPT();
 		}
+		if (x == 9999999999999999.)
+			__BKPT();
 	};
 }
