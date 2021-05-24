@@ -14,7 +14,7 @@ LIBDIR = ../lib
 SOURCES = $(STARTUP) \
 		  main.c \
 		  new.cc \
-		  $(LIBDIR)/mdrivlib/interrupt.cc \
+		  interrupt.cc \
 		  $(LIBDIR)/system/irq_ctrl.c \
 		  $(LIBDIR)/system/libc_stub.c \
 		  $(LIBDIR)/system/libcpp_stub.cc \
@@ -28,7 +28,7 @@ INCLUDES = -I. \
 		   -I$(LIBDIR)/STM32MP1xx_HAL_Driver/Inc \
 		   -I$(LIBDIR)/CMSIS/Core_A/Include \
 		   -I$(LIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
-		   -I$(LIBDIR)\
+		   -I$(LIBDIR)/mdrivlib \
 		   -I$(LIBDIR)\
 
 MCU =  -mcpu=cortex-a7 -march=armv7ve -mfpu=neon-vfpv4 -mlittle-endian -mfloat-abi=hard

@@ -380,9 +380,6 @@ void main()
 	double d31 = d29 + d30;
 
 	red_led1.off();
-	// asm volatile("mov r2, #0x0100\n");
-	// asm volatile("mov r3, #0xA000\n movt r3, #0x5000\n");
-	// asm volatile("str r2, [r3, #24]\n");
 
 	int i = 0;
 	while (1) {
