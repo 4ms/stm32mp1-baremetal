@@ -63,7 +63,7 @@ void main()
 		uart.write("3) Triggering Inner ISR: Green LED 1 turning off (PI9 rising edge)\r\n");
 
 		// Calculate Fibonacci sum
-		uint32_t x0 = 1;
+		volatile uint32_t x0 = 1;
 		uint32_t x1 = 1;
 		uint32_t x2 = x0 + x1;
 		uint32_t x3 = x1 + x2;
@@ -80,8 +80,8 @@ void main()
 		uint32_t x14 = x12 + x13;
 		uint32_t x15 = x13 + x14;
 		uint32_t x16 = x14 + x15;
-		double d0 = 1.25;
-		double d1 = 1.5;
+		volatile double d0 = 1.25 * x0;
+		volatile double d1 = 1.5;
 		double d2 = d0 + d1;
 		double d3 = d1 + d2;
 		double d4 = d2 + d3;
@@ -159,15 +159,71 @@ void main()
 		double d43 = d41 + d42;
 		double d44 = d42 + d43;
 		double d45 = d43 + d44;
-		// Check r5 == 0x5555 << fail
-		// Check r6 == 0x6666 << fail
-		// Check r7 == 0x7777 << fail
-		if (x45 != 0x6D73E55F)
-			uart.write("6) --- Int sum is incorrect! ");
-		else if (d45 != 2579115671.25)
-			uart.write("6) --- Double sum is incorrect ");
+		double d46 = d44 + d45;
+		double d47 = d45 + d46;
+		double d48 = d46 + d47;
+		double d49 = d47 + d48;
+		double d50 = d48 + d49;
+		double d51 = d49 + d50;
+		double d52 = d50 + d51;
+		double d53 = d51 + d52;
+		double d54 = d52 + d53;
+		double d55 = d53 + d54;
+		double d56 = d54 + d55;
+		double d57 = d55 + d56;
+		double d58 = d56 + d57;
+		double d59 = d57 + d58;
+		double d60 = d58 + d59;
+		double d61 = d59 + d60;
+		double d62 = d60 + d61;
+		double d63 = d61 + d62;
+		double d64 = d62 + d63;
+		double d65 = d63 + d64;
+		double d66 = d64 + d65;
+		double d67 = d65 + d66;
+		double d68 = d66 + d67;
+		double d69 = d67 + d68;
+		double d70 = d68 + d69;
+		double d71 = d69 + d70;
+		double d72 = d70 + d71;
+		double d73 = d71 + d72;
+		double d74 = d72 + d73;
+		double d75 = d73 + d74;
+		double d76 = d74 + d75;
+		double d77 = d75 + d76;
+		double d78 = d76 + d77;
+		double d79 = d77 + d78;
+		double d80 = d78 + d79;
+		double d81 = d79 + d80;
+		double d82 = d80 + d81;
+		double d83 = d81 + d82;
+		double d84 = d82 + d83;
+		double d85 = d83 + d84;
+		double d86 = d84 + d85;
+		double d87 = d85 + d86;
+		double d88 = d86 + d87;
+		double d89 = d87 + d88;
+		double d90 = d88 + d89;
+		double d91 = d89 + d90;
+		double d92 = d90 + d91;
+		double d93 = d91 + d92;
+		double d94 = d92 + d93;
+		double d95 = d93 + d94;
+		double d96 = d94 + d95;
+		uint32_t r5, r6, r7;
+		asm volatile("mov %0, r5 \n mov %1, r6 \n mov %2, r7 \n" : "=r"(r5), "=r"(r6), "=r"(r7)::);
+		uart.write("6) ");
+		if (r5 != 0x5555 || r6 != 0x6666 || r7 != 0x7777)
+			uart.write("Registers r5-r7 were clobbered! ");
 		else
-			uart.write("6) Sums are correct, ");
+			uart.write("Registers r5-r7 not clobbered. ");
+
+		if (x45 != 0x6D73E55F)
+			uart.write("--- Int sum is incorrect! ");
+		else if (d96 != 117446606576026000000.)
+			uart.write("--- Double sum is incorrect! ");
+		else
+			uart.write("Sums are correct. ");
 		uart.write("Exiting outer ISR (red LED 1)\r\n");
 	});
 
@@ -182,7 +238,7 @@ void main()
 	InterruptManager::registerISR(green_led1_irqnum, [&]() {
 		green_led_pinchange.clear_falling_isr_flag();
 		uart.write("4) Entering inner ISR (green LED 1)\r\n");
-		uint32_t x0 = 1;
+		volatile uint32_t x0 = 1;
 		uint32_t x1 = 1;
 		uint32_t x2 = x0 + x1;
 		uint32_t x3 = x1 + x2;
@@ -199,8 +255,8 @@ void main()
 		uint32_t x14 = x12 + x13;
 		uint32_t x15 = x13 + x14;
 		uint32_t x16 = x14 + x15;
-		double d0 = 1.25;
-		double d1 = 1.5;
+		volatile double d0 = 1.25;
+		volatile double d1 = 1.5;
 		double d2 = d0 + d1;
 		double d3 = d1 + d2;
 		double d4 = d2 + d3;
