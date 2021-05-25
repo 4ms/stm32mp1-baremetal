@@ -1,3 +1,4 @@
+#include "delay.hh"
 #include "leds.hh"
 #include "mdrivlib/interrupt.hh"
 #include "mdrivlib/interrupt_control.hh"
@@ -32,7 +33,6 @@ void main()
 
 	// Pin Change interrupt for red led
 	PinChangeISR red_led_pinchange{GPIO_I, 8};
-
 	const auto red_led1_irqnum = red_led_pinchange.get_IRQ_num();
 
 	GIC_DisableIRQ(red_led1_irqnum);
@@ -43,13 +43,12 @@ void main()
 	// 0b00 Level triggered (reads as 0b01)
 
 	// Setup interrupt for red LED 1 turning off
-	red_led_pinchange.enable_isr_on_rising_falling_edges(true, false);
 
 	InterruptManager::registerISR(red_led1_irqnum, [&]() {
 		red_led_pinchange.clear_rising_isr_flag();
-		uart.write("Entering IRQ handler\r\n");
+		uart.write(">>> Entering IRQ handler\r\n");
 		num_times_irq_called++;
-		uart.write("Exiting IRQ handler\r\n");
+		uart.write("<<< Exiting IRQ handler\r\n");
 	});
 
 	// Toggle the LED just to prove the ISR is not getting called
@@ -58,16 +57,26 @@ void main()
 	red_led1.on();
 
 	// Enable the ISR
+	red_led_pinchange.enable_isr_on_rising_falling_edges(true, false);
 	red_led_pinchange.enable();
 	red_led_pinchange.clear_rising_isr_flag();
-	GICDistributor->ISENABLER[3] = 0x00000004UL;
-	GICDistributor->ICPENDR[3] = 0x00000004UL;
-
-	// GIC_EnableIRQ(red_led1_irqnum);
-	// GIC_ClearPendingIRQ(red_led1_irqnum);
+	GIC_ClearPendingIRQ(red_led1_irqnum);
+	GIC_EnableIRQ(red_led1_irqnum);
 
 	// Trigger ISR
-	uart.write("Triggering ISR: Red LED 1 turning off\r\n");
+	uart.write("Triggering ISR: Red LED 1 turning off...\r\n");
+	Delay::cycles(0x1000000);
+	uart.write("5 ");
+	Delay::cycles(0x2000000);
+	uart.write("\r4 ");
+	Delay::cycles(0x2000000);
+	uart.write("\r3 ");
+	Delay::cycles(0x2000000);
+	uart.write("\r2 ");
+	Delay::cycles(0x2000000);
+	uart.write("\r1 ");
+	Delay::cycles(0x2000000);
+	uart.write("\r0 \r");
 	red_led1.off();
 
 	int i = 0;
@@ -79,7 +88,7 @@ void main()
 			else if (num_times_irq_called == 0)
 				uart.write("ISR was not called, boo.\r\n");
 			else
-				uart.write("ISR was called more than once.. but how?\r\n");
+				uart.write("ISR was called more than once.. hmmmrr.\r\n");
 
 			while (1)
 				;
