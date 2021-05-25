@@ -2,16 +2,19 @@
 #include "stm32mp1xx.h"
 #include <stddef.h>
 
-void GIC_ClearActiveIRQ(IRQn_Type IRQn) {
+void GIC_ClearActiveIRQ(IRQn_Type IRQn)
+{
 	if (IRQn >= 16U) {
 		GICDistributor->ICACTIVER[IRQn / 32U] = 1U << (IRQn % 32U);
 	}
 }
 
 /// Initialize interrupt controller.
-int32_t IRQ_Initialize(void) {
+int32_t IRQ_Initialize(void)
+{
+	GIC_Enable();
 
-	unsigned num_irq = 32U * ((GIC_DistributorInfo() & 0x1FU) + 1U); 
+	unsigned num_irq = 32U * ((GIC_DistributorInfo() & 0x1FU) + 1U);
 	int x;
 	do {
 		x = GIC_AcknowledgePending();
@@ -24,6 +27,8 @@ int32_t IRQ_Initialize(void) {
 	} while (x >= 0 && x < num_irq);
 
 	for (unsigned i = 32; i < num_irq; i++) {
+		// if (i == 0x62)
+		// 	__BKPT();
 		int act_pend = GIC_GetIRQStatus(i);
 		int active = (act_pend & 0b10) >> 1;
 		int pending = act_pend & 0b01;
@@ -34,10 +39,9 @@ int32_t IRQ_Initialize(void) {
 			GIC_ClearPendingIRQ(i);
 	}
 
-	GIC_Enable();
-
 	// Reset the active priority register, in case we halted/reset during an ISR
-	// FixMe: This doesn't always work! Sometimes if we halt during an ISR handler, and upload new code, we have to power cycle for it to run properly.
+	// FixMe: This doesn't always work! Sometimes if we halt during an ISR handler, and upload new code, we have to
+	// power cycle for it to run properly.
 	GICInterface->APR[0] = 0x00U;
 	__DSB();
 	__ISB();
@@ -48,4 +52,3 @@ int32_t IRQ_Initialize(void) {
 
 	return (0);
 }
-
