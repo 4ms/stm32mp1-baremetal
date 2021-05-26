@@ -35,9 +35,10 @@ the next line of code that was about to be executed before it got interrupted.
 If you're used to using the NVIC on Cortex-M series, this all seems like a lot
 of extra work. It is. The M series are more suited for "real-time", and
 hardware-based IRQ response is part of why. However, the overhead of a software
-NVIC on top of a GIC is somewhere in the ballpark of 200ns - 1us for an ISR call
-(depends on if you need FPU registers preserved), which I've still found
-useable even for "real-time" systems. Compared to a 180MHz M4 or M7, that's not unreasonable.
+NVIC on top of a GIC is somewhere in the ballpark of 200ns - 500ns for an ISR call
+(depends on if you need FPU registers preserved), which includes branching and
+the overhead of calling lambdas.  I've still found this quite useable for
+real-time systems. 
 
 For faster response, the GIC also has a FIQ (fast interrupt) which needs less
 register preservation and one less branch instruction. So if you needed a fast
