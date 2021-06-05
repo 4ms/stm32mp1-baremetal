@@ -141,7 +141,12 @@ void MMU_CreateTranslationTable(void)
 
 	// GIC
 	// Only need: 0xA0020000 - 0xA0028000, but set 0xA0020000 - 0XA0120000
-	MMU_TTSection(TTB_BASE, __get_CBAR(), 1, Sect_Device_RW);
+	// MMU_TTSection(TTB_BASE, __get_CBAR(), 1, Sect_Device_RW);
+
+	// Create (256 * 4k)=1MB faulting entries to cover private address space. Needs to be marked as Device memory
+	MMU_TTPage4k(TTB_BASE, __get_CBAR(), 256, Page_L1_4k, (uint32_t *)PRIVATE_TABLE_L2_BASE_4k, DESCRIPTOR_FAULT);
+	// Define private address space entry.
+	MMU_TTPage4k(TTB_BASE, __get_CBAR(), 8, Page_L1_4k, (uint32_t *)PRIVATE_TABLE_L2_BASE_4k, Page_4k_Device_RW);
 
 	// ARM Cortex-A Series Programmer's Guide v4.0, section 17.2.8:
 	// "use large MMU mappings (supersections or sections in preference to 4KB pages) as this reduces the cost of
