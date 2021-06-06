@@ -1,0 +1,680 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) STMicroelectronics 2017 - All Rights Reserved
+ * Author: Ludovic Barre <ludovic.barre@st.com> for STMicroelectronics.
+ */
+
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/soc/stm32-hdp.h>
+
+/ {
+	clocks {
+		clk_ext_camera: clk-ext-camera {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <24000000>;
+		};
+	};
+
+	joystick {
+		compatible = "gpio-keys";
+		#size-cells = <0>;
+		pinctrl-0 = <&joystick_pins>;
+		pinctrl-names = "default";
+		button-0 {
+			label = "JoySel";
+			linux,code = <KEY_ENTER>;
+			interrupt-parent = <&stmfx_pinctrl>;
+			interrupts = <0 IRQ_TYPE_EDGE_RISING>;
+		};
+		button-1 {
+			label = "JoyDown";
+			linux,code = <KEY_DOWN>;
+			interrupt-parent = <&stmfx_pinctrl>;
+			interrupts = <1 IRQ_TYPE_EDGE_RISING>;
+		};
+		button-2 {
+			label = "JoyLeft";
+			linux,code = <KEY_LEFT>;
+			interrupt-parent = <&stmfx_pinctrl>;
+			interrupts = <2 IRQ_TYPE_EDGE_RISING>;
+		};
+		button-3 {
+			label = "JoyRight";
+			linux,code = <KEY_RIGHT>;
+			interrupt-parent = <&stmfx_pinctrl>;
+			interrupts = <3 IRQ_TYPE_EDGE_RISING>;
+		};
+		button-4 {
+			label = "JoyUp";
+			linux,code = <KEY_UP>;
+			interrupt-parent = <&stmfx_pinctrl>;
+			interrupts = <4 IRQ_TYPE_EDGE_RISING>;
+		};
+	};
+
+	panel_backlight: panel-backlight {
+		compatible = "gpio-backlight";
+		gpios = <&gpiod 13 GPIO_ACTIVE_LOW>;
+		default-on;
+		status = "okay";
+	};
+
+	spdif_out: spdif-out {
+		#sound-dai-cells = <0>;
+		compatible = "linux,spdif-dit";
+		status = "okay";
+
+		spdif_out_port: port {
+			spdif_out_endpoint: endpoint {
+				remote-endpoint = <&sai4a_endpoint>;
+			};
+		};
+	};
+
+	spdif_in: spdif-in {
+		#sound-dai-cells = <0>;
+		compatible = "linux,spdif-dir";
+		status = "okay";
+
+		spdif_in_port: port {
+			spdif_in_endpoint: endpoint {
+				remote-endpoint = <&spdifrx_endpoint>;
+			};
+		};
+	};
+
+	sound {
+		compatible = "audio-graph-card";
+		label = "STM32MP1-EV";
+		routing =
+			"AIF1CLK" , "MCLK1",
+			"AIF2CLK" , "MCLK1",
+			"IN1LN" , "MICBIAS2",
+			"DMIC2DAT" , "MICBIAS1",
+			"DMIC1DAT" , "MICBIAS1";
+		dais = <&sai2a_port &sai2b_port &sai4a_port &spdifrx_port
+			&dfsdm0_port &dfsdm1_port &dfsdm2_port &dfsdm3_port>;
+		status = "okay";
+	};
+
+	dmic0: dmic-0 {
+		compatible = "dmic-codec";
+		#sound-dai-cells = <1>;
+		sound-name-prefix = "dmic0";
+		status = "okay";
+
+		port {
+			dmic0_endpoint: endpoint {
+				remote-endpoint = <&dfsdm_endpoint0>;
+			};
+		};
+	};
+
+	dmic1: dmic-1 {
+		compatible = "dmic-codec";
+		#sound-dai-cells = <1>;
+		sound-name-prefix = "dmic1";
+		status = "okay";
+
+		port {
+			dmic1_endpoint: endpoint {
+				remote-endpoint = <&dfsdm_endpoint1>;
+			};
+		};
+	};
+
+	dmic2: dmic-2 {
+		compatible = "dmic-codec";
+		#sound-dai-cells = <1>;
+		sound-name-prefix = "dmic2";
+		status = "okay";
+
+		port {
+			dmic2_endpoint: endpoint {
+				remote-endpoint = <&dfsdm_endpoint2>;
+			};
+		};
+	};
+
+	dmic3: dmic-3 {
+		compatible = "dmic-codec";
+		#sound-dai-cells = <1>;
+		sound-name-prefix = "dmic3";
+		status = "okay";
+
+		port {
+			dmic3_endpoint: endpoint {
+				remote-endpoint = <&dfsdm_endpoint3>;
+			};
+		};
+	};
+
+	usb_phy_tuning: usb-phy-tuning {
+		st,hs-dc-level = <2>;
+		st,fs-rftime-tuning;
+		st,hs-rftime-reduction;
+		st,hs-current-trim = <15>;
+		st,hs-impedance-trim = <1>;
+		st,squelch-level = <3>;
+		st,hs-rx-offset = <2>;
+		st,no-lsfs-sc;
+	};
+};
+
+&cec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cec_pins_a>;
+	status = "okay";
+};
+
+&dcmi {
+	status = "okay";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&dcmi_pins_a>;
+	pinctrl-1 = <&dcmi_sleep_pins_a>;
+
+	port {
+		dcmi_0: endpoint {
+			remote-endpoint = <&ov5640_0>;
+			bus-width = <8>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			pclk-sample = <1>;
+			pclk-max-frequency = <77000000>;
+		};
+	};
+};
+
+&dfsdm {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&dfsdm_clkout_pins_a
+		     &dfsdm_data1_pins_a &dfsdm_data3_pins_a>;
+	pinctrl-1 = <&dfsdm_clkout_sleep_pins_a
+		     &dfsdm_data1_sleep_pins_a &dfsdm_data3_sleep_pins_a>;
+	spi-max-frequency = <2048000>;
+
+	clocks = <&rcc DFSDM_K>, <&rcc ADFSDM_K>;
+	clock-names = "dfsdm", "audio";
+	status = "okay";
+
+	dfsdm0: filter@0 {
+		compatible = "st,stm32-dfsdm-dmic";
+		st,adc-channels = <3>;
+		st,adc-channel-names = "dmic_u1";
+		st,adc-channel-types = "SPI_R";
+		st,adc-channel-clk-src = "CLKOUT";
+		st,filter-order = <3>;
+		status = "okay";
+
+		asoc_pdm0: dfsdm-dai {
+			compatible = "st,stm32h7-dfsdm-dai";
+			#sound-dai-cells = <0>;
+			io-channels = <&dfsdm0 0>;
+			status = "okay";
+
+			dfsdm0_port: port {
+				dfsdm_endpoint0: endpoint {
+					remote-endpoint = <&dmic0_endpoint>;
+				};
+			};
+		};
+	};
+
+	dfsdm1: filter@1 {
+		compatible = "st,stm32-dfsdm-dmic";
+		st,adc-channels = <1>;
+		st,adc-channel-names = "dmic_u2";
+		st,adc-channel-types = "SPI_F";
+		st,adc-channel-clk-src = "CLKOUT";
+		st,filter-order = <3>;
+		status = "okay";
+
+		asoc_pdm1: dfsdm-dai {
+			compatible = "st,stm32h7-dfsdm-dai";
+			#sound-dai-cells = <0>;
+			io-channels = <&dfsdm1 0>;
+			status = "okay";
+
+			dfsdm1_port: port {
+				dfsdm_endpoint1: endpoint {
+					remote-endpoint = <&dmic1_endpoint>;
+				};
+			};
+		};
+	};
+
+	dfsdm2: filter@2 {
+		compatible = "st,stm32-dfsdm-dmic";
+		st,adc-channels = <3>;
+		st,adc-channel-names = "dmic_u3";
+		st,adc-channel-types = "SPI_F";
+		st,adc-channel-clk-src = "CLKOUT";
+		st,filter-order = <3>;
+		status = "okay";
+
+		asoc_pdm2: dfsdm-dai {
+			compatible = "st,stm32h7-dfsdm-dai";
+			#sound-dai-cells = <0>;
+			io-channels = <&dfsdm2 0>;
+			status = "okay";
+
+			dfsdm2_port: port {
+				dfsdm_endpoint2: endpoint {
+					remote-endpoint = <&dmic2_endpoint>;
+				};
+			};
+		};
+	};
+
+	dfsdm3: filter@3 {
+		compatible = "st,stm32-dfsdm-dmic";
+		st,adc-channels = <1>;
+		st,adc-channel-names = "dmic_u4";
+		st,adc-channel-types = "SPI_R";
+		st,adc-channel-clk-src = "CLKOUT";
+		st,filter-order = <3>;
+		status = "okay";
+
+		asoc_pdm3: dfsdm-dai {
+			compatible = "st,stm32h7-dfsdm-dai";
+			#sound-dai-cells = <0>;
+			io-channels = <&dfsdm3 0>;
+			status = "okay";
+
+			dfsdm3_port: port {
+				dfsdm_endpoint3: endpoint {
+					remote-endpoint = <&dmic3_endpoint>;
+				};
+			};
+		};
+	};
+};
+
+&ethernet0 {
+	status = "okay";
+	pinctrl-0 = <&ethernet0_rgmii_pins_a>;
+	pinctrl-1 = <&ethernet0_rgmii_pins_sleep_a>;
+	pinctrl-names = "default", "sleep";
+	phy-mode = "rgmii-id";
+	max-speed = <1000>;
+	phy-handle = <&phy0>;
+
+	mdio0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dwmac-mdio";
+		phy0: ethernet-phy@0 {
+			reg = <0>;
+		};
+	};
+};
+
+&fmc {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&fmc_pins_a>;
+	pinctrl-1 = <&fmc_sleep_pins_a>;
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nand@0 {
+		reg = <0>;
+		nand-on-flash-bbt;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
+&hdp {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&hdp0_pins_a &hdp6_pins_a &hdp7_pins_a>;
+	pinctrl-1 = <&hdp0_pins_sleep_a &hdp6_pins_sleep_a &hdp7_pins_sleep_a>;
+	status = "disabled";
+
+	muxing-hdp = <(STM32_HDP(0, HDP0_GPOVAL_0) |
+		       STM32_HDP(6, HDP6_GPOVAL_6) |
+		       STM32_HDP(7, HDP7_GPOVAL_7))>;
+};
+
+&i2c2 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&i2c2_pins_a>;
+	pinctrl-1 = <&i2c2_pins_sleep_a>;
+	i2c-scl-rising-time-ns = <185>;
+	i2c-scl-falling-time-ns = <20>;
+	status = "okay";
+	/delete-property/dmas;
+	/delete-property/dma-names;
+
+	wm8994: wm8994@1b {
+		compatible = "wlf,wm8994";
+		#sound-dai-cells = <0>;
+		reg = <0x1b>;
+		status = "okay";
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		DBVDD-supply = <&vdd>;
+		SPKVDD1-supply = <&vdd>;
+		SPKVDD2-supply = <&vdd>;
+		AVDD2-supply = <&v1v8>;
+		CPVDD-supply = <&v1v8>;
+
+		wlf,ldoena-always-driven;
+
+		clocks = <&sai2a>;
+		clock-names = "MCLK1";
+
+		wlf,gpio-cfg = <0x8101 0xa100 0xa100 0xa100 0xa101 0xa101 0xa100 0xa101 0xa101 0xa101 0xa101>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			wm8994_tx_port: port@0 {
+				reg = <0>;
+				wm8994_tx_endpoint: endpoint {
+					remote-endpoint = <&sai2a_endpoint>;
+				};
+			};
+
+			wm8994_rx_port: port@1 {
+				reg = <1>;
+				wm8994_rx_endpoint: endpoint {
+					remote-endpoint = <&sai2b_endpoint>;
+				};
+			};
+		};
+	};
+
+	ov5640: camera@3c {
+		compatible = "ovti,ov5640";
+		reg = <0x3c>;
+		clocks = <&clk_ext_camera>;
+		clock-names = "xclk";
+		DOVDD-supply = <&v2v8>;
+		powerdown-gpios = <&stmfx_pinctrl 18 (GPIO_ACTIVE_HIGH | GPIO_PUSH_PULL)>;
+		reset-gpios = <&stmfx_pinctrl 19 (GPIO_ACTIVE_LOW | GPIO_PUSH_PULL)>;
+		rotation = <180>;
+		status = "okay";
+
+		port {
+			ov5640_0: endpoint {
+				remote-endpoint = <&dcmi_0>;
+				bus-width = <8>;
+				data-shift = <2>; /* lines 9:2 are used */
+				hsync-active = <0>;
+				vsync-active = <0>;
+				pclk-sample = <1>;
+				pclk-max-frequency = <77000000>;
+			};
+		};
+	};
+
+	stmfx: stmfx@42 {
+		compatible = "st,stmfx-0300";
+		reg = <0x42>;
+		interrupts = <8 IRQ_TYPE_EDGE_RISING>;
+		interrupt-parent = <&gpioi>;
+		vdd-supply = <&v3v3>;
+
+		stmfx_pinctrl: stmfx-pin-controller {
+			compatible = "st,stmfx-0300-pinctrl";
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			gpio-ranges = <&stmfx_pinctrl 0 0 24>;
+
+			goodix_pins: goodix {
+				pins = "gpio14";
+				bias-pull-down;
+			};
+
+			joystick_pins: joystick {
+				pins = "gpio0", "gpio1", "gpio2", "gpio3", "gpio4";
+				bias-pull-down;
+			};
+		};
+	};
+};
+
+&i2c4 {
+	pmic: stpmic@33 {
+		regulators {
+			v1v8: ldo6 {
+				regulator-enable-ramp-delay = <300000>;
+			};
+		};
+	};
+};
+
+&i2c5 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&i2c5_pins_a>;
+	pinctrl-1 = <&i2c5_pins_sleep_a>;
+	i2c-scl-rising-time-ns = <185>;
+	i2c-scl-falling-time-ns = <20>;
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "okay";
+};
+
+&ltdc {
+	status = "okay";
+
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ltdc_ep0_out: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&dsi_in>;
+		};
+	};
+};
+
+&qspi {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qspi_clk_pins_a &qspi_bk1_pins_a &qspi_bk2_pins_a>;
+	pinctrl-1 = <&qspi_clk_sleep_pins_a &qspi_bk1_sleep_pins_a &qspi_bk2_sleep_pins_a>;
+	reg = <0x58003000 0x1000>, <0x70000000 0x4000000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	flash0: mx66l51235l@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <108000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+
+	flash1: mx66l51235l@1 {
+		compatible = "jedec,spi-nor";
+		reg = <1>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <108000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
+&sai2 {
+	clocks = <&rcc SAI2>, <&rcc PLL3_Q>, <&rcc PLL3_R>;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sai2a_pins_a>, <&sai2b_pins_a>;
+	pinctrl-1 = <&sai2a_sleep_pins_a>, <&sai2b_sleep_pins_a>;
+	clock-names = "pclk", "x8k", "x11k";
+	status = "okay";
+
+	sai2a: audio-controller@4400b004 {
+		#clock-cells = <0>;
+		dma-names = "tx";
+		clocks = <&rcc SAI2_K>;
+		clock-names = "sai_ck";
+		status = "okay";
+
+		sai2a_port: port {
+			sai2a_endpoint: endpoint {
+				remote-endpoint = <&wm8994_tx_endpoint>;
+				format = "i2s";
+				mclk-fs = <256>;
+			};
+		};
+	};
+
+	sai2b: audio-controller@4400b024 {
+		dma-names = "rx";
+		clocks = <&rcc SAI2_K>, <&sai2a>;
+		clock-names = "sai_ck", "MCLK";
+		status = "okay";
+
+		sai2b_port: port {
+			sai2b_endpoint: endpoint {
+				remote-endpoint = <&wm8994_rx_endpoint>;
+				format = "i2s";
+				mclk-fs = <256>;
+			};
+		};
+	};
+};
+
+&sai4 {
+	clocks = <&rcc SAI4>, <&rcc PLL3_Q>, <&rcc PLL3_R>;
+	clock-names = "pclk", "x8k", "x11k";
+	status = "okay";
+
+	sai4a: audio-controller@50027004 {
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&sai4a_pins_a>;
+		pinctrl-1 = <&sai4a_sleep_pins_a>;
+		dma-names = "tx";
+		clocks = <&rcc SAI4_K>;
+		clock-names = "sai_ck";
+		st,iec60958;
+		status = "okay";
+
+		sai4a_port: port {
+			sai4a_endpoint: endpoint {
+				remote-endpoint = <&spdif_out_endpoint>;
+			};
+		};
+	};
+};
+
+&sdmmc3 {
+	pinctrl-names = "default", "opendrain", "sleep";
+	pinctrl-0 = <&sdmmc3_b4_pins_a>;
+	pinctrl-1 = <&sdmmc3_b4_od_pins_a>;
+	pinctrl-2 = <&sdmmc3_b4_sleep_pins_a>;
+	vmmc-supply = <&v3v3>;
+	broken-cd;
+	st,neg-edge;
+	bus-width = <4>;
+	status = "disabled";
+};
+
+&spdifrx {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&spdifrx_pins_a>;
+	pinctrl-1 = <&spdifrx_sleep_pins_a>;
+	status = "okay";
+
+	spdifrx_port: port {
+		spdifrx_endpoint: endpoint {
+			remote-endpoint = <&spdif_in_endpoint>;
+		};
+	};
+};
+
+&spi1 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&spi1_pins_a>;
+	pinctrl-1 = <&spi1_sleep_pins_a>;
+	status = "disabled";
+};
+
+&timers2 {
+	/* spare dmas for other usage (un-delete to enable pwm capture) */
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "disabled";
+	pwm {
+		pinctrl-0 = <&pwm2_pins_a>;
+		pinctrl-1 = <&pwm2_sleep_pins_a>;
+		pinctrl-names = "default", "sleep";
+		status = "okay";
+	};
+	timer@1 {
+		status = "okay";
+	};
+};
+
+&timers8 {
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "disabled";
+	pwm {
+		pinctrl-0 = <&pwm8_pins_a>;
+		pinctrl-1 = <&pwm8_sleep_pins_a>;
+		pinctrl-names = "default", "sleep";
+		status = "okay";
+	};
+	timer@7 {
+		status = "okay";
+	};
+};
+
+&timers12 {
+	/delete-property/dmas;
+	/delete-property/dma-names;
+	status = "disabled";
+	pwm {
+		pinctrl-0 = <&pwm12_pins_a>;
+		pinctrl-1 = <&pwm12_sleep_pins_a>;
+		pinctrl-names = "default", "sleep";
+		status = "okay";
+	};
+	timer@11 {
+		status = "okay";
+	};
+};
+
+&usart3 {
+	pinctrl-names = "default", "sleep", "idle";
+	pinctrl-0 = <&usart3_pins_a>;
+	pinctrl-1 = <&usart3_sleep_pins_a>;
+	pinctrl-2 = <&usart3_idle_pins_a>;
+	uart-has-rtscts;
+	status = "disabled";
+};
+
+&usbh_ehci {
+	phys = <&usbphyc_port0>;
+	status = "okay";
+};
+
+&usbotg_hs {
+	pinctrl-0 = <&usbotg_hs_pins_a>;
+	pinctrl-names = "default";
+	phys = <&usbphyc_port1 0>;
+	phy-names = "usb2-phy";
+	status = "okay";
+};
+
+&usbphyc {
+	status = "okay";
+};
+
+&usbphyc_port0 {
+	st,phy-tuning = <&usb_phy_tuning>;
+};
+
+&usbphyc_port1 {
+	st,phy-tuning = <&usb_phy_tuning>;
+};

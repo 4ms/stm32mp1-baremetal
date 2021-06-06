@@ -1,0 +1,7 @@
+OCTAVO osd32mp1-brk BOARD
+M:	Martin Lesniak <martin.lesniak@st.com>
+S:	Maintained
+F:	arch/arm/dts/stm32mp157c-osd32mp1-brk*
+F:	board/Octavo/osd32mp1-brk/
+F:	configs/osd32mp1_brk_trusted_defconfig
+F:	include/configs/stm32mp1.h

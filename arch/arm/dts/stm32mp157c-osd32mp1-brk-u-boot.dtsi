@@ -1,0 +1,203 @@
+/* SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause*/
+/*
+ * Copyright (C) 2020, Octavo Systems LLC - All Rights Reserved
+ */
+
+/* For more information on Device Tree configuration, please refer to
+ * https://wiki.st.com/stm32mpu/wiki/Category:Device_tree_configuration
+ */
+
+#include <dt-bindings/clock/stm32mp1-clksrc.h>
+#include "stm32mp15-osd32mp1-ddr3-1x4Gb.dtsi"
+
+#include "stm32mp15-u-boot.dtsi"
+#include "stm32mp15-ddr.dtsi"
+
+
+/ {
+
+	aliases{
+		i2c0 = &i2c4;
+		mmc0 = &sdmmc1;
+		usb0 = &usbotg_hs;
+	};
+
+	config{
+		u-boot,boot-led = "LED2_GRN";
+		u-boot,error-led = "LED2_RED";
+		u-boot,mmc-env-partition = "ssbl";
+		st,stm32prog-gpios = <&gpiod 9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	};
+
+	clocks {
+		u-boot,dm-pre-reloc;
+
+#ifndef CONFIG_STM32MP1_TRUSTED
+		clk_lsi: clk-lsi {
+			u-boot,dm-pre-reloc;
+		};
+		clk_hsi: clk-hsi {
+			u-boot,dm-pre-reloc;
+		};
+		clk_csi: clk-csi {
+			u-boot,dm-pre-reloc;
+			status = "disabled";
+		};
+		clk_lse: clk-lse {
+			u-boot,dm-pre-reloc;
+			st,drive = < LSEDRV_MEDIUM_HIGH >;
+		};
+		clk_hse: clk-hse {
+			u-boot,dm-pre-reloc;
+			st,digbypass;
+		};
+#endif	/*CONFIG_STM32MP1_TRUSTED*/
+	};
+
+}; /*root*/
+
+#ifndef CONFIG_STM32MP1_TRUSTED
+
+&rcc {
+	u-boot,dm-pre-reloc;
+	st,clksrc = <
+		CLK_MPU_PLL1P
+		CLK_AXI_PLL2P
+		CLK_MCU_PLL3P
+		CLK_PLL12_HSE
+		CLK_PLL3_HSE
+		CLK_PLL4_HSE
+		CLK_RTC_LSE
+		CLK_MCO1_DISABLED
+		CLK_MCO2_DISABLED
+	>;
+	st,clkdiv = <
+		1 		/*MPU*/
+		0 		/*AXI*/
+		0 		/*MCU*/
+		1 		/*APB1*/
+		1 		/*APB2*/
+		1 		/*APB3*/
+		1 		/*APB4*/
+		2 		/*APB5*/
+		23 		/*RTC*/
+		0 		/*MCO1*/
+		0 		/*MCO2*/
+	>;
+	st,pkcs = <
+    CLK_CKPER_HSE
+    CLK_FMC_ACLK
+    CLK_QSPI_ACLK
+    CLK_ETH_DISABLED
+    CLK_SDMMC12_PLL4P
+    CLK_DSI_DSIPLL
+    CLK_STGEN_HSE
+    CLK_USBPHY_HSE
+    CLK_SPI2S1_PLL3Q
+    CLK_SPI2S23_PLL3Q
+    CLK_SPI45_HSI
+    CLK_SPI6_HSI
+    CLK_I2C46_HSI
+    CLK_SDMMC3_PLL4P
+    CLK_USBO_USBPHY
+    CLK_ADC_CKPER
+    CLK_CEC_LSE
+    CLK_I2C12_HSI
+    CLK_I2C35_HSI
+    CLK_UART1_HSI
+    CLK_UART24_HSI
+    CLK_UART35_HSI
+    CLK_UART6_HSI
+    CLK_UART78_HSI
+    CLK_SPDIF_PLL4P
+    CLK_FDCAN_PLL4R
+    CLK_SAI1_PLL3Q
+    CLK_SAI2_PLL3Q
+    CLK_SAI3_PLL3Q
+    CLK_SAI4_PLL3Q
+    CLK_RNG1_LSI
+    CLK_RNG2_LSI
+    CLK_LPTIM1_PCLK1
+    CLK_LPTIM23_PCLK3
+    CLK_LPTIM45_LSE
+	>;
+	pll2:st,pll@1 {
+		compatible = "st,stm32mp1-pll";
+		reg = <1>;
+		cfg = < 2 65 1 0 0 PQR(1,1,1) >;
+		frac = < 0x1400 >;
+		u-boot,dm-pre-reloc;
+	};
+	pll3:st,pll@2 {
+		compatible = "st,stm32mp1-pll";
+		reg = <2>;
+		cfg = < 1 33 1 16 36 PQR(1,1,1) >;
+		frac = < 0x1a04 >;
+		u-boot,dm-pre-reloc;
+	};
+	pll4:st,pll@3 {
+		compatible = "st,stm32mp1-pll";
+		reg = <3>;
+		cfg = < 3 98 5 7 7 PQR(1,1,1) >;
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&i2c4{
+	u-boot,dm-pre-reloc;
+};
+
+&sdmmc1{
+	u-boot,dm-pre-reloc;
+};
+
+#endif	/*CONFIG_STM32MP1_TRUSTED*/
+
+&cryp1{
+	u-boot,dm-pre-reloc;
+};
+
+&hash1{
+	u-boot,dm-pre-reloc;
+};
+
+&uart4{
+	u-boot,dm-pre-reloc;
+};
+
+&usbotg_hs{
+	u-boot,dm-pre-reloc;
+	u-boot,force-b-session-valid;
+	hnp-srp-disable;
+	dr_mode = "peripheral";
+};
+
+&usbphyc{
+	u-boot,dm-pre-reloc;
+};
+
+&usbphyc_port0{
+	u-boot,dm-pre-reloc;
+};
+
+&usbphyc_port1{
+	u-boot,dm-pre-reloc;
+};
+
+&adc{
+	status = "okay";
+};
+
+#ifndef CONFIG_STM32MP1_TRUSTED
+&i2s2{
+	clocks = <&rcc SPI2>, <&rcc SPI2_K>, <&rcc PLL3_Q>, <&rcc PLL3_R>;
+};
+
+&pmic{
+	u-boot,dm-pre-reloc;
+};
+
+&sai2{
+	clocks = <&rcc SAI2>, <&rcc PLL3_Q>, <&rcc PLL3_R>;
+};
+#endif /*CONFIG_STM32MP1_TRUSTED*/

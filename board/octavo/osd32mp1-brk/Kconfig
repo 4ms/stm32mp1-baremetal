@@ -1,0 +1,13 @@
+if TARGET_OCTAVO_OSD32MP1_BRK
+
+config SYS_BOARD
+	default "osd32mp1-brk"
+
+config SYS_VENDOR
+	default "octavo"
+
+config SYS_CONFIG_NAME
+	default "stm32mp1"
+
+source "board/st/common/Kconfig"
+endif
