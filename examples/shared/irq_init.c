@@ -27,8 +27,6 @@ int32_t IRQ_Initialize(void)
 	} while (x >= 0 && x < num_irq);
 
 	for (unsigned i = 32; i < num_irq; i++) {
-		// if (i == 0x62)
-		// 	__BKPT();
 		int act_pend = GIC_GetIRQStatus(i);
 		int active = (act_pend & 0b10) >> 1;
 		int pending = act_pend & 0b01;

@@ -1,35 +1,10 @@
-BINARYNAME = main
-BUILDDIR = build
 OBJDIR = $(BUILDDIR)/obj
 UIMAGENAME = $(BUILDDIR)/a7-main.uimg
 LOADADDR 	= 0xC2000040
 ENTRYPOINT 	= 0xC2000040
 
-STARTUP = startup.s
-LINKSCR = linkscript.ld
-
-UBOOTDIR = ../u-boot/build
-LIBDIR = ../lib
-
-SOURCES = $(STARTUP) \
-		  main.c \
-		  new.cc \
-		  interrupt.cc \
-		  $(LIBDIR)/system/irq_ctrl.c \
-		  $(LIBDIR)/system/libc_stub.c \
-		  $(LIBDIR)/system/libcpp_stub.cc \
-		  $(LIBDIR)/system/system_ca7.c \
-		  $(LIBDIR)/system/mmu_ca7.c \
-
 OBJECTS   = $(addprefix $(OBJDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
 DEPS   	  = $(addprefix $(OBJDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
-
-INCLUDES = -I. \
-		   -I$(LIBDIR)/STM32MP1xx_HAL_Driver/Inc \
-		   -I$(LIBDIR)/CMSIS/Core_A/Include \
-		   -I$(LIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
-		   -I$(LIBDIR)/mdrivlib \
-		   -I$(LIBDIR)\
 
 MCU =  -mcpu=cortex-a7 -march=armv7ve -mfpu=neon-vfpv4 -mlittle-endian -mfloat-abi=hard
 
@@ -50,7 +25,8 @@ CFLAGS = -g2 \
 		 -fdata-sections -ffunction-sections \
 		 -nostartfiles \
 		 -nostdlib \
-		 -ffreestanding
+		 -ffreestanding \
+		 $(EXTRACFLAGS)\
 
 CXXFLAGS = $(CFLAGS) \
 		-std=c++2a \
@@ -62,7 +38,7 @@ CXXFLAGS = $(CFLAGS) \
 		-Werror=return-type \
 		-Wdouble-promotion \
 		-Wno-register \
-
+		 $(EXTRACXXFLAGS) \
 
 LFLAGS = -Wl,--gc-sections \
 	-Wl,-Map,$(BUILDDIR)/$(BINARYNAME).map,--cref \
@@ -70,7 +46,8 @@ LFLAGS = -Wl,--gc-sections \
 	-T $(LINKSCR) \
 	-nostdlib \
 	-nostartfiles \
-	-ffreestanding
+	-ffreestanding \
+	$(EXTRALDFLAGS) \
 
 DEPFLAGS = -MMD -MP -MF $(OBJDIR)/$(basename $<).d
 

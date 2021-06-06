@@ -28,7 +28,7 @@ public:
 		ISRs[irqnum] = std::move(func);
 	}
 
-	static inline void callISR(uint32_t irqnum)
+	static void callISR(uint32_t irqnum)
 	{
 		ISRs[irqnum]();
 	}
@@ -36,7 +36,7 @@ public:
 	// Sets a default handler for all ISRs.
 	// This could be done for debug builds, to point to debug breakpoint
 	// Copies the provided func, so a function pointer is recommended
-	static inline void SetDefaultISR(ISRType func)
+	static void SetDefaultISR(ISRType func)
 	{
 		for (uint32_t i = 0; i < NumISRs; i++)
 			ISRs[i] = func;

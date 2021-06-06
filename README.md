@@ -1,28 +1,67 @@
-# STM32MP1 Cortex-A7 baremetal basic project
+# STM32MP1 Cortex-A7 baremetal example projects
 
-This is a set of template projects for baremetal applications on the Cortex A7
-core of an STM32MP1 microprocessor. It also is a useful introduction to what's
-needed for a baremetal Cortex-A7 application.
+This is a set of example and template projects for bare-metal applications
+on the STM32MP15x Cortex-A7 microprocessor. Why the STM32MP1?Since there are lots of projects
+and tutorials about bare-metal Cortex-M applications, the projects highlight what's
+different between the Cortex-A and Cortex-M processors. I hope this also
+serves as a basic introduction to bare-metal real-time Cortex-A7
+applications. Most of the code is in modern C++, with some assembly thrown in
+there where needed.
+
+I am actively refining and adding new example projects to this. If you want to
+see something, please ask! (open a github issue)
+
+My intended audience is people who have some familiarity with the ARM Cortex-M
+series, or perhaps ATMEGA series, or other microcontrollers. You should be
+comfortable with the concepts of interrupts, stacks, HAL, etc. If not, you'll
+need to brush up on microcontroller fundamentals before proceeding.
+
+
+Here's what's inside:
+
+  * **Minimal Boot**: Hello World project to prove the bootloader and your hardware is working.
+  * **Ctest**: Demonstrates the startup code for a C/C++ project: setting up the stack, initializing globals, etc.
+  * **Basic IRQ**: Basic interrupt handling with the A7's Generic Interrupt Controller.
+  * **Nested IRQ**: More sophisticed interrupt handling: interrupts interrupting interrupts! (and using lambdas as handlers!)
+  * **Multicore_a7**: Demonstrates running both A7 cores in parallel.
+  * **Copro_rproc**: Using the rproc feature of U-boot to load and run firmware on the M4 core in parallel with the A7 core.
+  * **Copro_embedded**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
+  * **STM32Cube HAL**: [TODO] demonstrates using ST's HAL.
+  * **Audio Processor**: [TODO] not a simple example, but a real-world practical project that uses all of the above features to create an audio effect.
 
 ## Motivation
 There are plenty of resources for using a Cortex-A with Linux. Why am I using it
 for a bare-metal project? The answer is simple: real-time audio processing.
-Lots of fast RAM and a fast processor make this a great platform for real-time
-processing, but everything I've read about Cortex-A series chips say they're
-not for real-time systems. Why not? I wanted to find out if it can be done
-(whether it _should_ be done is another question!) And so far, the answer is
-yes: you can use a Cortex-A as a powerful real-time processor (but it's not
-easy, and of course you don't get all the benefits of having Linux.)
+Lots of fast RAM and two fast processors (plus an M4 coprocessor) make
+this a great platform for real-time processing. But everything I've read about
+Cortex-A series chips say they're not for real-time systems. Why not? I wanted
+to find out...  And what I've discovered is that yes, you can use a Cortex-A as
+a powerful real-time processor (but it's not trivial, and of course you don't
+get all the awesome benefits of having Linux.) If you just need raw power and
+are comfortable with bare-metal programming (that is, not using an OS or even
+an RTOS), then hopefully these example projects can be a good foundation for
+your first Cortex-A bare-metal project.
 
-The STM32MP157 is a powerful chip, with two Cortex-A cores running at 650MHz,
-L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite of
-peripherals. There's a large gap between this and the next chip down in ST's
+The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz or
+800MHz, L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite
+of peripherals. There's a large gap between this and the next chip down in ST's
 lineup: the STM32H755, which is has two cores (480MHz M7 + 240MHz M4) and can
-only use SDRAM at 143MHz, which is terribly slow.
+only use SDRAM at 143MHz, which can be painfully slow for algorithms that
+perform a lot of reads and writes to memory (e.g.  reverb).
+
+The peripherals on the STM32MP1 are often identical to the peripherals on ST's
+Cortex-M7 chips such as the STM32H750 or H743. That means once you have the
+basic bare-metal framework up and running on the Cortex-A7, you may be able to
+just run your M7 project and all the I2C, SPI, SAI, UART, GPIO, etc will "just work".
 
 ## Overview
 
-The project has three parts: bootloaders in `u-boot/` helper scripts in
+Each project is meant to demonstrate a simple idea with as few dependencies as
+possible. The CMSIS device header for the STM32MP157 chip is used as the HAL
+(except for projects demonstrating the use of ST's Cube HAL, obviously). U-boot
+is used for the bootloader (don't worry if you're not familiar with U-boot!)
+
+The project has three parts: bootloader in `u-boot/` helper scripts in
 `scripts/` and the rest of the directories are example projects (`ctest/`,
 `minimal_boot/`, `nested_irq/`) and library code shared between projects
 (`lib/`)

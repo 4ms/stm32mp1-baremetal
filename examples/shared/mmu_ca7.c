@@ -27,23 +27,6 @@
  * limitations under the License.
  */
 
-// Note: You should use the Shareable attribute carefully.
-// For cores without coherency logic (such as SCU) marking a region as shareable forces the processor to not cache that
-// region regardless of the inner cache settings. Cortex-A versions of RTX use LDREX/STREX instructions relying on Local
-// monitors. Local monitors will be used only when the region gets cached, regions that are not cached will use the
-// Global Monitor. Some Cortex-A implementations do not include Global Monitors, so wrongly setting the attribute
-// Shareable may cause STREX to fail.
-
-// Recall: When the Shareable attribute is applied to a memory region that is not Write-Back, Normal memory, data held
-// in this region is treated as Non-cacheable. When SMP bit = 0, Inner WB/WA Cacheable Shareable attributes are treated
-// as Non-cacheable. When SMP bit = 1, Inner WB/WA Cacheable Shareable attributes are treated as Cacheable.
-
-// Following MMU configuration is expected
-// SCTLR.AFE == 1 (Simplified access permissions model - AP[2:1] define access permissions, AP[0] is an access flag)
-// SCTLR.TRE == 0 (TEX remap disabled, so memory type and attributes are described directly by bits in the descriptor)
-// Domain 0 is always the Client domain
-// Descriptors should place all memory in domain 0
-
 #include "stm32mp157cxx_ca7.h"
 
 // Todo: use values from the linker script, don't redefine here
@@ -84,9 +67,10 @@
 #define TTB_L1_SIZE (0x00004000)
 #define TTB_L2_SIZE (0x00000400)
 
-//"Private" peripherals is just the GIC on STM32MP15x
+//"Private" peripherals is the GIC on STM32MP15x
 #define PRIVATE_TABLE_L2_BASE_4k (__TTB_BASE + TTB_L1_SIZE)
-#define M4_VECTORS_TABLE_L2_BASE_64K (__TTB_BASE + TTB_L1_SIZE + 0x400) // Map 64k
+
+/* #define M4_VECTORS_TABLE_L2_BASE_64K (__TTB_BASE + TTB_L1_SIZE + 0x400) // Map 64k */
 
 static uint32_t Sect_Normal;	 // outer & inner wb/wa, non-shareable, executable, rw, domain 0, base addr 0
 static uint32_t Sect_Normal_Cod; // outer & inner wb/wa, non-shareable, executable, ro, domain 0, base addr 0
@@ -116,11 +100,16 @@ void MMU_CreateTranslationTable(void)
 	page64k_device_rw(Page_L1_64k, Page_64k_Device_RW, region);
 	page4k_device_rw(Page_L1_4k, Page_4k_Device_RW, region);
 
-	// Set access and cache for 1MB sections:
+	// Note from DG:
+	// ARM Cortex-A Series Programmer's Guide v4.0, section 17.2.8:
+	// "use large MMU mappings (supersections or sections in preference to 4KB pages) as this reduces the cost of
+	// individual translation table walks"
+	// So we use 1MB sections a lot here.
 
-	// ROM should be Sect_Normal_Cod (RO), but that seems to interere with debugger loading an elf file
-	// Setting it to Normal works better
-	// Todo: Investigate this!
+	// Note from DG:
+	// ROM should be Sect_Normal_Cod (RO), but that seems to interfere with SWD/JTAG debugger loading an elf file
+	// Setting it to Normal works better. This shouldn't matter when U-boot loads the firmware.
+	// Todo: Investigate why this is!
 	MMU_TTSection(TTB_BASE, __ROM_BASE, __ROM_SIZE / 0x100000, Sect_Normal);
 
 	// RAM is RW, cacheable
@@ -132,43 +121,25 @@ void MMU_CreateTranslationTable(void)
 	// It's actually is only 384kB, but we can set the whole 1MB section
 	MMU_TTSection(TTB_BASE, A7_SRAM1_BASE, 1, Sect_Device_RW);
 
-	// Peripheral memory
+	// Peripheral memory. Again, the actual peripherals use  only bits of pieces of the address spaces
 	MMU_TTSection(TTB_BASE, 0x40000000, 0x10000000 / 0x100000, Sect_Device_RW);
 	MMU_TTSection(TTB_BASE, 0x50000000, 0x10000000 / 0x100000, Sect_Device_RW);
 
 	// SYSRAM (256kB MCU RAM)
 	MMU_TTSection(TTB_BASE, A7_SYSRAM_1MB_SECTION_BASE, 1, Sect_Normal_RW);
 
-	// GIC
-	// Only need: 0xA0020000 - 0xA0028000, but set 0xA0020000 - 0XA0120000
-	// MMU_TTSection(TTB_BASE, __get_CBAR(), 1, Sect_Device_RW);
-
-	// Create (256 * 4k)=1MB faulting entries to cover private address space. Needs to be marked as Device memory
+	// GIC, aka "Private peripherals". Starts at the address returned by __get_CBAR()
+	// For no particular reason, we use 4kb pages here instead of a 1MB section. 
+	// Mostly I just wanted to document-by-example the process of using 4kb pages.
+	//
+	// Create (256 * 4k)=1MB faulting entries
 	MMU_TTPage4k(TTB_BASE, __get_CBAR(), 256, Page_L1_4k, (uint32_t *)PRIVATE_TABLE_L2_BASE_4k, DESCRIPTOR_FAULT);
-	// Define private address space entry.
+	// Define private address space entry. 8 pages of 4k each = 32k = 0x8000
 	MMU_TTPage4k(TTB_BASE, __get_CBAR(), 8, Page_L1_4k, (uint32_t *)PRIVATE_TABLE_L2_BASE_4k, Page_4k_Device_RW);
 
-	// ARM Cortex-A Series Programmer's Guide v4.0, section 17.2.8:
-	// "use large MMU mappings (supersections or sections in preference to 4KB pages) as this reduces the cost of
-	// individual translation table walks"
-
-	// But you may need to create 4k pages, so here how:
-	// First, create the 1M space (256 pages of 4k each = 1MB), and set it to Fault:
-	// Example here uses the top 1MB of the Heap
-	// MMU_TTPage4k(TTB_BASE, 0xDFF00000, 256, Page_L1_4k, (uint32_t *)SYNC_FLAGS_TABLE_L2_BASE_4k, DESCRIPTOR_FAULT);
-	// Then, set individual 4k pages to whatever memory type you want (Device_RW in this example:)
-	// MMU_TTPage4k(TTB_BASE, 0xDFFFF000, 1, Page_L1_4k, (uint32_t *)SYNC_FLAGS_TABLE_L2_BASE_4k, Page_4k_Device_RW);
-	//
+	// Co-processor vector table (Cortex-M4)
 	// From A7's perspective, the M4 vectors are at 0x38000000 (form M4's perspective, they're at 0x00000000)
 	MMU_TTSection(TTB_BASE, M4_VECTORS_BASE, 1, Sect_Device_RW);
-
-	// Create (16 * 64k)=1MB faulting entries
-	/* MMU_TTPage64k( */
-	/* 	TTB_BASE, M4_VECTORS_BASE, 16, Page_L1_64k, (uint32_t *)M4_VECTORS_TABLE_L2_BASE_64K, DESCRIPTOR_FAULT); */
-
-	// Create one 64k RW entry
-	/* MMU_TTPage64k( */
-	/* 	TTB_BASE, M4_VECTORS_BASE, 1, Page_L1_64k, (uint32_t *)M4_VECTORS_TABLE_L2_BASE_64K, Page_64k_Device_RW); */
 
 	/* Set location of level 1 page table
 	; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
