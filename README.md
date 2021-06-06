@@ -130,9 +130,9 @@ export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`
 
 Build u-boot, putting the files in the build/ dir:
 ```
-scripts/build.sh
+scripts/build-u-boot.sh
 ```
-Ignore warnings about "format string is not a string literal" (TODO: patch u-boot to fix this)
+Ignore warnings about "format string is not a string literal" 
 
 Verify the output files were created:
 ```
