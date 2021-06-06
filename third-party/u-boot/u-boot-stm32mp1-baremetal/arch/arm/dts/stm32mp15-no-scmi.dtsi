@@ -1,0 +1,157 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) STMicroelectronics 2020 - All Rights Reserved
+ * Author: Gabriel Fernandez <gabriel.fernandez@st.com> for STMicroelectronics.
+ */
+
+/ {
+
+	clocks {
+		clk_hse: clk-hse {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <24000000>;
+		};
+
+		clk_hsi: clk-hsi {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <64000000>;
+		};
+
+		clk_lse: clk-lse {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <32768>;
+		};
+
+		clk_lsi: clk-lsi {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <32000>;
+		};
+
+		clk_csi: clk-csi {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <4000000>;
+		};
+	};
+
+	cpus {
+		cpu0: cpu@0 {
+			clocks = <&rcc CK_MPU>;
+		};
+
+		cpu1: cpu@1 {
+			clocks = <&rcc CK_MPU>;
+		};
+	};
+
+	soc {
+		m_can1: can@4400e000 {
+			clocks = <&rcc CK_HSE>, <&rcc FDCAN_K>;
+		};
+
+		m_can2: can@4400f000 {
+			clocks = <&rcc CK_HSE>, <&rcc FDCAN_K>;
+		};
+
+		cryp1: cryp@54001000 {
+			clocks = <&rcc CRYP1>;
+			resets = <&rcc CRYP1_R>;
+		};
+	};
+
+	mlahb {
+		m4_rproc: m4@10000000 {
+			resets = <&rcc MCU_R>;
+
+			m4_system_resources {
+				m4_cec: cec@40016000 {
+					clocks = <&rcc CEC_K>, <&rcc CK_LSE>;
+				};
+
+				m4_m_can1: can@4400e000 {
+					clocks = <&rcc CK_HSE>, <&rcc FDCAN_K>;
+				};
+
+				m4_m_can2: can@4400f000 {
+					clocks = <&rcc CK_HSE>, <&rcc FDCAN_K>;
+				};
+			};
+		};
+	};
+
+	firmware {
+		/delete-node/ scmi-0;
+		/delete-node/ scmi-1;
+	};
+	/delete-node/ sram@2ffff000;
+	/delete-node/ mailbox-0;
+	/delete-node/ mailbox-1;
+};
+
+&cec {
+	clocks = <&rcc CEC_K>, <&clk_lse>;
+};
+
+&ddrperfm {
+	clocks = <&rcc DDRPERFM>, <&rcc PLL2_R>;
+};
+
+&dsi {
+	clocks = <&rcc DSI_K>, <&clk_hse>, <&rcc DSI_PX>;
+};
+
+&gpioz {
+	clocks = <&rcc GPIOZ>;
+};
+
+&hash1 {
+	clocks = <&rcc HASH1>;
+	resets = <&rcc HASH1_R>;
+};
+
+&i2c4 {
+	clocks = <&rcc I2C4_K>;
+	resets = <&rcc I2C4_R>;
+};
+
+&i2c6 {
+	clocks = <&rcc I2C6_K>;
+	resets = <&rcc I2C6_R>;
+};
+
+&iwdg2 {
+	clocks = <&rcc IWDG2>, <&rcc CK_LSI>;
+};
+
+&mdma1 {
+	clocks = <&rcc MDMA>;
+	resets = <&rcc MDMA_R>;
+};
+
+&rcc {
+	compatible = "st,stm32mp1-rcc", "syscon";
+	clocks = <&clk_hse>, <&clk_hsi>, <&clk_csi>, <&clk_lse>, <&clk_lsi>;
+};
+
+&rng1 {
+	clocks = <&rcc RNG1_K>;
+	resets = <&rcc RNG1_R>;
+};
+
+&rtc {
+	clocks = <&rcc RTCAPB>, <&rcc RTC>;
+};
+
+&spi6 {
+	clocks = <&rcc SPI6_K>;
+	resets = <&rcc SPI6_R>;
+};
+
+&usart1 {
+	clocks = <&rcc USART1_K>;
+	resets = <&rcc USART1_R>;
+};

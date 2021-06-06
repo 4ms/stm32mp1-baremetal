@@ -1,0 +1,108 @@
+/* SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause) */
+/*
+ * Copyright (C) STMicroelectronics 2018 - All Rights Reserved
+ * Author: Roullier Christophe <christophe.roullier@st.com>
+ * for STMicroelectronics.
+ */
+
+#ifndef _DT_BINDINGS_STM32_HDP_H
+#define _DT_BINDINGS_STM32_HDP_H
+
+#define STM32_HDP(port, value) ((value) << ((port) * 4))
+
+/* define HDP Pins number*/
+#define HDP0_PWR_PWRWAKE_SYS			0
+#define HDP0_CM4_SLEEPDEEP			1
+#define HDP0_PWR_STDBY_WKUP			2
+#define HDP0_PWR_ENCOMP_VDDCORE			3
+#define HDP0_BSEC_OUT_SEC_NIDEN			4
+#define HDP0_RCC_CM4_SLEEPDEEP			6
+#define HDP0_GPU_DBG7				7
+#define HDP0_DDRCTRL_LP_REQ			8
+#define HDP0_PWR_DDR_RET_ENABLE_N		9
+#define HDP0_GPOVAL_0				15
+
+#define HDP1_PWR_PWRWAKE_MCU			0
+#define HDP1_CM4_HALTED				1
+#define HDP1_CA7_NAXIERRIRQ			2
+#define HDP1_PWR_OKIN_MR			3
+#define HDP1_BSEC_OUT_SEC_DBGEN			4
+#define HDP1_EXTI_SYS_WAKEUP			5
+#define HDP1_RCC_PWRDS_MPU			6
+#define HDP1_GPU_DBG6				7
+#define HDP1_DDRCTRL_DFI_CTRLUPD_REQ		8
+#define HDP1_DDRCTRL_CACTIVE_DDRC_ASR		9
+#define HDP1_GPOVAL_1				15
+
+#define HDP2_PWR_PWRWAKE_MPU			0
+#define HDP2_CM4_RXEV				1
+#define HDP2_CA7_NPMUIRQ1			2
+#define HDP2_CA7_NFIQOUT1			3
+#define HDP2_BSEC_IN_RSTCORE_N			4
+#define HDP2_EXTI_C2_WAKEUP			5
+#define HDP2_RCC_PWRDS_MCU			6
+#define HDP2_GPU_DBG5				7
+#define HDP2_DDRCTRL_DFI_INIT_COMPLETE		8
+#define HDP2_DDRCTRL_PERF_OP_IS_REFRESH		9
+#define HDP2_DDRCTRL_GSKP_DFI_LP_REQ		10
+#define HDP2_GPOVAL_2				15
+
+#define HDP3_PWR_SEL_VTH_VDD_CORE		0
+#define HDP3_CM4_TXEV				1
+#define HDP3_CA7_NPMUIRQ0			2
+#define HDP3_CA7_NFIQOUT0			3
+#define HDP3_BSEC_OUT_SEC_DFTLOCK		4
+#define HDP3_EXTI_C1_WAKEUP			5
+#define HDP3_RCC_PWRDS_SYS			6
+#define HDP3_GPU_DBG4				7
+#define HDP3_DDRCTRL_STAT_DDRC_REG_SELREF_TYPE0	8
+#define HDP3_DDRCTRL_CACTIVE_1			9
+#define HDP3_GPOVAL_3				15
+
+#define HDP4_PWR_PDDS				0
+#define HDP4_CM4_SLEEPING			1
+#define HDP4_CA7_NRESET1			2
+#define HDP4_CA7_NIRQOUT1			3
+#define HDP4_BSEC_OUT_SEC_DFTEN			4
+#define HDP4_BSEC_OUT_SEC_DBGSWENABLE		5
+#define HDP4_ETH_OUT_PMT_INTR_O			6
+#define HDP4_GPU_DBG3				7
+#define HDP4_DDRCTRL_STAT_DDRC_REG_SELREF_TYPE1	8
+#define HDP4_DDRCTRL_CACTIVE_0			9
+#define HDP4_GPOVAL_4				15
+
+#define HDP5_CA7_STANDBYWFIL2			0
+#define HDP5_PWR_VTH_VDDCORE_ACK		1
+#define HDP5_CA7_NRESET0			2
+#define HDP5_CA7_NIRQOUT0			3
+#define HDP5_BSEC_IN_PWROK			4
+#define HDP5_BSEC_OUT_SEC_DEVICEEN		5
+#define HDP5_ETH_OUT_LPI_INTR_O			6
+#define HDP5_GPU_DBG2				7
+#define HDP5_DDRCTRL_CACTIVE_DDRC		8
+#define HDP5_DDRCTRL_WR_CREDIT_CNT		9
+#define HDP5_GPOVAL_5				15
+
+#define HDP6_CA7_STANDBYWFI1			0
+#define HDP6_CA7_STANDBYWFE1			1
+#define HDP6_CA7_EVENT0				2
+#define HDP6_CA7_DBGACK1			3
+#define HDP6_BSEC_OUT_SEC_SPNIDEN		5
+#define HDP6_ETH_OUT_MAC_SPEED_O1		6
+#define HDP6_GPU_DBG1				7
+#define HDP6_DDRCTRL_CSYSACK_DDRC		8
+#define HDP6_DDRCTRL_LPR_CREDIT_CNT		9
+#define HDP6_GPOVAL_6				15
+
+#define HDP7_CA7_STANDBYWFI0			0
+#define HDP7_CA7_STANDBYWFE0			1
+#define HDP7_CA7_DBGACK0			3
+#define HDP7_BSEC_OUT_FUSE_OK			4
+#define HDP7_BSEC_OUT_SEC_SPIDEN		5
+#define HDP7_ETH_OUT_MAC_SPEED_O0		6
+#define HDP7_GPU_DBG0				7
+#define HDP7_DDRCTRL_CSYSREQ_DDRC		8
+#define HDP7_DDRCTRL_HPR_CREDIT_CNT		9
+#define HDP7_GPOVAL_7				15
+
+#endif /* _DT_BINDINGS_STM32_HDP_H */

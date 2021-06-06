@@ -1,0 +1,442 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
+ * Author: Fabien Dessenne <fabien.dessenne@st.com> for STMicroelectronics.
+ */
+
+&m4_rproc {
+	m4_system_resources {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		m4_timers2: timer@40000000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40000000 0x400>;
+			clocks = <&rcc TIM2_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers3: timer@40001000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40001000 0x400>;
+			clocks = <&rcc TIM3_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers4: timer@40002000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40002000 0x400>;
+			clocks = <&rcc TIM4_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers5: timer@40003000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40003000 0x400>;
+			clocks = <&rcc TIM5_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers6: timer@40004000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40004000 0x400>;
+			clocks = <&rcc TIM6_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers7: timer@40005000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40005000 0x400>;
+			clocks = <&rcc TIM7_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers12: timer@40006000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40006000 0x400>;
+			clocks = <&rcc TIM12_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers13: timer@40007000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40007000 0x400>;
+			clocks = <&rcc TIM13_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers14: timer@40008000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40008000 0x400>;
+			clocks = <&rcc TIM14_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_lptimer1: timer@40009000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40009000 0x400>;
+			clocks = <&rcc LPTIM1_K>;
+			clock-names = "mux";
+			status = "disabled";
+		};
+		m4_spi2: spi@4000b000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4000b000 0x400>;
+			clocks = <&rcc SPI2_K>;
+			status = "disabled";
+		};
+		m4_i2s2: audio-controller@4000b000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4000b000 0x400>;
+			status = "disabled";
+		};
+		m4_spi3: spi@4000c000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4000c000 0x400>;
+			clocks = <&rcc SPI3_K>;
+			status = "disabled";
+		};
+		m4_i2s3: audio-controller@4000c000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4000c000 0x400>;
+			status = "disabled";
+		};
+		m4_spdifrx: audio-controller@4000d000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4000d000 0x400>;
+			clocks = <&rcc SPDIF_K>;
+			clock-names = "kclk";
+			status = "disabled";
+		};
+		m4_usart2: serial@4000e000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4000e000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <27 1>;
+			clocks = <&rcc USART2_K>;
+			status = "disabled";
+		};
+		m4_usart3: serial@4000f000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4000f000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <28 1>;
+			clocks = <&rcc USART3_K>;
+			status = "disabled";
+		};
+		m4_uart4: serial@40010000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40010000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <30 1>;
+			clocks = <&rcc UART4_K>;
+			status = "disabled";
+		};
+		m4_uart5: serial@40011000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40011000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <31 1>;
+			clocks = <&rcc UART5_K>;
+			status = "disabled";
+		};
+		m4_i2c1: i2c@40012000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40012000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <21 1>;
+			clocks = <&rcc I2C1_K>;
+			status = "disabled";
+		};
+		m4_i2c2: i2c@40013000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40013000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <22 1>;
+			clocks = <&rcc I2C2_K>;
+			status = "disabled";
+		};
+		m4_i2c3: i2c@40014000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40014000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <23 1>;
+			clocks = <&rcc I2C3_K>;
+			status = "disabled";
+		};
+		m4_i2c5: i2c@40015000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40015000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <25 1>;
+			clocks = <&rcc I2C5_K>;
+			status = "disabled";
+		};
+		m4_cec: cec@40016000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40016000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <69 1>;
+			clocks = <&rcc CEC_K>, <&scmi0_clk CK_SCMI0_LSE>;
+			clock-names = "cec", "hdmi-cec";
+			status = "disabled";
+		};
+		m4_dac: dac@40017000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40017000 0x400>;
+			clocks = <&rcc DAC12>;
+			clock-names = "pclk";
+			status = "disabled";
+		};
+		m4_uart7: serial@40018000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40018000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <32 1>;
+			clocks = <&rcc UART7_K>;
+			status = "disabled";
+		};
+		m4_uart8: serial@40019000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x40019000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <33 1>;
+			clocks = <&rcc UART8_K>;
+			status = "disabled";
+		};
+		m4_timers1: timer@44000000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44000000 0x400>;
+			clocks = <&rcc TIM1_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers8: timer@44001000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44001000 0x400>;
+			clocks = <&rcc TIM8_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_usart6: serial@44003000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44003000 0x400>;
+			interrupt-parent = <&exti>;
+			interrupts = <29 1>;
+			clocks = <&rcc USART6_K>;
+			status = "disabled";
+		};
+		m4_spi1: spi@44004000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44004000 0x400>;
+			clocks = <&rcc SPI1_K>;
+			status = "disabled";
+		};
+		m4_i2s1: audio-controller@44004000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44004000 0x400>;
+			status = "disabled";
+		};
+		m4_spi4: spi@44005000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44005000 0x400>;
+			clocks = <&rcc SPI4_K>;
+			status = "disabled";
+		};
+		m4_timers15: timer@44006000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44006000 0x400>;
+			clocks = <&rcc TIM15_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers16: timer@44007000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44007000 0x400>;
+			clocks = <&rcc TIM16_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_timers17: timer@44008000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44008000 0x400>;
+			clocks = <&rcc TIM17_K>;
+			clock-names = "int";
+			status = "disabled";
+		};
+		m4_spi5: spi@44009000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x44009000 0x400>;
+			clocks = <&rcc SPI5_K>;
+			status = "disabled";
+		};
+		m4_sai1: sai@4400a000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4400a000 0x4>;
+			clocks = <&rcc SAI1_K>;
+			clock-names = "sai_ck";
+			status = "disabled";
+		};
+		m4_sai2: sai@4400b000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4400b000 0x4>;
+			clocks = <&rcc SAI2_K>;
+			clock-names = "sai_ck";
+			status = "disabled";
+		};
+		m4_sai3: sai@4400c000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4400c000 0x4>;
+			clocks = <&rcc SAI3_K>;
+			clock-names = "sai_ck";
+			status = "disabled";
+		};
+		m4_dfsdm: dfsdm@4400d000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4400d000 0x800>;
+			clocks = <&rcc DFSDM_K>, <&rcc ADFSDM_K>;
+			clock-names = "dfsdm", "audio";
+			status = "disabled";
+		};
+		m4_m_can1: can@4400e000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4400e000 0x400>, <0x44011000 0x2800>;
+			clocks = <&scmi0_clk CK_SCMI0_HSE>, <&rcc FDCAN_K>;
+			clock-names = "hclk", "cclk";
+			status = "disabled";
+		};
+		m4_m_can2: can@4400f000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4400f000 0x400>, <0x44011000 0x2800>;
+			clocks = <&scmi0_clk CK_SCMI0_HSE>, <&rcc FDCAN_K>;
+			clock-names = "hclk", "cclk";
+			status = "disabled";
+		};
+		m4_dma1: dma@48000000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x48000000 0x400>;
+			clocks = <&rcc DMA1>;
+			status = "disabled";
+		};
+		m4_dma2: dma@48001000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x48001000 0x400>;
+			clocks = <&rcc DMA2>;
+			status = "disabled";
+		};
+		m4_dmamux1: dma-router@48002000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x48002000 0x1c>;
+			clocks = <&rcc DMAMUX>;
+			status = "disabled";
+		};
+		m4_adc: adc@48003000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x48003000 0x400>;
+			clocks = <&rcc ADC12>, <&rcc ADC12_K>;
+			clock-names = "bus", "adc";
+			status = "disabled";
+		};
+		m4_sdmmc3: sdmmc@48004000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x48004000 0x400>, <0x48005000 0x400>;
+			clocks = <&rcc SDMMC3_K>;
+			status = "disabled";
+		};
+		m4_usbotg_hs: usb-otg@49000000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x49000000 0x10000>;
+			clocks = <&rcc USBO_K>;
+			clock-names = "otg";
+			status = "disabled";
+		};
+		m4_hash2: hash@4c002000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4c002000 0x400>;
+			clocks = <&rcc HASH2>;
+			status = "disabled";
+		};
+		m4_rng2: rng@4c003000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4c003000 0x400>;
+			clocks = <&rcc RNG2_K>;
+			status = "disabled";
+		};
+		m4_crc2: crc@4c004000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4c004000 0x400>;
+			clocks = <&rcc CRC2>;
+			status = "disabled";
+		};
+		m4_cryp2: cryp@4c005000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4c005000 0x400>;
+			clocks = <&rcc CRYP2>;
+			status = "disabled";
+		};
+		m4_dcmi: dcmi@4c006000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x4c006000 0x400>;
+			clocks = <&rcc DCMI>;
+			clock-names = "mclk";
+			status = "disabled";
+		};
+		m4_lptimer2: timer@50021000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x50021000 0x400>;
+			clocks = <&rcc LPTIM2_K>;
+			clock-names = "mux";
+			status = "disabled";
+		};
+		m4_lptimer3: timer@50022000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x50022000 0x400>;
+			clocks = <&rcc LPTIM3_K>;
+			clock-names = "mux";
+			status = "disabled";
+		};
+		m4_lptimer4: timer@50023000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x50023000 0x400>;
+			clocks = <&rcc LPTIM4_K>;
+			clock-names = "mux";
+			status = "disabled";
+		};
+		m4_lptimer5: timer@50024000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x50024000 0x400>;
+			clocks = <&rcc LPTIM5_K>;
+			clock-names = "mux";
+			status = "disabled";
+		};
+		m4_sai4: sai@50027000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x50027000 0x4>;
+			clocks = <&rcc SAI4_K>;
+			clock-names = "sai_ck";
+			status = "disabled";
+		};
+		m4_qspi: qspi@58003000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x58003000 0x1000>, <0x70000000 0x10000000>;
+			clocks = <&rcc QSPI_K>;
+			status = "disabled";
+		};
+		m4_ethernet0: ethernet@5800a000 {
+			compatible = "rproc-srm-dev";
+			reg = <0x5800a000 0x2000>;
+			clock-names = "stmmaceth",
+				      "mac-clk-tx",
+				      "mac-clk-rx",
+				      "ethstp",
+				      "syscfg-clk";
+			clocks = <&rcc ETHMAC>,
+				 <&rcc ETHTX>,
+				 <&rcc ETHRX>,
+				 <&rcc ETHSTP>,
+				 <&rcc SYSCFG>;
+			status = "disabled";
+		};
+	};
+};
+
