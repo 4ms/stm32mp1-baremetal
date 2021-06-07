@@ -1,5 +1,11 @@
+LINKSCR ?= linkscript.ld
+EXTLIBDIR ?= ../../third-party
+UBOOTDIR ?= $(EXTLIBDIR)/u-boot/build
+BUILDDIR ?= build
+BINARYNAME ?= main
+UIMAGENAME ?= $(BUILDDIR)/a7-main.uimg
+
 OBJDIR = $(BUILDDIR)/obj
-UIMAGENAME = $(BUILDDIR)/a7-main.uimg
 LOADADDR 	= 0xC2000040
 ENTRYPOINT 	= 0xC2000040
 
@@ -13,7 +19,7 @@ ARCH_CFLAGS += -DUSE_FULL_LL_DRIVER \
 			  -DSTM32MP1 \
 			  -DCORE_CA7 \
 
-OPTFLAG = -O0
+OPTFLAG ?= -O0
 
 AFLAGS = $(MCU)
 
