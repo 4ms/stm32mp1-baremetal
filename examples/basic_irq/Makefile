@@ -1,15 +1,13 @@
 BINARYNAME = main
 BUILDDIR = build
 
-STARTUP = startup.s
-LINKSCR = linkscript.ld
+OPTFLAG = -O0
 
 EXTLIBDIR = ../../third-party
-UBOOTDIR = $(EXTLIBDIR)/u-boot/build
 SHAREDDIR = ../shared
 
-SOURCES = $(STARTUP) \
-		  main.c \
+SOURCES = startup.s \
+		  main.cc \
 		  $(SHAREDDIR)/irq_init.c \
 		  $(SHAREDDIR)/libc_stub.c \
 		  $(SHAREDDIR)/libcpp_stub.cc \
