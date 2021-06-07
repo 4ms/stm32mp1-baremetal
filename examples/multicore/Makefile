@@ -13,8 +13,6 @@ LIBDIR = ../lib
 
 SOURCES = $(STARTUP) \
 		  main.c \
-		  new.cc \
-		  interrupt.cc \
 		  $(LIBDIR)/system/irq_ctrl.c \
 		  $(LIBDIR)/system/libc_stub.c \
 		  $(LIBDIR)/system/libcpp_stub.cc \

@@ -7,7 +7,6 @@
 
 namespace BasicIRQ
 {
-
 Uart<UART4_BASE> uart;
 
 PinChangeISR<GPIOI_BASE, 8> red_led_pinchange;

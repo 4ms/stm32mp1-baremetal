@@ -5,11 +5,12 @@ executing simultaneously at 650MHz or 800MHz (depending on the chip), achieving
 true parallel processing (not time-sharing as is used in a single-core RTOS or
 OS). In this project we harness this massive potential to blink two lights ;)
 
-Since both cores are nearly identical, this is called Symmetric Multiprocessing or SMP
-(as opposed to the usage of the M4 core, which is called Asymmetric Multiprocessing or AMP).
-SMP is typically used by an OS running on a main core to assign another core(s) to run a task and then return. That 
-level of control will be demonstrated in a different example project. Here, we just have two main() functions:
-`main()` for the 'main' core, which is MPU0 or Core0.
+Since both cores are nearly identical, this is called Symmetric Multiprocessing
+or SMP (as opposed to the usage of the M4 core, which is called Asymmetric
+Multiprocessing or AMP).  SMP is typically used by an OS running on a main core
+to assign another core(s) to run a task and then return. That level of control
+will be demonstrated in a different example project. Here, we just have two
+main() functions: `main()` for the 'main' core, which is MPU0 or Core0.
 `aux_core_main()` for the `aux` core, which is MPU1 or Core1.
 
 When the STM32MP157 starts up, both A7 cores runs code in a section of memory
@@ -50,33 +51,47 @@ is used for telling a just-woken-up core where to go (more on that later). As
 an aside, the clearing of register 4 is used by the PSCI feature in U-boot to
 send a signal to Core0 that Core1 has indeed woken from it's first sleep.
 
-Now that Core1 has finished the first sleep, it proceeds to go to sleep for a second time.
-But first it [6040] loads another magic number, 0xCA7FACE1 into register R6. It keeps it there and
-[060C] passes out. 
+Now that Core1 has finished the first sleep, it proceeds to go to sleep for a
+second time.  But first it [6040] loads another magic number, 0xCA7FACE1 into
+register R6. It keeps it there and [060C] passes out. 
 
-Now we've reached the part where our code comes in. While Core1 sleeps, Core0 can take its time to initialize
-the application, and do whatever it needs to be done by a single core. In our example app, we just setup the LED GPIOs
-and send a message out the UART. In a larger system, you might initialize external chips, setup data structures, etc etc.
+Now we've reached the part where our code comes in. While Core1 sleeps, Core0
+can take its time to initialize the application, and do whatever it needs to be
+done by a single core. In our example app, we just setup the LED GPIOs and send
+a message out the UART. In a larger system, you might initialize external
+chips, setup data structures, etc etc.
 
-When Core0 is ready to use Core1's computing power, it has to first fill two registers. One of these is a magic number. Yes, the very 
-same magic number that Core1 stored in R6 right before falling asleep (0xCA7FACE1). Core0 has to write this to TAMP backup register 4.
-Also, when Core1 awakens, it will need to know what to do, that is, what instructions should it start executing?
-Core0 must write an address into TAMP backup register 5, and this address is called the Branch Address. Shortly after waking, Core1 will jump to the Branch Address and start executing whatever code is there.
+When Core0 is ready to use Core1's computing power, it has to first fill two
+registers. One of these is a magic number. Yes, the very same magic number that
+Core1 stored in R6 right before falling asleep (0xCA7FACE1). Core0 has to write
+this to TAMP backup register 4.  Also, when Core1 awakens, it will need to know
+what to do, that is, what instructions should it start executing?  Core0 must
+write an address into TAMP backup register 5, and this address is called the
+Branch Address. Shortly after waking, Core1 will jump to the Branch Address and
+start executing whatever code is there.
 
-You can see in `secondary_core.hh` we have a function called `start()`.
-This enables the SGI, and then makes sure that TAMP's backup protection is cleared. Then it writes the address of the `aux_core_start` into the BranchAddressRegister. The `aux_core_start` function is the entry point into our app for our aux core app: it's written in assembly in startup.s. It just initializes the core's caches and MMU, sets up the stack, and then jumps to our `aux_core_main` function (which is written in C++ in main.cc).
+You can see in `secondary_core.hh` we have a function called `start()`.  This
+enables the SGI, and then makes sure that TAMP's backup protection is cleared.
+Then it writes the address of the `aux_core_start` into the
+BranchAddressRegister. The `aux_core_start` function is the aux core's entry
+point into our app: it's written in assembly in startup.s. It just initializes
+the core's caches and MMU, sets up the stack, and then jumps to our
+`aux_core_main` function (which is written in C++ in main.cc).
 
-Once the magic number and branch address are written, we can actually start Core1. Moment of truth! 
-We just need to send an SGI to Core1. As soon as that's done, Core1 wakes up!
-But it has a few housekeeping
+Once the magic number and branch address are written, we can actually start
+Core1. Moment of truth!  We just need to send an SGI to Core1 from Core0. As
+soon as that's done, Core1 wakes up.  It reads some flags in the Boot Security
+registers (BSEC), which I presume is some sort of security clearance procedure
+that lets you disable booting the secondardy core by writing into some OTP
+registers (One-Time-Programmable). Anyways, unless you took active measures to
+prevent booting, these tests will pass.  The core now proceeds to read from
+TAMP register 4 and checks for the magic number 0xCA7FACE1. If it reads that,
+then it reads TAMP register 5 and branches to whatever address is in that
+register. (Literally any address, even a mis-aligned number or a totally bogus
+address! It's Core0's responsibility to make sure this is a proper place to
+jump to).
 
-
-
-
-
-
-....
-
+### Building
 
 Like the other projects in this repository, this is designed for the OSD32MP1
 BRK board, but any STM32MP157-based board with header pins for UART4 exposed
@@ -99,12 +114,10 @@ Reboot your board with a UART-to-USB cable connected, and watch u-boot's
 startup messages scroll by in a terminal.
 
 ```
-ABC
-
-Core0: Running: flashing LED1
+Core0: Flashing an LED is hard work! I'm going to wake up Core1 to help.
+Core0: I'll handle flashing LED1, and tell Core1 to flash LED2...
 Core0: Starting Core1
-Core1: Running: flashing LED2
-You should see LED2 flashing twice as fast as LED1.
+Core1: Good morning, Core0! I'm happy to help, I can flash LED2 twice as fast as LED1!
 ```
 
 

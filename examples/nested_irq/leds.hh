@@ -13,7 +13,9 @@ public:
 	Led()
 		: gpio{reinterpret_cast<GPIO_TypeDef *>(GPIO_BASE_ADDR)}
 		, pin_bit{1 << PIN_NUM}
-	{}
+	{
+		init();
+	}
 
 	void init()
 	{

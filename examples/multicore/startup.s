@@ -163,4 +163,12 @@ PAbt_Handler:
 
 DAbt_Handler:
 	b .
- 
+
+SVC_Handler:
+	b .
+
+IRQ_Handler:
+	b .
+
+FIQ_Handler:
+	b .

@@ -1,0 +1,232 @@
+MPU1 (Core1) takes this path when it's booted by Core0. See the README for an overview of the process.
+
+       0:	ea00000d 	b	0x3c 								// Reset vector: Branch to 0x003C
+       4:	ea000005 	b	0x20 								// (other exception handlers follow, but aren't used by Core1)
+       8:	ea000005 	b	0x24 									
+       c:	ea000005 	b	0x28 									
+      10:	ea000005 	b	0x2c 									
+      14:	ea000005 	b	0x30 									
+      18:	ea000006 	b	0x38 									
+      1c:	ea000004 	b	0x34 									
+      20:	ea000161 	b	0x5ac 									
+      24:	ea0002de 	b	0xba4 									
+      28:	ea0002df 	b	0xbac 									
+      2c:	ea0002e0 	b	0xbb4 									
+      30:	ea0002e1 	b	0xbbc 									
+      34:	ea0002e2 	b	0xbc4 									
+      38:	ea0002e3 	b	0xbcc 									
+      3c:	e3a00000 	mov	r0, #0, 0 							// Set all registers to 0
+      40:	e3a01000 	mov	r1, #0, 0
+      44:	e3a02000 	mov	r2, #0, 0
+      48:	e3a03000 	mov	r3, #0, 0
+      4c:	e3a04000 	mov	r4, #0, 0
+      50:	e3a05000 	mov	r5, #0, 0
+      54:	e3a06000 	mov	r6, #0, 0
+      58:	e3a07000 	mov	r7, #0, 0
+      5c:	e3a08000 	mov	r8, #0, 0
+      60:	e3a09000 	mov	r9, #0, 0
+      64:	e3a0a000 	mov	sl, #0, 0
+      68:	e3a0b000 	mov	fp, #0, 0
+      6c:	e3a0c000 	mov	ip, #0, 0
+      70:	ee104fb0 	mrc	15, 0, r4, cr0, cr0, {5}  			// Read Processor ID
+      74:	e2144003 	ands	r4, r4, #3, 0
+      78:	e3540000 	cmp	r4, #0, 0
+      7c:	1a000063 	bne	0x210 								// Jump to 0x210 if CPU = 1
+
+	  ///// snip /////
+
+     210:	e59f5310 	ldr	r5, [pc, #784]	; 0x528 			// Setup Stack [load stack base]
+     214:	e7955104 	ldr	r5, [r5, r4, lsl #2] 				// Shift stack base, based on CPUID (==r4)
+     218:	e125f305 	msr	SP_abt, r5 							// Abort stack
+     21c:	e59f5308 	ldr	r5, [pc, #776]	; 0x52c
+     220:	e7955104 	ldr	r5, [r5, r4, lsl #2]
+     224:	e127f305 	msr	SP_und, r5 							// Undefined handler stack
+     228:	e59f5300 	ldr	r5, [pc, #768]	; 0x530
+     22c:	e7955104 	ldr	r5, [r5, r4, lsl #2]
+     230:	e121f305 	msr	SP_irq, r5 							// IRQ stack
+     234:	e59f52f8 	ldr	r5, [pc, #760]	; 0x534
+     238:	e7955104 	ldr	r5, [r5, r4, lsl #2]
+     23c:	e123f305 	msr	SP_svc, r5 							// SVC stack
+     240:	f1020016 	cps	#22 								// Start Monitor mode
+     244:	e59f52ec 	ldr	r5, [pc, #748]	; 0x538
+     248:	e7955104 	ldr	r5, [r5, r4, lsl #2]
+     24c:	e1a0d005 	mov	sp, r5 								// Set stack for Monitor mode
+     250:	e59f52e4 	ldr	r5, [pc, #740]	; 0x53c
+     254:	e7955104 	ldr	r5, [r5, r4, lsl #2]
+     258:	ee0c5f30 	mcr	15, 0, r5, cr12, cr0, {1} 			// Set monitor VBAR (vector base address) to 0x07E0
+     25c:	e59f52dc 	ldr	r5, [pc, #732]	; 0x540
+     260:	ee0c5f10 	mcr	15, 0, r5, cr12, cr0, {0} 			// Set secure VBAR to 0x0000
+     264:	ee116f11 	mrc	15, 0, r6, cr1, cr1, {0} 			// Set SCR->NS to 1: non-secure state when not in monitor mode
+     268:	e3866001 	orr	r6, r6, #1, 0
+     26c:	ee016f11 	mcr	15, 0, r6, cr1, cr1, {0}
+     270:	e59f52cc 	ldr	r5, [pc, #716]	; 0x544 			
+     274:	ee0c5f10 	mcr	15, 0, r5, cr12, cr0, {0} 			// Set non-secure VBAR to 0xA320
+     278:	ee115f10 	mrc	15, 0, r5, cr1, cr0, {0} 			// Modify non-secure SCTLR:
+     27c:	e3c55a02 	bic	r5, r5, #8192	; 0x2000 			// Clear V bit (low exception vectors)
+     280:	e3855a01 	orr	r5, r5, #4096	; 0x1000 			// Set I bit (Instruction cache enabled)
+     288:	e3c55004 	bic	r5, r5, #4, 0 						// Clear Z bit (program flow prediction disabled)
+     284:	e3c55b02 	bic	r5, r5, #2048	; 0x800 			// Clear C bit (data cache disabled)
+     28c:	e3c55001 	bic	r5, r5, #1, 0 						// Clear M bit (MMU disabled)
+     290:	ee015f10 	mcr	15, 0, r5, cr1, cr0, {0} 			
+     294:	e3a00000 	mov	r0, #0, 0
+     298:	ee070fd5 	mcr	15, 0, r0, cr7, cr5, {6} 			// Disable non-secure BPALL (all branch prediction)
+     29c:	e3c66001 	bic	r6, r6, #1, 0
+     2a0:	ee016f11 	mcr	15, 0, r6, cr1, cr1, {0} 			// Secure mode
+     2a4:	ee115f10 	mrc	15, 0, r5, cr1, cr0, {0}  			// Modify secure SCTLR:
+     2a8:	e3c55a02 	bic	r5, r5, #8192	; 0x2000  			// Clear V bit (low exception vectors)
+     2ac:	e3855a01 	orr	r5, r5, #4096	; 0x1000  			// Set I bit (Instruction cache enabled)
+     2b0:	e3c55b02 	bic	r5, r5, #2048	; 0x800  			// Clear Z bit (program flow prediction disabled)
+     2b4:	e3c55004 	bic	r5, r5, #4, 0            			// Clear C bit (data cache disabled)
+     2b8:	e3c55001 	bic	r5, r5, #1, 0            			// Clear M bit (MMU disabled)
+     2bc:	ee015f10 	mcr	15, 0, r5, cr1, cr0, {0}  			
+     2c0:	e3a00000 	mov	r0, #0, 0
+     2c4:	ee070fd5 	mcr	15, 0, r0, cr7, cr5, {6} 			// Disable secure BPALL
+     2c8:	ee115f11 	mrc	15, 0, r5, cr1, cr1, {0}
+     2cc:	e3855004 	orr	r5, r5, #4, 0 						// FIQ will go to monitor exception
+     2d0:	e3c55002 	bic	r5, r5, #2, 0 						// IRQs will go to IRQ exception
+     2d4:	e3c55008 	bic	r5, r5, #8, 0 						// External Aborts go to Abort exception
+     2d8:	ee015f11 	mcr	15, 0, r5, cr1, cr1, {0}
+     2dc:	f1020013 	cps	#19 								// System mode
+     2e0:	eb00247e 	bl	0x94e0 								// Branch to sub-routine to enable SMP bit in ACTLR
+     2e4:	ee100fb0 	mrc	15, 0, r0, cr0, cr0, {5} 			// Get CPU ID (MPIDR)
+     2e8:	e2100003 	ands	r0, r0, #3, 0
+     2ec:	0a000000 	beq	0x2f4 								// 
+     2f0:	1a00006a 	bne	0x4a0  								// CPU1--> Jump to setup for IRQs at 04A0
+
+	////// snip //////
+
+     4a0:	eb002767 	bl	0xa244 								// Enable Group 0 and Group 1 IRQs in GICD CTRL
+     4a4:	e3a00008 	mov	r0, #8, 0
+     4a8:	eb002792 	bl	0xa2f8 								// Set GICC PRiority Mask to 8 (0b00001xxx)
+     4ac:	e3a00000 	mov	r0, #0, 0
+     4b0:	eb002758 	bl	0xa218 								// Enable IRQ0
+     4b4:	e3a00000 	mov	r0, #0, 0
+     4b8:	e3a01000 	mov	r1, #0, 0
+     4bc:	eb00277d 	bl	0xa2b8 								// Set IRQ0 Priority to 0
+     4c0:	e3a00000 	mov	r0, #0, 0
+     4c4:	e3a01000 	mov	r1, #0, 0
+     4c8:	eb002770 	bl	0xa290 								// Set IRQ0 group to 0
+
+	 // First Sleep:
+     4cc:	f57ff04f 	dsb	sy 										
+     4d0:	e320f003 	wfi 									// Go to sleep (First Sleep)
+     4d4:	eb002760 	bl	0xa25c 								// When we wake-up, read GIC IAR (get IRQ number)
+     4d8:	eb00278a 	bl	0xa308 								// Tell GIC we handled the IRQ (write IRQ number to EOIR)
+     4dc:	e3900000 	orrs	r0, r0, #0, 0 					// Check if IRQ number = 0
+     4e0:	1afffff9 	bne	0x4cc 								// If it's not 0, go back to sleep and repeat.
+     4e4:	ea0016bc 	b	0x5fdc 								// Otherwise, branch to 5fdc
+
+	////// snip //////
+
+	// Second Sleep Routine:
+     608:	f3bf 8f4f 	dsb	sy 									// Start of the 2nd sleep subroutine
+     60c:	bf30      	wfi 									// Sleep until interrupt
+     60e:	4770      	bx	lr 									// Returns back to function that called this (604E)
+
+	// Read TAMP backup registers Routine:
+    35de:	f500 7080 	add.w	r0, r0, #256	; 0x100
+    35e2:	f850 0021 	ldr.w	r0, [r0, r1, lsl #2]
+    35e6:	4770      	bx	lr
+
+	// Write TAMP backup registers Routine:
+    35f2:	f500 7080 	add.w	r0, r0, #256	; 0x100
+    35f6:	f840 2021 	str.w	r2, [r0, r1, lsl #2]
+    35fa:	4770      	bx	lr
+
+	////// snip //////
+
+	// Prepare for second sleep:
+    5fdc:	e28fc001 	add	ip, pc, #1, 0  						// Enter thumb mode
+    5fe0:	e12fff1c 	bx	ip
+    5fe4:	f04f 45a0 	mov.w	r5, #1342177280	; 0x50000000
+    5fe8:	2700      	movs	r7, #0
+    5fea:	4628      	mov	r0, r5
+    5fec:	f7fd f9af 	bl	0x334e 								// RCC reset flag
+    5ff0:	4604      	mov	r4, r0
+    5ff2:	f244 0100 	movw	r1, #16384	; 0x4000
+    5ff6:	4628      	mov	r0, r5
+    5ff8:	f7fd f99f 	bl	0x333a 								// RCC flag
+    5ffc:	0460      	lsls	r0, r4, #17
+    5ffe:	d503      	bpl.n	0x6008 							
+    6000:	4621      	mov	r1, r4
+    6002:	4628      	mov	r0, r5
+    6004:	f7fd fa7c 	bl	0x3500
+    6008:	4e23      	ldr	r6, [pc, #140]	; (0x6098)
+    600a:	2104      	movs	r1, #4
+    600c:	4630      	mov	r0, r6
+    600e:	f7fd fae6 	bl	0x35de 								// Read TAMP backup register 4
+    6012:	4922      	ldr	r1, [pc, #136]	; (0x609c)
+    6014:	4288      	cmp	r0, r1 								// Compare reading to 0xCA7FACE0
+    6016:	d012      	beq.n	0x603e 							// Skip ahead if it is
+    6018:	4c21      	ldr	r4, [pc, #132]	; (0x60a0) 			// If it's not then do this:
+    601a:	4620      	mov	r0, r4 								// 		Set DBP (disable backup protection) in PWR register
+    601c:	f7fd f842 	bl	0x30a4 								// 		which allows us to write to TAMP backup registers
+    6020:	2200      	movs	r2, #0
+    6022:	4605      	mov	r5, r0
+    6024:	2104      	movs	r1, #4
+    6026:	4630      	mov	r0, r6
+    6028:	f7fd fae3 	bl	0x35f2 								// 		Set TAMP backup reg 4 to 0
+    602c:	2200      	movs	r2, #0
+    602e:	4630      	mov	r0, r6
+    6030:	2105      	movs	r1, #5
+    6032:	f7fd fade 	bl	0x35f2 								// 		Set TAMP backup reg 5 to 0
+    6036:	4629      	mov	r1, r5
+    6038:	4620      	mov	r0, r4
+    603a:	f7fd f850 	bl	0x30de
+    603e:	46b0      	mov	r8, r6 								// [here's where we go if BKP4R was CA7FACE0]
+    6040:	4e16      	ldr	r6, [pc, #88]	; (0x609c) 			// Load CA7FACE0 into r6
+    6042:	4c18      	ldr	r4, [pc, #96]	; (0x60a4) 			// Load address of TAMP into r4
+    6044:	f240 35ff 	movw	r5, #1023	; 0x3ff 			// Load 0x3ff ("spurious" interrupt number) into r5
+    6048:	1c76      	adds	r6, r6, #1 						// Add 1 to r6 so it's CA7FACE1
+    604a:	f7fa fadd 	bl	0x608 								// Branch to the second sleep routine
+
+																// Return here from the second sleep routine:
+    604e:	f004 e906 	blx	0xa25c 								// Get IRQ number (read IAR)
+    6052:	42a8      	cmp	r0, r5 								// Go back to sleep if it's spurious (0x3ff)
+    6054:	d0f9      	beq.n	0x604a
+    6056:	f004 e958 	blx	0xa308 								// Write it to EOIR to tell GIC we've handled the IRQ
+    605a:	4620      	mov	r0, r4
+    605c:	f7fc fe26 	bl	0x2cac 								// Read the INVALID bit in the BSEC (boot security) OTP_STATUS register
+    6060:	2801      	cmp	r0, #1
+    6062:	d10a      	bne.n	0x607a 							// Skip ahead if flag was 0 (OTP is invalid)
+    6064:	4620      	mov	r0, r4
+    6066:	f7fc fe2d 	bl	0x2cc4 								// Read BSEC OTP_DATA0 register, bit 6 = "Close state"
+    606a:	0640      	lsls	r0, r0, #25 					// See https://wiki.st.com/stm32mpu/wiki/STM32MP15_ROM_code_overview#OTP_WORD_0
+    606c:	d505      	bpl.n	0x607a 							// Skip ahead if bit 6 was 0 (not closed) 
+    606e:	2105      	movs	r1, #5 
+    6070:	4640      	mov	r0, r8
+    6072:	f7fd fa9b 	bl	0x35ac 											
+    6076:	2877      	cmp	r0, #119	; 0x77
+    6078:	d1e7      	bne.n	0x604a 							// Go back to sleep if the BSEC register tests failed
+    607a:	2104      	movs	r1, #4 							// Proceed to check the TAMP registers:
+    607c:	4640      	mov	r0, r8
+    607e:	f7fd faae 	bl	0x35de 								// Read TAMP BKP register 4
+    6082:	42b0      	cmp	r0, r6 								// Compare it to CA7FACE1
+    6084:	d1e1      	bne.n	0x604a 							// Go back to sleep if it's not a match
+    6086:	2105      	movs	r1, #5 							// Otherwise, read TAMP BKP register 5
+    6088:	4640      	mov	r0, r8
+    608a:	f7fd faa8 	bl	0x35de
+    608e:	4601      	mov	r1, r0 								// Prepare to jump...
+    6090:	4638      	mov	r0, r7
+    6092:	4788      	blx	r1 									// Jump to whatever address we read in register 5
+
+    6094:	e7fe      	b.n	0x6094 								// If we happen to return, then loop infinitely.
+    6096:	0000      	movs	r0, r0 							// NOP
+
+	// Data section:
+    6098:	5c00a000 	DC32 									// TAMP base
+    609c:	ca7face0 	DC32  									// Magic number base (TAMP backup register 4)
+    60a0:	50001000 	DC32 									// PWR base
+    60a4:	5c005000 	DC32 									// BSEC base
+
+	// Read IAR routine:
+    a25c:	ee9f0f10 	mrc	15, 4, r0, cr15, cr0, {0} 			// Get Base address for GIC
+    a260:	e2800a02 	add	r0, r0, #8192	; 0x2000 			// Add 0x2000 to get the GIC CPU Interface base address
+    a264:	e590000c 	ldr	r0, [r0, #12] 						// +12 is the IAR register, read it into r0
+    a268:	e12fff1e 	bx	lr
+
+	// Write EOIR routine:
+    a308:	ee9f1f10 	mrc	15, 4, r1, cr15, cr0, {0} 			// Get Base address for GIC                            	
+    a30c:	e2811a02 	add	r1, r1, #8192	; 0x2000  			// Add 0x2000 to get the GIC CPU Interface base address
+    a310:	e5810010 	str	r0, [r1, #16]             			// +16 is the EOIR register, write r0 to it
+    a314:	e12fff1e 	bx	lr

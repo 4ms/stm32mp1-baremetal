@@ -1,3 +1,5 @@
+SDCARD_MOUNT_PATH ?= /Volumes/BAREAPP
+
 OBJDIR = $(BUILDDIR)/obj
 UIMAGENAME = $(BUILDDIR)/a7-main.uimg
 LOADADDR 	= 0xC2000040
@@ -70,9 +72,8 @@ BIN 	= $(BUILDDIR)/$(BINARYNAME).bin
 all: Makefile $(ELF) $(UIMAGENAME)
 
 install:
-	cp $(UIMAGENAME) /Volumes/BAREAPP/
-	diskutil unmount /Volumes/BAREAPP
-	#../scripts/copy-app-to-sdcard.sh $(UIMAGENAME) /dev/disk3s4
+	cp $(UIMAGENAME) $(SDCARD_MOUNT_PATH)
+	diskutil unmount $(SDCARD_MOUNT_PATH)
 
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(dir $@)
@@ -101,9 +102,13 @@ $(ELF): $(OBJECTS) $(LINKSCR)
 $(BIN): $(ELF)
 	$(OBJCPY) -O binary $< $@
 
-$(UIMAGENAME): $(BIN)
+$(UIMAGENAME): $(BIN) $(UBOOTDIR)/tools/mkimage
 	$(info Creating uimg file)
 	@$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a $(LOADADDR) -e $(ENTRYPOINT) -d $< $@
+
+$(UBOOTDIR)/tools/mkimage:
+	$(info Building U-boot bootloader)
+	@cd ../.. && scripts/build-u-boot.sh
 
 %.d: ;
 
