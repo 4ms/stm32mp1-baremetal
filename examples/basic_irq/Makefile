@@ -8,11 +8,11 @@ SHAREDDIR = ../shared
 
 SOURCES = startup.s \
 		  main.cc \
-		  $(SHAREDDIR)/irq_init.c \
-		  $(SHAREDDIR)/libc_stub.c \
-		  $(SHAREDDIR)/libcpp_stub.cc \
-		  $(SHAREDDIR)/system_ca7.c \
-		  $(SHAREDDIR)/mmu_ca7.c \
+		  $(SHAREDDIR)/system/irq_init.c \
+		  $(SHAREDDIR)/system/libc_stub.c \
+		  $(SHAREDDIR)/system/libcpp_stub.cc \
+		  $(SHAREDDIR)/system/system_ca7.c \
+		  $(SHAREDDIR)/system/mmu_ca7.c \
 
 INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Inc \

@@ -1,12 +1,13 @@
-#include "leds.hh"
-#include "mdrivlib/interrupt.hh"
-#include "mdrivlib/interrupt_control.hh"
-#include "pinchange.hh"
+#include "drivers/leds.hh"
+#include "drivers/pinchange.hh"
+#include "drivers/uart.hh"
+#include "interrupt.hh"
 #include "stm32mp157cxx_ca7.h"
-#include "uart.hh"
 #include <cstdint>
 
 constexpr uint8_t GPIO_I = 8; // GPIOA = 0, GPIOB = 1, etc..
+
+// For debugging, it's handy to know these values:
 // IRQn = 0x62 (98) | PRIORITY: Reg 24 bit 2 | CFGR: Reg 16, bit 2 | ENABLE Reg 3, bit2
 // IRQn = 0x63 (99) | PRIORITY: Reg 24 bit 3 | CFGR: Reg 16, bit 3 | ENABLE Reg 3, bit3
 
@@ -16,7 +17,7 @@ void main()
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nTesting nested interrupts\r\n");
 	uart.write("Make sure this is compiled with -O1 to test register clobbering (Makefile, OPTFLAG on "
-			   "line 41)\r\n");
+			   "line 4)\r\n");
 	uart.write("To see the floating-point register test fail, ");
 	uart.write("comment out the #define STASH_FPU_REGS in interrupt.cc\r\n");
 	uart.write("To see the integer register test fail, ");
@@ -35,8 +36,8 @@ void main()
 	debug_pin3.init();
 
 	// Pin Change interrupts
-	PinChangeISR red_led_pinchange{GPIO_I, 8};
-	PinChangeISR green_led_pinchange{GPIO_I, 9};
+	PinChangeISR<GPIOI_BASE, 8> red_led_pinchange;
+	PinChangeISR<GPIOI_BASE, 9> green_led_pinchange;
 
 	const auto red_led1_irqnum = red_led_pinchange.get_IRQ_num();
 	const auto green_led1_irqnum = green_led_pinchange.get_IRQ_num();

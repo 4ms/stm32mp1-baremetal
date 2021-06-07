@@ -5,54 +5,22 @@ $(info Building for MP1 A7 core)
 
 BUILDDIR = $(BUILDDIR_A7)
 
-LOADFILE = linkscript_ca7.ld
-STARTUP	= startup_ca7.s
+LINKSCR = linkscript_ca7.ld
 
 OPTFLAG = -O0
 
-SOURCES = $(STARTUP) \
+SOURCES = startup_ca7.s \
 		  main_ca7.c \
-		  $(LIBDIR)/system/irq_ctrl.c \
-		  $(LIBDIR)/system/libc_stub.c \
-		  $(LIBDIR)/system/libcpp_stub.cc \
-		  $(LIBDIR)/system/system_ca7.c \
-		  $(LIBDIR)/system/mmu_ca7.c \
+		  $(SHAREDDIR)/system/irq_init.c \
+		  $(SHAREDDIR)/system/libc_stub.c \
+		  $(SHAREDDIR)/system/libcpp_stub.cc \
+		  $(SHAREDDIR)/system/system_ca7.c \
+		  $(SHAREDDIR)/system/mmu_ca7.c \
 
 INCLUDES = -I. \
-		   -I$(LIBDIR)/STM32MP1xx_HAL_Driver/Inc \
-		   -I$(LIBDIR)/CMSIS/Core_A/Include \
-		   -I$(LIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
-		   -I$(LIBDIR) \
+		   -I$(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Inc \
+		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
+		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
+		   -I$(SHAREDDIR) \
 
-ARCH_CFLAGS += -DUSE_FULL_LL_DRIVER \
-			  -DSTM32MP157Cxx \
-			  -DSTM32MP1 \
-			  -DCORE_CA7 \
-
-MCU =  -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mlittle-endian -mfloat-abi=hard -mthumb-interwork
-
-#### U-BOOT
-UIMG  		= $(BUILDDIR)/a7-main.uimg
-LOADADDR 	= 0xC2000040
-ENTRYPOINT 	= $(LOADADDR)
-UBOOTDIR 	= ../u-boot
-UBOOTSRCDIR = $(UBOOTDIR)/u-boot-stm32mp1-baremetal
-UBOOTBUILDDIR = $(UBOOTDIR)/build
-UBOOT_MKIMAGE = $(UBOOTBUILDDIR)/tools/mkimage
-#####
-
-image: $(UIMG)
-
-$(UBOOT_MKIMAGE): $(UBOOTSRCDIR)
-	cd $(UBOOTSRCDIR) && make O=$(PWD)/$(UBOOTBUILDDIR) CROSS_COMPILE=arm-none-eabi- stm32mp15x_baremetal_defconfig
-	cd $(UBOOTSRCDIR) && make -j16 O=$(PWD)/$(UBOOTBUILDDIR) CROSS_COMPILE=arm-none-eabi- all
-
-$(UIMG): $(BUILDDIR)/main.bin $(UBOOT_MKIMAGE)
-	@$(UBOOT_MKIMAGE) -A arm -C none -T kernel -a $(LOADADDR) -e $(ENTRYPOINT) -d $(BIN) $@
-
-clean_uboot:
-	rm -rf $(UBOOTBUILDDIR)
-
-
-include makefile_common.mk
-
+include ../shared/makefile-common.mk

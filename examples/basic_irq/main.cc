@@ -1,8 +1,8 @@
-#include "delay.hh"
-#include "leds.hh"
-#include "pinchange.hh"
+#include "drivers/delay.hh"
+#include "drivers/leds.hh"
+#include "drivers/pinchange.hh"
+#include "drivers/uart.hh"
 #include "stm32mp157cxx_ca7.h"
-#include "uart.hh"
 #include <cstdint>
 
 namespace BasicIRQ

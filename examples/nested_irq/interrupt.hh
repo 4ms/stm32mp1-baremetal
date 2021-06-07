@@ -1,5 +1,4 @@
 #pragma once
-#include "interrupt_control.hh"
 #include <cstdint>
 #include <functional>
 

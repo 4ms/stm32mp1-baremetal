@@ -1,8 +1,8 @@
-#include "delay.hh"
-#include "leds.hh"
+#include "drivers/delay.hh"
+#include "drivers/leds.hh"
+#include "drivers/uart.hh"
 #include "secondary_core.hh"
 #include "stm32mp157cxx_ca7.h"
-#include "uart.hh"
 #include <cstdint>
 
 namespace stm32mp1_baremetal_multicore

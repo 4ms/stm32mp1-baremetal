@@ -1,26 +1,23 @@
-# Makefile by Dan Green <danngreen1@gmail.com>, public domain
-
 $(info --------------------)
 $(info Building for MP1 M4 core)
 
 BUILDDIR = $(BUILDDIR_M4)
 
-LOADFILE = linkscript_cm4.ld
-STARTUP = startup_cm4.ld
+LINKSCR = linkscript_cm4.ld
 
 OPTFLAG = -O0
 
-SOURCES  = $(STARTUP)
-SOURCES  += main_cm4.cc \
+SOURCES  += startup_cm4.s \
+			main_cm4.cc \
 			system_cm4.c \
-			$(LIBDIR)/system/libc_stub.c \
-			$(LIBDIR)/system/libcpp_stub.cc
+			$(SHAREDDIR)/system/libc_stub.c \
+			$(SHAREDDIR)/system/libcpp_stub.cc
 
 INCLUDES = -I. \
-		   -I$(LIBDIR)/STM32MP1xx_HAL_Driver/Inc \
-		   -I$(LIBDIR)/CMSIS/Core/Include \
-		   -I$(LIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
-		   -I$(LIBDIR) \
+		   -I$(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Inc \
+		   -I$(EXTLIBDIR)/CMSIS/Core/Include \
+		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
+		   -I$(SHAREDDIR) \
 
 MCU = -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb -mlittle-endian -mfloat-abi=hard
 
@@ -30,5 +27,5 @@ ARCH_CFLAGS = -DUSE_FULL_LL_DRIVER \
 			  -DCORE_CM4 \
 			  -DARM_MATH_CM4 \
 
-include makefile_common.mk
+include ../shared/makefile-common.mk
 

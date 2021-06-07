@@ -3,7 +3,8 @@
 export BINARYNAME = main
 export BUILDDIR_A7 = build/corea7
 export BUILDDIR_M4 = build/corem4
-export LIBDIR = ../lib
+export EXTLIBDIR = ../../third-party
+export SHAREDDIR = ../shared
 
 # This compiles and links the m4 firmware to an .elf file,
 # then splits up and re-combines the sections based on contigious memory blocks,
@@ -15,7 +16,7 @@ export LIBDIR = ../lib
 # to make sure u-boot knows how to translate those addresses in the .uimg file correctly.
 
 all: firmware_m4.h firmware_m4_vectors.h
-	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all image
+	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all 
 
 $(BUILDDIR_M4)/$(BINARYNAME).elf: m4
 
@@ -33,6 +34,9 @@ $(BUILDDIR_M4)/firmware.bin: $(BUILDDIR_M4)/$(BINARYNAME).elf
 	cat $(BUILDDIR_M4)/text.bin >> $@
 	cat $(BUILDDIR_M4)/rodata.bin >> $@
 
+install:
+	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk install
+
 clean:
 	rm -rf $(BUILDDIR_A7)
 	rm -rf $(BUILDDIR_M4)
@@ -43,12 +47,19 @@ clean:
 # Resetting and starting the m4 copro will still need to be done by the a7, but the a7 won't need to copy fw data.
 # Then you could convert the combo.hex to a .bin and then .uimg file, which u-boot can load.
 a7:
-	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all image
+	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all 
 
 m4:
 	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk
 
-combo: a7 m4
+
+$(BUILDDIR_A7)/$(BINARYNAME).hex:
+	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk $@
+
+$(BUILDDIR_M4)/$(BINARYNAME).hex:
+	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk $@
+
+combo: a7 m4 $(BUILDDIR_A7)/$(BINARYNAME).hex $(BUILDDIR_M4)/$(BINARYNAME).hex
 	@ cat $(BUILDDIR_M4)/$(BINARYNAME).hex $(BUILDDIR_A7)/$(BINARYNAME).hex | \
 	awk 'BEGIN {} END {print ":00000001FF"} /^:00000001FF/{$$0 = ""} {if ($$0 != ""){ print } }' > build/combo.hex
 	@ ls -l build/combo.hex

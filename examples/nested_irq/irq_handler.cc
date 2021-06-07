@@ -1,4 +1,5 @@
 #include "interrupt.hh"
+#include "stm32mp1xx.h"
 
 #define STASH_FPU_REGS
 #define STASH_R5_R11_LR
@@ -9,7 +10,6 @@ void ISRHandler(unsigned irqnum)
 {
 	InterruptManager::callISR(irqnum);
 }
-
 
 void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler()
 {
@@ -101,4 +101,23 @@ void SVC_Handler()
 	while (1)
 		;
 }
+
+// Todo: is it possible to get something like this to work with (mostly) C code?
+// void __attribute__((interrupt("IRQ"))) __attribute__((section(".irqhandler"))) IRQ_Handler()
+// {
+// 	uint32_t stored_spsr;
+// 	// Get SPSR
+// 	asm volatile("MRS %0, spsr" : "=r"(stored_spsr));
+// 	asm volatile("cps #0x13\n");
+
+// 	auto irqnum = GIC_AcknowledgePending();
+// 	__enable_irq();
+// 	InterruptManager::callISR(irqnum);
+// 	__disable_irq();
+// 	GIC_EndInterrupt(irqnum);
+
+// 	// Set SPSR
+// 	asm volatile("cps #0x13\n");
+// 	asm volatile("MSR spsr_cxsf, %0" : : "r"(stored_spsr) : "memory");
+// }
 }
