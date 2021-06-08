@@ -11,7 +11,9 @@
 # to the 4th partition
 
 [ "$#" -eq 2 ] || { 
+	echo ""
 	echo "Usage: scripts/copy-bootloader.sh /dev/XXX build/" >&2; 
+	echo ""
 	echo "Where /dev/XXX is the sd card device, e.g. /dev/sdc or /dev/disk3"
 	echo "And 'build/' is the path to the u-boot image files, (make sure it ends in a '/')"
 	exit 1; 

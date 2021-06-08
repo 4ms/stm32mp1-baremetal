@@ -1,23 +1,27 @@
 # STM32MP1 Cortex-A7 baremetal example projects
 
 This is a set of example and template projects for bare-metal applications
-on the STM32MP15x Cortex-A7 microprocessor. Why the STM32MP1?Since there are lots of projects
-and tutorials about bare-metal Cortex-M applications, the projects highlight what's
-different between the Cortex-A and Cortex-M processors. I hope this also
-serves as a basic introduction to bare-metal real-time Cortex-A7
-applications. Most of the code is in modern C++, with some assembly thrown in
-there where needed.
+on the STM32MP15x Cortex-A7 microprocessor. I use "Bare-metal" to mean no OS,
+so unlike most STM32MP1 or Cortex-A tutorials, there is no Linux or RTOS. Basic
+systems such as handling interrupts, setting up a stack, memory management, are
+handled in these projects, as well as more advanced featues like parallel
+processing (multiple cores) and coprocessor control.
+
+The target audience is the developer who is already familiar with the Cortex-M
+series.  Rather than give a ground-up introduction to
+microcontrollers/processors, these projects assume you are familiar with MCUs
+such as the Cortex-M0/M3/M4/M7 or perhaps AVR (ATMEGA) chips.  You should be
+comfortable with the concepts of interrupts, stacks, HAL, etc. If not, you'll
+need to brush up on microcontroller fundamentals before proceeding. 
+
+Most of the code is in modern C++, with some assembly thrown in there where
+needed. You don't need to know C++ or assembly, the projects are very simple
+and should be easy to follow.
 
 I am actively refining and adding new example projects to this. If you want to
 see something, please ask! (open a github issue)
 
-My intended audience is people who have some familiarity with the ARM Cortex-M
-series, or perhaps ATMEGA series, or other microcontrollers. You should be
-comfortable with the concepts of interrupts, stacks, HAL, etc. If not, you'll
-need to brush up on microcontroller fundamentals before proceeding.
-
-
-Here's what's inside:
+Here's a list of the example projects:
 
   * **Minimal Boot**: Hello World project to prove the bootloader and your hardware is working.
   * **Ctest**: Demonstrates the startup code for a C/C++ project: setting up the stack, initializing globals, etc.
@@ -33,14 +37,21 @@ Here's what's inside:
 There are plenty of resources for using a Cortex-A with Linux. Why am I using it
 for a bare-metal project? The answer is simple: real-time audio processing.
 Lots of fast RAM and two fast processors (plus an M4 coprocessor) make
-this a great platform for real-time processing. But everything I've read about
-Cortex-A series chips say they're not for real-time systems. Why not? I wanted
-to find out...  And what I've discovered is that yes, you can use a Cortex-A as
-a powerful real-time processor (but it's not trivial, and of course you don't
-get all the awesome benefits of having Linux.) If you just need raw power and
-are comfortable with bare-metal programming (that is, not using an OS or even
-an RTOS), then hopefully these example projects can be a good foundation for
-your first Cortex-A bare-metal project.
+this a great platform for real-time processing. 
+
+Everything I've read about Cortex-A series chips say they're not for real-time
+systems. Why not? I wanted to find out...  And what I've discovered is that
+they can be used for real-time systems!
+Interrupt response is a little slower (in the order of 100's
+of nanoseconds slower) but that's made up for by all the other speed
+improvements (cache, faster RAM, faster clock speed), and the M4 coprocessor is
+there if you really do need those few 100ns.
+
+Of course you don't get all the awesome benefits of having Linux. But many
+embedded applications don't need Linux.
+If you just need raw processing power and fast RAM and caches, then
+hopefully these example projects can be a good foundation for your first
+Cortex-A bare-metal project.
 
 The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz or
 800MHz, L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite
@@ -52,32 +63,32 @@ perform a lot of reads and writes to memory (e.g.  reverb).
 The peripherals on the STM32MP1 are often identical to the peripherals on ST's
 Cortex-M7 chips such as the STM32H750 or H743. That means once you have the
 basic bare-metal framework up and running on the Cortex-A7, you may be able to
-just run your M7 project and all the I2C, SPI, SAI, UART, GPIO, etc will "just work".
+just run your M7 project and all the I2C, SPI, SAI, UART, GPIO, etc will "just work". 
+
+For a real-life example, I ported a very complex project (~1MSLOC) involving
+three SPI buses, two I2C buses, a 240x240 RGB565 display, external ADCs and DAC
+chips, a full-duplex 48kHz/24-bit codec, an external PWM LED driver, and a few
+other goodies. A few peripherals needed some minor tweaks that were well
+documented in the datasheet, but for the most part the project just ported over
+seamlessly -- with tons more free cycles for processing the audio stream!
 
 ## Overview
 
-Each project is meant to demonstrate a simple idea with as few dependencies as
-possible. The CMSIS device header for the STM32MP157 chip is used as the HAL
-(except for projects demonstrating the use of ST's Cube HAL, obviously). U-boot
-is used for the bootloader (don't worry if you're not familiar with U-boot!)
+Each project in the `examples/` directory is meant to demonstrate a simple idea
+with as few dependencies as possible. The CMSIS device header for the
+STM32MP157 chip is used to access the hardware registers, and in some cases
+I've written a simple driver class that lives in `examples/shared/drivers/`. 
+There also is some shared initialization code in `examples/shared/system/`, such as setting up the MMU and the caches. For the most part you can use these as-is for most projects (although you will need to modify the MMU setup if your project needs areas of RAM to be non-cacheable in order to use a DMA, for example). I plan to do a tutorial on the MMU eventually.
 
-The project has three parts: bootloader in `u-boot/` helper scripts in
-`scripts/` and the rest of the directories are example projects (`ctest/`,
-`minimal_boot/`, `nested_irq/`) and library code shared between projects
-(`lib/`)
+U-boot is a third-party tool that we use for the bootloader (don't worry if
+you're not familiar with U-boot!). The U-boot bootloader must be built once,
+and loaded once onto an SD card, which is inserted into the OSD32 board. You
+probably won't need to think about it ever again after that, unless your
+hardware changes substantially (or you run the `corpo_rproc` example project).
 
-The u-boot bootloader must be built once, and loaded once onto an SD Card,
-which is inserted into the OSD32 board. You probably won't need to think about it
-ever again after that, unless your hardware changes substantially (or you start
-to use the M4 core).  The application ultimately needs to live on the SD Card
-as well, but it can be flashed into RAM using an SWD flasher, making debugging
-much easier than having to copy files to an SD Card each time the code is
-changed.
-
-You can include this repo as a submodule into your project, or just copy it in.
-
-In these example projects so far, only a single A7 core is used; the M4 core or
-second A7 core are not used (yet-- but I'm working on some examples).
+The application ultimately needs to live on the SD card as well, but it can be
+flashed into RAM using an SWD flasher, making debugging much easier than having
+to copy files to an SD card each time the code is changed.
 
 ## Requirements
 
@@ -85,11 +96,12 @@ second A7 core are not used (yet-- but I'm working on some examples).
 
 These projects will build and run on an
 [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board,
-which is just a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/), 
-which is just an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
+which is just a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/).
+The OSD32MP15x SiP is an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
 plus SDRAM and PMIC in a BGA package. To port these projects to work on another PCB
 with an STM32MP15x chip, you may need to modify the device tree files of u-boot
 to match your hardware.
+
 
 You'll need an SD-card to insert into the OSD32 board. Any one will do.
 
@@ -101,7 +113,7 @@ and these helpful accessories [clip](https://www.tag-connect.com/product/tc2050-
 [adaptor](https://www.tag-connect.com/product/tc2050-arm2010-arm-20-pin-to-tc2050-adapter)
 and an SWD programmer like the SEGGER J-link).
 
-Finally, a USB-to-UART cable is very helpful. The OSD32 board has UART pins
+Finally, you'll need a USB-to-UART cable. The OSD32 board has UART pins
 exposed, and you can solder header pins and connect such a cable. The
 bootloader makes use of the UART and you can issue commands and peek around if
 you have issues. You also need it to use the USB gadget feature, which allows
@@ -111,37 +123,41 @@ UART connection to control it).  FTDI makes the TTL-232R-3V3, available from
 or there are other options like a host adaptor such as the [Binho
 Nova](https://binho.io/#shopify-section-1550985341560).
 
+[TODO]: I'm working on a port to the STM32MP1 Discovery board!
+
 ## 1) Setup:
 
-Make sure to clone the submodule (which is 4ms's u-boot fork):
+Clone the repo:
+
 ```
-git submodule update --init
+git clone https://github.com/4ms/stm32mp1-baremetal
 ```
 
 On macOS, you may need to install gsed and set your PATH to use it instead of
-sed. See Caveats section in `brew info gnu-sed` for details.  
+sed. This is needed for building U-boot. See Caveats section in `brew info
+gnu-sed` for details.  
 
 ```
 brew install gnu-sed
-export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`
+export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`  ##or add it to your .zshrc/.bashrc
 ```
 
 ## 2) Build and load U-boot:
 
-Build u-boot, putting the files in the build/ dir:
+Build u-boot using the script. The output will be in `third-party/u-boot/build/`:
 ```
+cd stm32mp1-baremetal
 scripts/build-u-boot.sh
 ```
 Ignore warnings about "format string is not a string literal" 
 
 Verify the output files were created:
 ```
-ls -l u-boot/build/u-boot-spl.stm32
-ls -l u-boot/build/u-boot.img
+ls -l third-party/u-boot/build/u-boot-spl.stm32
+ls -l third-party/u-boot/build/u-boot.img
 ```
 
-Now you need to format and partition an SD Card.  Insert a card and do:
-(TODO: Is this neccessary or does sgdisk -o wipe it?)
+Now you need to format and partition an SD card.  Insert a card and do:
 ```
 ## Linux:
 mkfs.fat -F 32 /dev/sdX
@@ -153,110 +169,154 @@ Where /dev/sdX or /dev/disk# is the actual device name, such as /dev/sdc or /dev
 
 _If you need to find out what the device is, you can type `ls -l /dev/sd` or `ls -l /dev/disk` and then hit Tab.
 Or, on macOS you can type `mount` instead of `ls -l /dev/disk<TAB>`
-Take note of what it lists. Then remove (or insert) the SD Card, and repeat the command. Whatever changed is the SD Card's device name(s). Use the base name, e.g. /dev/sdc, not /dev/sdc3._
+Take note of what it lists. Then remove (or insert) the SD card, and repeat the command. Whatever changed is the SD card's device name(s). Use the base name, e.g. /dev/sdc, not /dev/sdc3._
 
 You also could use the script `format-sdcard.sh`, though it's just a heavy wrapper around the above commands.
 
+I recommend you eject and re-insert the card at this point (you might get some cryptic errors if you don't).
 
 Then run the script to partition the drive 
 ```
 scripts/partition-sdcard.sh /dev/XXX 
 ```
-...where /dev/XXX is the SD Card device name such as /dev/sdc or /dev/disk2
+...where /dev/XXX is the SD card device name such as /dev/sdc or /dev/disk2
 This script will create four partitions, and format the fourth to FAT32.
 
 Then run the script to copy the bootloader (u-boot and spl) to the first three partitions:
 ```
-scripts/copy-bootloader.sh u-boot/build/
+# MacOS:
+scripts/copy-bootloader.sh third-party/u-boot/build/
+
+# Linux:
+sudo dd if=third-party/u-boot/u-boot-spl.stm32 of=/dev/sdX1
+sudo dd if=third-party/u-boot/u-boot-spl.stm32 of=/dev/sdX2
+sudo dd if=third-party/u-boot/u-boot.img of=$/dev/sdX3
+# Where /dev/sdX# is something like /dev/sdc1
 ```
-You may need to change the path `u-boot/build/` if the u-boot-spl.stm32 and u-boot.img files are somewhere else.
 
 ## 3) Power up the OSD32 board
 
-This is a good moment to test your hardware setup. You can skip this step if you've done this before.
-Remove the SD card from the computer and insert into the OSD32 board.
-Attach a USB-to-UART device to the UART pins on the OSD32 board (use UART4 if you've got a custom board-- only TX/RX and GND are needed).
-Start a terminal session that connects to the USB driver (I use minicom; there are many fine alternatives).
+This is a good moment to test your hardware setup. You can skip this step if
+you've done this before.  Remove the SD card from the computer and insert into
+the OSD32 board.  Attach a USB-to-UART device to the UART pins on the OSD32
+board (use UART4 if you've got a custom board-- only TX/RX and GND are needed).
+Start a terminal session that connects to the USB driver (I use minicom; there
+are many fine alternatives). The baud rate is 115200, 8N1.
 
-Insert the card into the OSD32 board and power it on. You should see boot messages, and then finally an error when it can't find
-bare-arm.uimg. Now it's time to build that file. 
+Example:
+```
+minicom -D /dev/cu.usbmodemXXXXX
+```
+
+Insert the card into the OSD32 board and power it on. You should see boot
+messages, and then finally an error when it can't find `a7-main.uimg`. Now it's
+time to build that file. 
 
 ## 4) Build the application
 ```
-cd ctest    # or the application directory if you're using this as a template in another app
+cd examples/minimal_boot
 make 
-ls -l build/*.elf
-ls -l build/*.uimg
+ls -l build/main.elf
+ls -l build/a7-main.uimg
 ```
 You should see the elf and the uimg files. Each of these is the compiled application, and either one must be loaded
 in SDRAM at 0xC2000040. You can load the elf file by using a debugger/programmer such as J-link connected to the SWD pins.
-Or, you can copy uimg file to the SD Card in the fourth partition the same way you would copy any file. 
-The former method is only temporary, requires a debugger to be attached, and will not persist after power down. However, it's much more convenient so it's preferred for Debug builds.
-In the latter method, the application firmware is stored on the SD Card, so this is the method for production or long-term testing. With this method, the bootloader will load the application into 0xC2000040 on boot.
+Or, you can copy the uimg file to the SD card's fourth partition the same way you would copy any file. 
 
-## 5) Copy application to SD card
+The SWD method is only temporary, requires a debugger to be attached, and will not persist after power down. However, it's much more convenient so it's preferred for Debug builds. That said, not everything gets reset/cleared when you do it this way, so sometimes you need to do a cold boot and run your firmware from the SD card.
 
-If you've never loaded the app onto the SD Card, you have to do this before you can use a debugger on the application (step #6).
-Or, if you want to have the application load even without a debugger attached, use this method.
+With the copy-to-SD-card method, the application firmware is stored on the SD card, so this is the method for production or long-term testing. With this method, the bootloader will load the application into 0xC2000040 on boot.
+
+## 5) Copy the application to the SD card
+
+If you've never loaded the app onto the SD card, you have to do this before you
+can use a debugger on the application (step #6).  Or, if you want to have the
+application load even without a debugger attached, use this method.
 
 There are two ways to do this:
 
-The easiest way is just to physically insert the SD card into your computer. If the SD Card is still in the OSD32 board, power down the OSD32 board, remove the SD Card, and put it back into the computer.
+##### The Simple Way:
 
-The more convenient way (if it works) is to use the USB gadget function. If you have the UART and USB cable connected (and your particular OS happens to be compatible with usb-gadget) then you might be able to mount the SD Card directly over the USB connection without having to physically touch the card. It works for me on macOS and an Ubuntu box, but YMMV.
+Physically remove the SD card from the OSD32 board and insert it into your computer. Then do:
+
+```
+cp build/a7-main.uimg /Volumes/BAREMETA/
+```
+
+Of course, adjust the command above to use the actual path to the mounted SD
+card. Or you can use drag-and-drop within your OS's GUI.
+
+##### The Convenient (but possibly won't work) Way:
+
+The more convenient way (if it works) is to use the USB gadget function. If you
+have the UART and USB cable connected (and your particular OS happens to be
+compatible with usb-gadget) then you might be able to mount the SD card
+directly over the USB connection without having to physically touch the card.
+It works for me on macOS and an Ubuntu box, but YMMV.
 
 Do this:
 1) When the board is booting, up look for the message `Hit any key to stop autoboot`, and press a key.
 2) You will see a UBOOT> prompt. Type the command: `ums 0 mmc 0`
-3) In another terminal window, look to see that there's a new device, e.g. /dev/sdX or /dev/disk#
+3) In another terminal window, look to see that there's a new device, e.g. /dev/sdX or /dev/disk#. The 4th partition might automatically mount on your computer, if not you can mount it manually.
 
-Regardless of whether you physically move the card or use USB gadget, the next step is make sure the sd card is mounted and then copy the application uimg file to it, just like you would copy a normal file to a normal USB stick. You have to re-name the file on the sd card to be `bare-arm.uimg`. 
+Copy it like a normal file to a normal USB stick:
 
 ```
-cp build/main.uimg /Volumes/MYAPP/bare-arm.uimg
+cp build/a7-main.uimg /Volumes/BAREMETA/
 ```
- Of course, adjust the command above so that you're using the actual uimg file that your application build created (might be app.uimg or something), and the actual path to the mounted sd card.
-Or you can use drag-and-drop within your OS's GUI, and then rename it.
 
-If your OS didn't automatically mount the drive, do:
-`sudo mount -o user /dev/sdX /tmp/sdcard_root`
-or use some other path where you mount things. Then copy the file as above.
+Of course, adjust the command above to use the actual path to the mounted SD
+card. Or you can use drag-and-drop within your OS's GUI.
 
-**Make sure the file is named `bare-arm.uimg` on the SD Card. The bootloader looks for a file with this exact name, in the root dir of a FAT32 filesystem on partition 4.**
+If your OS didn't automatically mount the drive, do: `sudo mount -o user
+/dev/sdX /tmp/sdcard_root` or use some other path where you mount things. Then
+copy the file as above.
 
-There's also a handy script to automatically mount and copy and unmount the drive. 
+**Make sure the file is named `a7-main.uimg` on the SD card. U-boot looks for a file with this exact name, in the root dir of a FAT32 filesystem on partition 4.**
+
+There's also a script to copy the file.
+Really, it's worthless except it shows you the before/after file sizes:
 ```
-scripts/copy-app-to-sdcard.sh build/myapp.uimg /dev/sdXX
+../../scripts/copy-app-to-sdcard.sh build/a7-main.uimg /Volumes/BAREMETA/
 ```
-Where `build/myapp.uimg` is the path to the app uimg file (perhaps ctest/bare-arm.uimg) and `/dev/sdXX` is the SD Card's fourth partition, e.g. `/dev/sdc4`.
-The script will mount the SD Card partition, remove the old bare-arm.uimg file, and copy the one you provided onto the correct place. It's not a fool-proof script,
-you may need to view the source and run commands manually if it's not working on your OS.
+
+The example projects have a `make install` target, so you can just type that. The path to the SD card is hard-coded into the Makefile, so you can either edit `examples/shared/makefile-common.mk` or do this:
+```
+SDCARD_MOUNT_PATH=/path/to/SDCARD make install
+```
 
 ## 6) Debug application
 
-This is completely optional, but is very convenient when developing. You must have a working bootloader and application uimg file, and the board must boot into the application.
-Once that's established, you can use a J-link programer and Ozone to load a new application image and debug it. 
+This is completely optional, but is very convenient when developing. You must
+have a working bootloader and application uimg file, and the board must boot
+into the application.  Once that's established, you can use a J-link programer
+and Ozone to load a new application image and debug it. 
 
-This README isn't a tutorial on using gdb or debuggers or SEGGER Ozone and J-link, so I won't go into detail here. The process is no different than debugging on any other STM32 device: you have an elf file and you use gdb (or Ozone) to load it.
-If you use Ozone, create a new Ozone project for the STM32MP157C Core A7, and load the elf file created back in step 4. That's it.
+This README isn't a tutorial on using gdb or debuggers or SEGGER Ozone and
+J-link, so I won't go into detail here. I also experience some quirks and odd
+behavior, which is common when debugging remote targets with software from
+SEGGER, or OpenOCD. The process is no different than debugging on any other
+STM32 device: you have an elf file and you use gdb (or Ozone) to load it.  If
+you use Ozone, create a new Ozone project for the STM32MP157C Core A7, and load
+the elf file created back in step 4. That's it.
 
-Remember, any file you load using a debugger will only get loaded into RAM. As soon as you power down, it will be lost.
+Remember, any file you load using a debugger will only get loaded into RAM. As
+soon as you power down, it will be lost.
 
 # Resources:
 
-Required reading: [The ARM Cortex-A Programmer's Guide](https://developer.arm.com/documentation/den0013/d)
+[The ARM Cortex-A Programmer's Guide](https://developer.arm.com/documentation/den0013/d).
+Don't expect anything to make sense until you at least skim this!
 
-This guide is very helpful, although geared for a different platform:
-http://umanovskis.se/files/arm-baremetal-ebook.pdf
+[Bare-metal ARM E-book](http://umanovskis.se/files/arm-baremetal-ebook.pdf)
+Very helpful, well written and easy to read. Geared for a different platform,
+but valuable information. The Ctest and Minimal Boot projects are loosely based
+on this. U-boot is also used here.
 
 ## Feedback
 
 I welcome any issues, questions, bug reports or pull requests, high-fives, or
-even just a "Hi I'm curious about this, kthxbye!" Please note that this project
-assumes you are familiar with embedded programming, the gcc toolchain, and
-support hardware (programmers, debuggers, etc). There are plenty of tutorials
-online to get acquanted with that stuff, and I want this project to pick up
-where existing resources leave off. I've found almost no support or example
-projects for using this powerful chip in a baremetal (or even RTOS) context, so
-I'm figuring this out as I go along and would appreciate knowing if anyone else
-finds this interesting too!
+even just a "Hi I'm curious about this, kthxbye!" I've found almost no support
+or example projects for using this powerful chip in a baremetal (or even RTOS)
+context, so I'm figuring this out as I go along and would appreciate knowing if
+anyone else finds this interesting too!
