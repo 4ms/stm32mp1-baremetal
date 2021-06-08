@@ -28,7 +28,7 @@ Here's a list of the example projects:
   * **Basic IRQ**: Basic interrupt handling with the A7's Generic Interrupt Controller.
   * **Nested IRQ**: More sophisticed interrupt handling: interrupts interrupting interrupts! (and using lambdas as handlers!)
   * **Multicore_a7**: Demonstrates running both A7 cores in parallel.
-  * **Copro_rproc**: Using the rproc feature of U-boot to load and run firmware on the M4 core in parallel with the A7 core.
+  * **Copro_rproc**: Using the rproc feature of U-Boot to load and run firmware on the M4 core in parallel with the A7 core.
   * **Copro_embedded**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
   * **STM32Cube HAL**: [TODO] demonstrates using ST's HAL.
   * **Audio Processor**: [TODO] not a simple example, but a real-world practical project that uses all of the above features to create an audio effect.
@@ -80,8 +80,8 @@ STM32MP157 chip is used to access the hardware registers, and in some cases
 I've written a simple driver class that lives in `examples/shared/drivers/`. 
 There also is some shared initialization code in `examples/shared/system/`, such as setting up the MMU and the caches. For the most part you can use these as-is for most projects (although you will need to modify the MMU setup if your project needs areas of RAM to be non-cacheable in order to use a DMA, for example). I plan to do a tutorial on the MMU eventually.
 
-U-boot is a third-party tool that we use for the bootloader (don't worry if
-you're not familiar with U-boot!). The U-boot bootloader must be built once,
+U-Boot is a third-party tool that we use for the bootloader (don't worry if
+you're not familiar with U-Boot!). The U-Boot bootloader must be built once,
 and loaded once onto an SD card, which is inserted into the OSD32 board. You
 probably won't need to think about it ever again after that, unless your
 hardware changes substantially (or you run the `corpo_rproc` example project).
@@ -99,7 +99,7 @@ These projects will build and run on an
 which is just a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/).
 The OSD32MP15x SiP is an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
 plus SDRAM and PMIC in a BGA package. To port these projects to work on another PCB
-with an STM32MP15x chip, you may need to modify the device tree files of u-boot
+with an STM32MP15x chip, you may need to modify the device tree files of U-Boot
 to match your hardware.
 
 
@@ -134,7 +134,7 @@ git clone https://github.com/4ms/stm32mp1-baremetal
 ```
 
 On macOS, you may need to install gsed and set your PATH to use it instead of
-sed. This is needed for building U-boot. See Caveats section in `brew info
+sed. This is needed for building U-Boot. See Caveats section in `brew info
 gnu-sed` for details.  
 
 ```
@@ -142,9 +142,9 @@ brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`  ##or add it to your .zshrc/.bashrc
 ```
 
-## 2) Build and load U-boot:
+## 2) Build and load U-Boot:
 
-Build u-boot using the script. The output will be in `third-party/u-boot/build/`:
+Build U-Boot using the script. The output will be in `third-party/u-boot/build/`:
 ```
 cd stm32mp1-baremetal
 scripts/build-u-boot.sh
@@ -272,7 +272,7 @@ If your OS didn't automatically mount the drive, do: `sudo mount -o user
 /dev/sdX /tmp/sdcard_root` or use some other path where you mount things. Then
 copy the file as above.
 
-**Make sure the file is named `a7-main.uimg` on the SD card. U-boot looks for a file with this exact name, in the root dir of a FAT32 filesystem on partition 4.**
+**Make sure the file is named `a7-main.uimg` on the SD card. U-Boot looks for a file with this exact name, in the root dir of a FAT32 filesystem on partition 4.**
 
 There's also a script to copy the file.
 Really, it's worthless except it shows you the before/after file sizes:
@@ -311,7 +311,7 @@ Don't expect anything to make sense until you at least skim this!
 [Bare-metal ARM E-book](http://umanovskis.se/files/arm-baremetal-ebook.pdf)
 Very helpful, well written and easy to read. Geared for a different platform,
 but valuable information. The Ctest and Minimal Boot projects are loosely based
-on this. U-boot is also used here.
+on this. U-Boot is also used here.
 
 ## Feedback
 
