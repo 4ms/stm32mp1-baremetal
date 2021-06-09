@@ -36,15 +36,21 @@ echo "Copying bootloader files..."
 
 case "$(uname -s)" in
 	Darwin)
+		echo "sudo dd if=$path/u-boot-spl.stm32 of=${1}s1"
+		echo "sudo dd if=$path/u-boot-spl.stm32 of=${1}s2" 
+		echo "sudo dd if=$path/u-boot.img of=${1}s3"
 		sudo dd if=$path/u-boot-spl.stm32 of=${1}s1
-		sudo dd if=$path/u-boot-spl.stm32 of=${1}s2 
-		sudo dd if=$path/u-boot.img of=$P1}s3
+		sudo dd if=$path/u-boot-spl.stm32 of=${1}s2
+		sudo dd if=$path/u-boot.img of=${1}s3
 		sleep 1
 		diskutil unmountDisk $1
 		;;
 	Linux)
+		echo "sudo dd if=$path/u-boot-spl.stm32 of=${1}1"
+		echo "sudo dd if=$path/u-boot-spl.stm32 of=${1}2"
+		echo "sudo dd if=$path/u-boot.img of=${1}3"
 		sudo dd if=$path/u-boot-spl.stm32 of=${1}1
-		sudo dd if=$path/u-boot-spl.stm32 of=${1}2 
+		sudo dd if=$path/u-boot-spl.stm32 of=${1}2
 		sudo dd if=$path/u-boot.img of=${1}3
 		sleep 1
 		sudo umount $1
