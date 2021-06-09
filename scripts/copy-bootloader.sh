@@ -10,12 +10,14 @@
 # After running this script, you must copy your application image file
 # to the 4th partition
 
-[ "$#" -eq 2 ] || { 
+[ "$#" -eq 2 ] || [ "$#" -eq 1 ] || { 
 	echo ""
-	echo "Usage: scripts/copy-bootloader.sh /dev/XXX build/" >&2; 
+	echo "Usage: scripts/copy-bootloader.sh /dev/XXX third-party/u-boot/build/" >&2; 
 	echo ""
 	echo "Where /dev/XXX is the sd card device, e.g. /dev/sdc or /dev/disk3"
-	echo "And 'build/' is the path to the u-boot image files, (make sure it ends in a '/')"
+	echo "And 'third-party/u-boot/build/' is the path to the dir containing the U-Boot image files, (make sure it ends in a '/')"
+	echo ""
+	echo "If you omit the last parameter, it defaults to third-party/u-boot/build/"
 	exit 1; 
 }
 
@@ -24,11 +26,37 @@ if [ ! -b $1 ]; then
 	exit 1;
 fi
 
-echo "Copying bootloaders... (this only works on macOS, for linux just remove the 's' in the of= part of the commands"
+if [ "$#" -eq 1 ]; then
+	path="third-party/u-boot/build/"
+else
+	path=$2
+fi
 
-sudo dd if=$2/u-boot-spl.stm32 of=$1s1
-sudo dd if=$2/u-boot-spl.stm32 of=$1s2 
-sudo dd if=$2/u-boot.img of=$1s3
+echo "Copying bootloader files..."
+
+case "$(uname -s)" in
+	Darwin)
+		sudo dd if=$path/u-boot-spl.stm32 of=${1}s1
+		sudo dd if=$path/u-boot-spl.stm32 of=${1}s2 
+		sudo dd if=$path/u-boot.img of=$P1}s3
+		sleep 1
+		diskutil unmountDisk $1
+		;;
+	Linux)
+		sudo dd if=$path/u-boot-spl.stm32 of=${1}1
+		sudo dd if=$path/u-boot-spl.stm32 of=${1}2 
+		sudo dd if=$path/u-boot.img of=${1}3
+		sleep 1
+		sudo umount $1
+		;;
+	*)
+		echo 'OS not supported: please copy the u-boot images onto partitions 1, 2, and 3 like this:'
+		echo "sudo dd if=$path/u-boot-spl.stm32 of=${1}s1"
+		echo "sudo dd if=$path/u-boot-spl.stm32 of=${1}s2"
+		echo "sudo dd if=$path/u-boot.img of=${1}s3"
+		;;
+esac
+
 
 echo "Done!"
 
