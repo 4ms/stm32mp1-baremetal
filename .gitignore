@@ -6,3 +6,5 @@
 build/
 firmware_m4.h
 firmware_m4_vectors.h
+
+examples/audio_processor/.clangd
