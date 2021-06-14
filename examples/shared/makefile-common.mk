@@ -7,7 +7,7 @@ BUILDDIR ?= build
 BINARYNAME ?= main
 UIMAGENAME ?= $(BUILDDIR)/a7-main.uimg
 
-OBJDIR = $(BUILDDIR)/obj
+OBJDIR = $(BUILDDIR)/obj/obj
 LOADADDR 	= 0xC2000040
 ENTRYPOINT 	= 0xC2000040
 
@@ -17,9 +17,9 @@ DEPS   	  = $(addprefix $(OBJDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
 MCU ?=  -mcpu=cortex-a7 -march=armv7ve -mfpu=neon-vfpv4 -mlittle-endian -mfloat-abi=hard
 
 ARCH_CFLAGS ?= -DUSE_FULL_LL_DRIVER \
-			  -DSTM32MP157Cxx \
-			  -DSTM32MP1 \
-			  -DCORE_CA7 \
+			   -DSTM32MP157Cxx \
+			   -DSTM32MP1 \
+			   -DCORE_CA7 \
 
 OPTFLAG ?= -O0
 
@@ -49,13 +49,13 @@ CXXFLAGS = $(CFLAGS) \
 		 $(EXTRACXXFLAGS) \
 
 LFLAGS = -Wl,--gc-sections \
-	-Wl,-Map,$(BUILDDIR)/$(BINARYNAME).map,--cref \
-	$(MCU)  \
-	-T $(LINKSCR) \
-	-nostdlib \
-	-nostartfiles \
-	-ffreestanding \
-	$(EXTRALDFLAGS) \
+		 -Wl,-Map,$(BUILDDIR)/$(BINARYNAME).map,--cref \
+		 $(MCU)  \
+		 -T $(LINKSCR) \
+		 -nostdlib \
+		 -nostartfiles \
+		 -ffreestanding \
+		 $(EXTRALDFLAGS) \
 
 DEPFLAGS = -MMD -MP -MF $(OBJDIR)/$(basename $<).d
 
@@ -94,7 +94,7 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
-	@$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
 
 $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)
