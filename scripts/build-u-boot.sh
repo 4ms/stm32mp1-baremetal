@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
-echo ""
-echo "Usage: "
-echo "scripts/build-u-boot.sh"
-echo ""
+if [ "$#" -ne 0 ]; then
+	echo ""
+	echo "Usage: "
+	echo "scripts/build-u-boot.sh"
+	echo ""
+	exit 1
+fi
 
 
 echo "What board do you want to build for?"
