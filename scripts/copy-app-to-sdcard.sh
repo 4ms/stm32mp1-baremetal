@@ -5,7 +5,9 @@
 	echo "Usage:"
 	echo "scripts/copy_to_sdcard.sh path/to/application.uimg /sdcard/mount-point/" >&2;
 	echo ""
-	echo "Where /dev/XXX is the name of the 4th partition, e.g. /dev/disk1s4 or /dev/sdc4"
+	echo "/sdcard/mount-point/ is where the SD card is mounted."
+	echo ""
+	echo "Example: scripts/copy_to_sdcard.sh examples/minimal_boot/build/a7-main.img /Volumes/BAREAPP/"
 	echo ""
 	exit 1;
 }
@@ -28,7 +30,7 @@ case "$(uname -s)" in
 		UNMOUNTCMD="unmount $2"
 		;;
 	*)
-		echo 'OS not supported'
+		echo 'OS not supported: disk was not unmounted'
 		;;
 esac
 
