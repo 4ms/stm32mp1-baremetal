@@ -229,7 +229,7 @@ There are two ways to do this:
 Physically remove the SD card from the OSD32 board and insert it into your computer. Then do:
 
 ```
-cp build/a7-main.uimg /Volumes/BAREMETA/
+cp build/a7-main.uimg /Volumes/BAREAPP/
 ```
 
 Of course, adjust the command above to use the actual path to the mounted SD
@@ -251,7 +251,7 @@ Do this:
 Copy it like a normal file to a normal USB stick:
 
 ```
-cp build/a7-main.uimg /Volumes/BAREMETA/
+cp build/a7-main.uimg /Volumes/BAREAPP/
 ```
 
 Of course, adjust the command above to use the actual path to the mounted SD
@@ -266,7 +266,7 @@ copy the file as above.
 There's also a script to copy the file.
 Really, it's worthless except it shows you the before/after file sizes:
 ```
-../../scripts/copy-app-to-sdcard.sh build/a7-main.uimg /Volumes/BAREMETA/
+../../scripts/copy-app-to-sdcard.sh build/a7-main.uimg /Volumes/BAREAPP/
 ```
 
 The example projects have a `make install` target, so you can just type that. The path to the SD card is hard-coded into the Makefile, so you can either edit `examples/shared/makefile-common.mk` or do this:
