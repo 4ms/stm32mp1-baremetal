@@ -130,5 +130,11 @@ ifneq "$(MAKECMDGOALS)" "clean"
 endif
 
 .PRECIOUS: $(DEPS) $(OBJECTS) $(ELF)
-.PHONY: all
+.PHONY: all clean install
 
+.PHONY: compile_commands
+compile_commands:
+	compiledb make
+	compdb -p ./ list > compile_commands.tmp 2>/dev/null
+	rm compile_commands.json
+	mv compile_commands.tmp compile_commands.json
