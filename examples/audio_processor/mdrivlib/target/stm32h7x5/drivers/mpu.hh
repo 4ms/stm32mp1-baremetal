@@ -4,8 +4,6 @@
 
 namespace mdrivlib
 {
-namespace stm32h7x5
-{
 struct MPU_ {
 	static void reset() {
 		_region_ctr = 0;
@@ -109,5 +107,4 @@ public:
 		return _region_ctr;
 	}
 };
-} // namespace stm32h7x5
 } // namespace mdrivlib

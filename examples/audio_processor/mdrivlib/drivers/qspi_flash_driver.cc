@@ -4,6 +4,9 @@
 
 // #define QSPI_DO_TESTS
 
+namespace mdrivlib
+{
+
 constexpr uint32_t QSpiFlash::get_64kblock_addr(uint8_t block64k_num) {
 	if (block64k_num >= QSPI_NUM_64KBLOCKS)
 		return 0;
@@ -181,7 +184,9 @@ bool QSpiFlash::Test_Sector(uint8_t sector_num) {
 	return true;
 }
 
-uint8_t QSpiFlash::test_encode_num(uint32_t num) { return (num * 7) + (num >> 7); }
+uint8_t QSpiFlash::test_encode_num(uint32_t num) {
+	return (num * 7) + (num >> 7);
+}
 
 bool QSpiFlash::Erase(uint32_t size, uint32_t BaseAddress, UseInterruptFlags use_interrupt) {
 	uint8_t status;
@@ -537,3 +542,4 @@ extern "C" void HAL_QSPI_TxCpltCallback(QSPI_HandleTypeDef *hqspi) {
 		QSpiFlash::instance_->QSPI_status = QSpiFlash::STATUS_TX_COMPLETE;
 }
 
+} // namespace mdrivlib

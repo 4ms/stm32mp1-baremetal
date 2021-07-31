@@ -5,9 +5,6 @@
 
 namespace mdrivlib
 {
-namespace stm32h7x5
-{
-
 namespace RCC_Enable
 {
 using RegisterDataT = uint32_t;
@@ -174,5 +171,4 @@ using D1CKREADY = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, CR), 
 using D2CKREADY = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, CR), RCC_CR_D2CKRDY>;
 
 } // namespace RCC_Clocks
-} // namespace stm32h7x5
 } // namespace mdrivlib

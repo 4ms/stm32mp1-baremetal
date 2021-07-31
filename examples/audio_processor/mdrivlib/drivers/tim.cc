@@ -1,8 +1,6 @@
 #include "tim.hh"
-#include "arch.hh"
 #include "clocks.hh"
 #include "periph.hh"
-#include "system.hh"
 
 namespace mdrivlib
 {
@@ -19,9 +17,9 @@ void TIMPeriph::init_periph(TIM_TypeDef *TIM, uint32_t period, uint16_t prescale
 }
 
 void TIMPeriph::init_periph_once(TIM_TypeDef *TIM, uint32_t period, uint16_t prescaler, uint32_t clock_division) {
-	static bool did_init[target::peripherals::TIM::NumPeriph]{false};
+	static bool did_init[PeriphUtil::TIM::NumPeriph]{false};
 
-	uint8_t tim_i = target::peripherals::TIM::to_num(TIM);
+	uint8_t tim_i = PeriphUtil::TIM::to_num(TIM);
 
 	if (tim_i == 0 || did_init[tim_i - 1])
 		return;

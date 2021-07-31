@@ -1,14 +1,14 @@
 #pragma once
 #include "spi.hh"
 #include "spi_transfer_config_struct.hh"
-#include "system.hh"
 #include "util/math.hh"
 
-// Arch-specific wrapper around a chip's SPI peripheral, handling multi-chip buses.
+// Wrapper around a chip's SPI peripheral, handling multi-chip buses.
 // Note: to use the enable_fixed_size_interrupt() method you must enable the ISR outside of this driver.
 // Note: The parent object of this is responsible for controlling any aux gpio pins: (data/cmd, dac latch, etc):
 namespace mdrivlib
 {
+
 template<typename SpiConfT>
 struct SpiTransferDriver {
 

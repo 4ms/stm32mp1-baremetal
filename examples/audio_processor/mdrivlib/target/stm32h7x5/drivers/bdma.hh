@@ -8,8 +8,6 @@
 
 namespace mdrivlib
 {
-namespace stm32h7x5
-{
 template<typename ConfT>
 struct BDMATransfer {
 	uint32_t _src_addr;
@@ -26,7 +24,7 @@ struct BDMATransfer {
 	DMAMUX_Channel_TypeDef *dmamux_chan;
 
 	BDMATransfer() {
-		target::RCC_Enable::BDMA_::set();
+		RCC_Enable::BDMA_::set();
 
 		if constexpr (ConfT::StreamNum == 0) {
 			stream = BDMA_Channel0;
@@ -229,5 +227,4 @@ private:
 		using ClearFlag = RegisterBits<WriteOnly, DMAMUX2_BASE, 0x000000FF>;
 	};
 };
-} // namespace stm32h7x5
 } // namespace mdrivlib

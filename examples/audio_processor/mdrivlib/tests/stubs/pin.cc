@@ -3,6 +3,8 @@
 #include "drivers/pin.hh"
 // clang-format on
 
+using namespace mdrivlib;
+
 static FakeGPIO fake_port(GPIO port);
 static FakeGPIO fake_port(GPIO port) {
 	// clang-format off

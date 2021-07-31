@@ -1,6 +1,8 @@
 #pragma once
 #include "stm32xx.h"
 
+namespace mdrivlib
+{
 struct DefaultDMAConf {
 	static constexpr unsigned DMAx = 0;
 	static constexpr unsigned StreamNum = 0;
@@ -54,7 +56,7 @@ struct DMA_LL_Config {
 
 template<typename T>
 constexpr volatile uint32_t *dma_get_ISR_reg(T stream) {
-	uint32_t s = (uint32_t)stream;
+	auto s = (uint32_t)stream;
 	return (s > (uint32_t)DMA2_Stream7) ? &(BDMA->ISR)
 		 : (s > (uint32_t)DMA2_Stream3) ? &(DMA2->HISR)
 		 : (s > (uint32_t)DMA1_Stream7) ? &(DMA2->LISR)
@@ -64,7 +66,7 @@ constexpr volatile uint32_t *dma_get_ISR_reg(T stream) {
 
 template<typename T>
 constexpr volatile uint32_t *dma_get_IFCR_reg(T stream) {
-	uint32_t s = (uint32_t)stream;
+	auto s = (uint32_t)stream;
 	return s > (uint32_t)DMA2_Stream7 ? &(BDMA->IFCR)
 		 : s > (uint32_t)DMA2_Stream3 ? &(DMA2->HIFCR)
 		 : s > (uint32_t)DMA1_Stream7 ? &(DMA2->LIFCR)
@@ -76,7 +78,7 @@ constexpr volatile uint32_t *dma_get_IFCR_reg(T stream) {
 
 template<typename T>
 constexpr volatile uint32_t *dma_get_ISR_reg(T stream) {
-	uint32_t s = (uint32_t)stream;
+	auto s = (uint32_t)stream;
 	return (s > (uint32_t)DMA2_Stream3) ? &(DMA2->HISR)
 		 : (s > (uint32_t)DMA1_Stream7) ? &(DMA2->LISR)
 		 : (s > (uint32_t)DMA1_Stream3) ? &(DMA1->HISR)
@@ -85,7 +87,7 @@ constexpr volatile uint32_t *dma_get_ISR_reg(T stream) {
 
 template<typename T>
 constexpr volatile uint32_t *dma_get_IFCR_reg(T stream) {
-	uint32_t s = (uint32_t)stream;
+	auto s = (uint32_t)stream;
 	return s > (uint32_t)DMA2_Stream3 ? &(DMA2->HIFCR)
 		 : s > (uint32_t)DMA1_Stream7 ? &(DMA2->LIFCR)
 		 : s > (uint32_t)DMA1_Stream3 ? &(DMA1->HIFCR)
@@ -96,7 +98,7 @@ constexpr volatile uint32_t *dma_get_IFCR_reg(T stream) {
 
 template<typename T>
 constexpr uint32_t dma_get_TC_flag_index(T stream) {
-	uint32_t s = (uint32_t)stream;
+	auto s = (uint32_t)stream;
 	return s == ((uint32_t)DMA1_Stream0) ? DMA_FLAG_TCIF0_4
 		 : s == ((uint32_t)DMA2_Stream0) ? DMA_FLAG_TCIF0_4
 		 : s == ((uint32_t)DMA1_Stream4) ? DMA_FLAG_TCIF0_4
@@ -128,7 +130,7 @@ constexpr uint32_t dma_get_TC_flag_index(T stream) {
 
 template<typename T>
 constexpr uint32_t dma_get_TE_flag_index(T stream) {
-	uint32_t s = (uint32_t)stream;
+	auto s = (uint32_t)stream;
 	return s == ((uint32_t)DMA1_Stream0) ? DMA_FLAG_TEIF0_4
 		 : s == ((uint32_t)DMA2_Stream0) ? DMA_FLAG_TEIF0_4
 		 : s == ((uint32_t)DMA1_Stream4) ? DMA_FLAG_TEIF0_4
@@ -160,7 +162,7 @@ constexpr uint32_t dma_get_TE_flag_index(T stream) {
 
 template<typename T>
 constexpr uint32_t dma_get_HT_flag_index(T stream) {
-	uint32_t s = (uint32_t)stream;
+	auto s = (uint32_t)stream;
 	return s == ((uint32_t)DMA1_Stream0) ? DMA_FLAG_HTIF0_4
 		 : s == ((uint32_t)DMA2_Stream0) ? DMA_FLAG_HTIF0_4
 		 : s == ((uint32_t)DMA1_Stream4) ? DMA_FLAG_HTIF0_4
@@ -189,3 +191,4 @@ constexpr uint32_t dma_get_HT_flag_index(T stream) {
 #endif
 										  : 0x00000000;
 }
+} // namespace mdrivlib

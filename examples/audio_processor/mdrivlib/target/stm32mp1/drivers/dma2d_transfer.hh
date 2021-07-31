@@ -6,10 +6,6 @@
 
 namespace mdrivlib
 {
-namespace stm32mp1
-{
-namespace core_a7
-{
 
 struct DMA2DTransfer {
 	static volatile inline bool is_dma2d_done = true;
@@ -32,8 +28,6 @@ struct DMA2DTransfer {
 		}
 	}
 };
-} // namespace core_a7
-} // namespace stm32mp1
 } // namespace mdrivlib
 
 #endif

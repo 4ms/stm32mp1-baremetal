@@ -1,10 +1,12 @@
 // Based on github.com/kensmith/cortex-from-scratch
+// Extended and modified by Dan Green.
 // Todo: Seek license/permission?
-
 #pragma once
 #include <cstdint>
 #include <limits>
 
+namespace mdrivlib
+{
 using regsize_t = uint32_t;
 
 // RegisterBits<>: Bits in register specified by mask
@@ -134,3 +136,4 @@ struct RegisterDualSetClear {
 		WriteOnly::set(reinterpret_cast<volatile regsize_t *>(ClearAddress), ClearMask);
 	}
 };
+} // namespace mdrivlib

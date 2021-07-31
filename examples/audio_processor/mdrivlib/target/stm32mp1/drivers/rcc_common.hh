@@ -5,10 +5,6 @@
 
 namespace mdrivlib
 {
-namespace stm32mp1
-{
-namespace core_a7
-{
 
 namespace RCC_Reset_Set
 {
@@ -320,11 +316,7 @@ using D2CKREADY = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, CR), 
 */
 } // namespace RCC_Clocks
 
-} // namespace core_a7
-
-namespace core_m4
-{
-namespace RCC_Enable
+namespace core_m4::RCC_Enable
 {
 // clang-format off
 using ADC12LP_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MC_AHB2LPENSETR), RCC_MC_AHB2LPENSETR_ADC12LPEN>;
@@ -552,7 +544,5 @@ using VREF_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MC_APB3EN
 using WWDG1LP_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MC_APB1LPENSETR), RCC_MC_APB1LPENSETR_WWDG1LPEN>;
 using WWDG1_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MC_APB1ENSETR), RCC_MC_APB1ENSETR_WWDG1EN>;
 // clang-format on
-} // namespace RCC_Enable
-} // namespace core_m4
-} // namespace stm32mp1
+} // namespace core_m4::RCC_Enable
 } // namespace mdrivlib

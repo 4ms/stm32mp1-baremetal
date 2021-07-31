@@ -3,6 +3,8 @@
 #include "spi_config_struct.hh"
 #include "stm32xx.h"
 
+namespace mdrivlib
+{
 struct DefaultSpiTransferConf {
 	struct SpiConf : DefaultSpiConf {
 		static constexpr uint16_t NumChips = 1;
@@ -12,4 +14,4 @@ struct DefaultSpiTransferConf {
 	static constexpr uint32_t NumChannelsPerChip = 2;
 	using AuxPin = FPin<GPIO::A, 0>;
 };
-
+} // namespace mdrivlib

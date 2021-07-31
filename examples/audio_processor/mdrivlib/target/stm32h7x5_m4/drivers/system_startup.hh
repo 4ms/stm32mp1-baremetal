@@ -1,22 +1,16 @@
 #pragma once
-#include "drivers/hsem.hh"
-#include "drivers/interrupt.hh"
-#include "drivers/rcc.hh"
-#include "drivers/stm32xx.h"
-// #include "drivers/system.hh"
-
-// #define DEBUG_MODE_DISABLE_I_CACHE
-// #define DEBUG_MODE_DISABLE_D_CACHE
+#include "hsem.hh"
+#include "interrupt.hh"
+#include "rcc.hh"
+#include "stm32xx.h"
 
 namespace mdrivlib
 {
-namespace stm32h7x5
-{
-namespace corem4
-{
-struct SystemClocks {
-	SystemClocks() {
-		target::RCC_Enable::HSEM_::set();
+struct SystemStartup {
+	SystemStartup() = delete;
+
+	static void init_clocks() {
+		RCC_Enable::HSEM_::set();
 
 		// Enable notification in order to wakeup
 		HWSemaphore<15>::enable_channel_ISR();
@@ -47,9 +41,7 @@ struct SystemClocks {
 		SystemCoreClock = SystemD2Clock;
 		HAL_InitTick(TICK_INT_PRIORITY);
 
-		target::RCC_Enable::SYSCFG_::set();
+		RCC_Enable::SYSCFG_::set();
 	}
 };
-} // namespace corem4
-} // namespace stm32h7x5
 } // namespace mdrivlib

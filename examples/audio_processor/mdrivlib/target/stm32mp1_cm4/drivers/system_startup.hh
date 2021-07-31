@@ -3,13 +3,8 @@
 #include "drivers/interrupt.hh"
 #include "drivers/rcc.hh"
 #include "drivers/stm32xx.h"
-#include "drivers/system.hh"
 
 namespace mdrivlib
-{
-namespace stm32mp1
-{
-namespace core_a7
 {
 struct SystemClocks {
 	SystemClocks() {
@@ -32,6 +27,4 @@ struct SystemClocks {
 		// target::RCC_Enable::SYSCFG_::set();
 	}
 };
-} // namespace core_a7
-} // namespace stm32mp1
 } // namespace mdrivlib

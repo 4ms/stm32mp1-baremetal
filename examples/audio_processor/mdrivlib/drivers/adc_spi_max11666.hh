@@ -4,7 +4,6 @@
 #include "spi.hh"
 #include "spi_config_struct.hh"
 #include "spi_transfer.hh"
-#include "system.hh"
 
 namespace mdrivlib
 {

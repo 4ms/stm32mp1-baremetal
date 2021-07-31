@@ -3,6 +3,9 @@
 
 extern uint32_t aux_core_start; // defined in startup.s
 
+namespace mdrivlib
+{
+
 // Controls MPU1 from MPU0
 struct SecondaryCoreController {
 
@@ -68,4 +71,17 @@ private:
 	}
 };
 
+struct PrimaryCoreController {
+	static void send_sgi(IRQn_Type irq) {
+		constexpr uint32_t filter_use_cpu_sel_bits = 0b00;
+		constexpr uint32_t cpu1 = 1 << 0; // CPU0
+		GIC_SendSGI(irq, cpu1, filter_use_cpu_sel_bits);
+	}
+	static void send_sgi(uint32_t irq) {
+		send_sgi(static_cast<IRQn_Type>(irq));
+	}
+};
+
+using MainCore = PrimaryCoreController;
 using SecondaryCore = SecondaryCoreController;
+} // namespace mdrivlib

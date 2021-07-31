@@ -13,7 +13,7 @@ static void reset_MPU() {
 	MPU->RBAR = 0xFFFFFFFF;
 	MPU->RASR = 0xFFFFFFFF;
 	MPU->CTRL = 0;
-	mdrivlib::stm32h7x5::MPU_::reset();
+	mdrivlib::MPU_::reset();
 }
 
 TEST_CASE("Fake MPU can be read/written") {
@@ -41,7 +41,7 @@ TEST_CASE("Disable cache in a region and check MPU registers are correct") {
 	uint32_t base2_size = log2(smallest_base2_region_that_fits_over_fake);
 	uint32_t expected_SIZE_val = base2_size - 1;
 
-	auto region_id = mdrivlib::stm32h7x5::MPU_::disable_cache_for_dma_buffer(fake_region_base_addr, fake_region_size);
+	auto region_id = mdrivlib::MPU_::disable_cache_for_dma_buffer(fake_region_base_addr, fake_region_size);
 
 	CHECK(region_id >= 0);
 
@@ -68,7 +68,7 @@ TEST_CASE("Region sizes are correct") {
 		uint32_t fake_region_size = 31;
 		uint32_t expected_SIZE_val = 4;
 		MPU->RASR = 0xFFFFFFFF;
-		mdrivlib::stm32h7x5::MPU_::disable_cache_for_dma_buffer(fake_region_base_addr, fake_region_size);
+		mdrivlib::MPU_::disable_cache_for_dma_buffer(fake_region_base_addr, fake_region_size);
 		CHECK((MPU->RASR & MPU_RASR_SIZE_Msk) == (expected_SIZE_val << MPU_RASR_SIZE_Pos));
 	}
 }
@@ -82,8 +82,7 @@ TEST_CASE("Enabling too many regions returns invalid region id") {
 	for (int i = 0; i < 34; i++) {
 		fake_region_base_addr += 0x01000000;
 
-		auto region_id =
-			mdrivlib::stm32h7x5::MPU_::disable_cache_for_dma_buffer(fake_region_base_addr, fake_region_size);
+		auto region_id = mdrivlib::MPU_::disable_cache_for_dma_buffer(fake_region_base_addr, fake_region_size);
 
 		if (i < 16)
 			CHECK(region_id >= 0); // valid

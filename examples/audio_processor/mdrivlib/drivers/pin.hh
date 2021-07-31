@@ -22,6 +22,8 @@
 #include "stm32xx.h"
 #include <cstddef>
 
+namespace mdrivlib
+{
 enum class PinPolarity {
 	Normal,
 	Inverted,
@@ -139,7 +141,7 @@ private:
 		return static_cast<uint32_t>(x);
 	}
 
-	auto GPIOPort(GPIO port_) const {
+	[[nodiscard]] auto GPIOPort(GPIO port_) const {
 		return reinterpret_cast<GPIO_TypeDef *>(port_);
 	}
 	void _init(PinMode mode, uint8_t af, PinPull pull, PinSpeed speed, PinOType otype);
@@ -190,3 +192,4 @@ private:
 	static PinSetHigh<Gpio, PinNum> _sethigh;
 	static PinRead<Gpio, PinNum> _read;
 };
+} // namespace mdrivlib

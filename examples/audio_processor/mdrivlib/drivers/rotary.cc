@@ -1,5 +1,8 @@
 #include "rotary.hh"
 
+namespace mdrivlib
+{
+
 enum HalfStepRotaryState : uint8_t {
 	HS_R_START = 0x0,
 	HS_R_CCW_BEGIN = 0x01,
@@ -33,7 +36,8 @@ RotaryBase::RotaryBase(GPIO portA, uint8_t pin_numA, GPIO portB, uint8_t pin_num
 	: pinA{portA, pin_numA, PinMode::Input, PinAF::AFNone, PinPull::Up, PinPolarity::Inverted}
 	, pinB{portB, pin_numB, PinMode::Input, PinAF::AFNone, PinPull::Up, PinPolarity::Inverted}
 	, state_{0x00}
-	, position_{0} {}
+	, position_{0} {
+}
 
 void RotaryBase::update(const uint32_t table_select) {
 	uint8_t pinstate = pinA.is_on() ? 0b00 : 0b10;
@@ -96,3 +100,4 @@ const uint8_t RotaryBase::StateTable[13][4] = {
 	// R_CCW_NEXT
 	{FS_R_CCW_NEXT, FS_R_CCW_FINAL, FS_R_CCW_BEGIN, FS_R_START | FS_DIR_CCW},
 };
+} // namespace mdrivlib

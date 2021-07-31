@@ -18,10 +18,10 @@ inline void invalidate_dcache_by_addr(ptr addr) {
 }
 
 inline void invalidate_dcache_by_range(void *addr, int32_t size) {
-	auto *u32_ptr = reinterpret_cast<uint32_t *>(addr);
+	auto addr_line = reinterpret_cast<uint32_t>(addr) & ~0b11111; // just keep Tag and Set/Index
 	while (size > 0) {
-		__set_DCIMVAC((uint32_t)u32_ptr);
-		u32_ptr += 1;
+		__set_DCIMVAC(addr_line);
+		addr_line += 0b100000;
 		size -= 4;
 	}
 	__DMB();
@@ -37,10 +37,14 @@ inline void clean_dcache_by_addr(ptr addr) {
 }
 
 inline void clean_dcache_by_range(void *addr, int32_t size) {
-	auto *u32_ptr = reinterpret_cast<uint32_t *>(addr);
+	auto addr_line = reinterpret_cast<uint32_t>(addr) & ~0b11111; // just keep Tag and Set/Index
+	// auto *u32_ptr = reinterpret_cast<uint32_t *>(addr_line);
+	// auto *u32_ptr = reinterpret_cast<uint32_t *>(addr);
 	while (size > 0) {
-		__set_DCCMVAC((uint32_t)u32_ptr);
-		u32_ptr += 1;
+		__set_DCCMVAC(addr_line);
+		addr_line += 0b100000;
+		// __set_DCCMVAC((uint32_t)u32_ptr);
+		// u32_ptr += 1;
 		size -= 4;
 	}
 	__DMB();

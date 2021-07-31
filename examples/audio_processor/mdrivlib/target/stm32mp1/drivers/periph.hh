@@ -2,13 +2,7 @@
 #include "stm32xx.h"
 #include <cstdint>
 
-namespace mdrivlib
-{
-namespace stm32mp1
-{
-namespace core_a7
-{
-namespace peripherals
+namespace mdrivlib::PeriphUtil
 {
 
 struct GPIO {
@@ -82,12 +76,7 @@ struct TIM {
 			return TIM7_IRQn;
 		else if (TIM == TIM8)
 			return TIM8_UP_IRQn;
-		// else if (TIM == TIM9)
-		//   return TIM9_IRQn;
-		// else if (TIM == TIM10)
-		//   return TIM10_IRQn;
-		// else if (TIM == TIM11)
-		//   return TIM1_TRG_COM_TIM11_IRQn;
+		// Note: TIM9 TIM10 TIM11 are not present on MP1
 		else if (TIM == TIM12)
 			return TIM12_IRQn;
 		else if (TIM == TIM13)
@@ -127,7 +116,4 @@ struct TIM {
 		return clock_division + 1;
 	}
 };
-} // namespace peripherals
-} // namespace core_a7
-} // namespace stm32mp1
-} // namespace mdrivlib
+} // namespace mdrivlib::PeriphUtil

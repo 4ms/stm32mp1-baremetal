@@ -1,14 +1,12 @@
 #pragma once
 #include <cstdint>
-namespace mdrivlib
-{
-namespace _CodecWM8731
+
+namespace mdrivlib::CodecWM8731Registers
 {
 #define WM8731_ADDR_0 0x1A
 #define WM8731_ADDR_1 0x1B
-#define WM8731_NUM_REGS 10
 
-const uint16_t CODEC_ADDRESS = WM8731_ADDR_0 << 1;
+#define WM8731_NUM_REGS 10
 
 // Registers:
 #define WM8731_REG_INBOTH ((uint8_t)8)
@@ -20,12 +18,12 @@ const uint16_t CODEC_ADDRESS = WM8731_ADDR_0 << 1;
 #define WM8731_REG_RESET 0x0F
 
 #define VOL_p12dB 0b11111 /*+12dB*/
-#define VOL_0dB 0b10111 /*0dB*/
-#define VOL_n1dB 0b10110 /*-1.5dB*/
-#define VOL_n3dB 0b10101 /*-3dB*/
-#define VOL_n6dB 0b10011 /*-6dB*/
-#define VOL_n12dB 15 /*-12dB*/
-#define VOL_n15dB 13 /*-15dB*/
+#define VOL_0dB 0b10111	  /*0dB*/
+#define VOL_n1dB 0b10110  /*-1.5dB*/
+#define VOL_n3dB 0b10101  /*-3dB*/
+#define VOL_n6dB 0b10011  /*-6dB*/
+#define VOL_n12dB 15	  /*-12dB*/
+#define VOL_n15dB 13	  /*-15dB*/
 /*1.5dB steps down to..*/
 #define VOL_n34dB 0b00000 /*-34.5dB*/
 
@@ -35,13 +33,13 @@ const uint16_t CODEC_ADDRESS = WM8731_ADDR_0 << 1;
 #define HPVOL_0dB (0b1111001)
 
 // Register 4: Analogue Audio Path Control
-#define MICBOOST (1 << 0) /* Boost Mic level */
-#define MUTEMIC (1 << 1) /* Mute Mic to ADC */
-#define INSEL_mic (1 << 2) /* Mic Select*/
+#define MICBOOST (1 << 0)	/* Boost Mic level */
+#define MUTEMIC (1 << 1)	/* Mute Mic to ADC */
+#define INSEL_mic (1 << 2)	/* Mic Select*/
 #define INSEL_line (0 << 2) /* LineIn Select*/
-#define BYPASS (1 << 3) /* Bypass Enable */
-#define DACSEL (1 << 4) /* Select DAC */
-#define SIDETONE (1 << 5) /* Enable Sidetone */
+#define BYPASS (1 << 3)		/* Bypass Enable */
+#define DACSEL (1 << 4)		/* Select DAC */
+#define SIDETONE (1 << 5)	/* Enable Sidetone */
 #define SIDEATT_neg15dB (0b11 << 6)
 #define SIDEATT_neg12dB (0b10 << 6)
 #define SIDEATT_neg9dB (0b01 << 6)
@@ -81,7 +79,7 @@ const uint16_t CODEC_ADDRESS = WM8731_ADDR_0 << 1;
 
 // Register: Sample Rate Controls
 #define SR_USB_NORM (1 << 0) // 1=USB (250/272fs), 0=Normal Mode (256/384fs)
-#define SR_BOSR (1 << 1) // Base Over-Sampling Rate: 0=250/256fs, 1=272/384fs (also 128/192)
+#define SR_BOSR (1 << 1)	 // Base Over-Sampling Rate: 0=250/256fs, 1=272/384fs (also 128/192)
 #define SR_NORM_8K (0b1011 << 2)
 #define SR_NORM_32K (0b0110 << 2)
 #define SR_NORM_44K (0b1000 << 2)
@@ -89,5 +87,4 @@ const uint16_t CODEC_ADDRESS = WM8731_ADDR_0 << 1;
 #define SR_NORM_88K (0b1111 << 2)
 #define SR_NORM_96K (0b0111 << 2)
 
-}; // namespace _CodecWM8731
-} // namespace mdrivlib
+}; // namespace mdrivlib::CodecWM8731Registers

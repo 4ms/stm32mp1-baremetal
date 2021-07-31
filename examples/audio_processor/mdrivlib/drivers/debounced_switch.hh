@@ -1,7 +1,9 @@
 #include "pin.hh"
 #include "util/debouncer.hh"
-#include <stdint.h>
+#include <cstdint>
 
+namespace mdrivlib
+{
 template<GPIO Gpio, uint16_t PinNum, PinPolarity Polarity>
 struct DebouncedPin : public Debouncer<0x00000001, 0xFFFFFFFE, 0x00000FFF> {
 	DebouncedPin() {
@@ -18,6 +20,7 @@ struct DebouncedPin : public Debouncer<0x00000001, 0xFFFFFFFE, 0x00000FFF> {
 	}
 };
 
+} // namespace mdrivlib
 // struct DebouncedSwitch : public Debouncer<0x0000003F, 0xFFFFFFC0, 0x00000FFF> {
 // 	DebouncedSwitch(GPIO port, uint8_t pin_num, PinPolarity polarity = PinPolarity::Inverted)
 // 		: pin_(port,

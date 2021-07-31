@@ -6,10 +6,6 @@
 
 namespace mdrivlib
 {
-namespace stm32mp1
-{
-namespace corea7 // FixMe: This is actually for both cores...
-{
 struct HSEM_ {
 	template<uint32_t Mask>
 	using IER = RegisterBits<ReadWrite, HSEM_BASE + offsetof(HSEM_Common_TypeDef, IER), Mask>;
@@ -23,9 +19,6 @@ struct HSEM_ {
 	template<uint32_t Mask>
 	using MISR = RegisterBits<ReadWrite, HSEM_BASE + offsetof(HSEM_Common_TypeDef, MISR), Mask>;
 };
-} // namespace corea7
-} // namespace stm32mp1
-} // namespace mdrivlib
 
 enum class HWSemaphoreFlag {
 	LockFailed = 0,
@@ -149,3 +142,4 @@ struct HWSemaphoreGlobalBase {
 
 	static inline CallbackT funcs[32];
 };
+} // namespace mdrivlib

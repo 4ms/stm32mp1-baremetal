@@ -1,22 +1,21 @@
 #include "hal_callback.hh"
 
-static void HALCallbackHandler(HALCallbackID cbnum)
+namespace mdrivlib
 {
+static void HALCallbackHandler(HALCallbackID cbnum) {
 	HALCallbackManager::callHALCB(cbnum);
 }
+} // namespace mdrivlib
 
-extern "C" void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-	HALCallbackHandler(HALCallbackID::I2C_MemTxCplt);
+extern "C" void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c) {
+	HALCallbackHandler(mdrivlib::HALCallbackID::I2C_MemTxCplt);
 }
 
-extern "C" void HAL_SAI_TxCpltCallback(SAI_HandleTypeDef *hsai)
-{
-	HALCallbackHandler(HALCallbackID::SAI_TxCplt);
+extern "C" void HAL_SAI_TxCpltCallback(SAI_HandleTypeDef *hsai) {
+	HALCallbackHandler(mdrivlib::HALCallbackID::SAI_TxCplt);
 }
-extern "C" void HAL_SAI_TxHalfCpltCallback(SAI_HandleTypeDef *hsai)
-{
-	HALCallbackHandler(HALCallbackID::SAI_TxHalfCplt);
+extern "C" void HAL_SAI_TxHalfCpltCallback(SAI_HandleTypeDef *hsai) {
+	HALCallbackHandler(mdrivlib::HALCallbackID::SAI_TxHalfCplt);
 }
 
 // Todo: allow for registration of mulitple periphs per HAL callback:

@@ -3,6 +3,9 @@
 #include "stm32xx.h"
 #include <functional>
 
+namespace mdrivlib
+{
+
 enum class HALCallbackID {
 	I2C_MemTxCplt,
 	SAI_TxCplt,
@@ -33,17 +36,17 @@ private:
 };
 
 struct HALCallback : public HALCallbackManager::HALCBBase {
-	// template<typename Func>
 	using Func = std::function<void(void)>;
+
 	HALCallback(HALCallbackID cbnum, const Func &&func)
 		: func_(std::move(func)) {
 		HALCallbackManager::registerHALCB(cbnum, this);
 	}
-	virtual void halcb() {
+	void halcb() override {
 		func_();
 	}
 
 private:
 	const std::function<void(void)> func_;
 };
-
+} // namespace mdrivlib

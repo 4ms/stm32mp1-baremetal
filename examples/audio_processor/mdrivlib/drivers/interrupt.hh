@@ -7,11 +7,13 @@ using IRQType = IRQn_Type;
 #ifdef TESTPROJECT
 #include "stubs/system.hh"
 #else
-#include "arch.hh"
-#include "system.hh"
+#include "interrupt_control.hh"
 #endif
 
 #include <functional>
+
+namespace mdrivlib
+{
 
 // Interrupt Manager class
 class Interrupt {
@@ -32,10 +34,10 @@ public:
 	// Register a callable object (e.g. lambda) to respond to an IRQ
 	// Sets the priority and enables the IRQ immediately
 	static void registerISR(IRQType irqnum, unsigned priority1, unsigned priority2, ISRType &&func) {
-		target::System::disable_irq(irqnum);
-		target::System::set_irq_priority(irqnum, priority1, priority2);
+		InterruptControl::disable_irq(irqnum);
+		InterruptControl::set_irq_priority(irqnum, priority1, priority2);
 		ISRs[irqnum] = std::move(func);
-		target::System::enable_irq(irqnum);
+		InterruptControl::enable_irq(irqnum);
 	}
 
 	static inline void callISR(uint32_t irqnum) {
@@ -46,8 +48,8 @@ public:
 	// This could be done for debug builds, to point to debug breakpoint
 	// Copies the provided func, so a function pointer is recommended
 	static inline void SetDefaultISR(ISRType func) {
-		for (uint32_t i = 0; i < NumISRs; i++)
-			ISRs[i] = func;
+		for (auto &ISR : ISRs)
+			ISR = func;
 	}
 
 private:
@@ -55,6 +57,8 @@ private:
 };
 
 using InterruptManager = Interrupt;
+
+} // namespace mdrivlib
 
 // Todo:
 // 		rename file to interrupt_handler.hh

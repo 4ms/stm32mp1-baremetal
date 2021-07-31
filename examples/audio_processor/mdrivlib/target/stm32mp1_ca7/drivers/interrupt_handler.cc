@@ -2,7 +2,7 @@
 
 extern "C" {
 void __attribute__((used)) ISRHandler(unsigned irqnum) {
-	InterruptManager::callISR(irqnum);
+	mdrivlib::InterruptManager::callISR(irqnum);
 }
 
 void __attribute__((used)) SVC_Handler() {

@@ -2,6 +2,9 @@
 #include "util/colors.hh"
 #include "util/oscs.hh"
 
+namespace mdrivlib
+{
+
 // MixedRgbLed: each color element can have a different
 // LED driver (e.g. PWM, DAC, external chip)
 // Todo: use concepts to ensure LedT all have .set();
@@ -101,3 +104,4 @@ private:
 //"Normal" RGB LED where each element has the same type of LED driver
 template<typename LedType, unsigned UpdateRateHz = 1000>
 using RgbLed = MixedRgbLed<LedType, LedType, LedType, UpdateRateHz>;
+} // namespace mdrivlib

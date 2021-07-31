@@ -2,6 +2,8 @@
 #include "rcc.hh"
 #include <cstring>
 
+namespace mdrivlib
+{
 struct CoproController {
 
 	// Allow MCU to boot if it's reset.
@@ -34,3 +36,5 @@ struct CoproController {
 };
 
 using Copro = CoproController;
+
+} // namespace mdrivlib
