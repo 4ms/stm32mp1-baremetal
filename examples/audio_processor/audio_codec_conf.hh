@@ -1,10 +1,13 @@
-#include "drivers/sai_config_struct.hh"
 #include "drivers/i2c_config_struct.hh"
+#include "drivers/sai_config_struct.hh"
+
+using mdrivlib::GPIO;
+using mdrivlib::I2CConfig;
 
 const I2CConfig i2c_conf = {
 	.I2Cx = I2C1,
 	.SCL = {GPIO::D, 12, LL_GPIO_AF_5},
-	.SDA = {GPIO::F, 15, LL_GPIO_AF_5}, 
+	.SDA = {GPIO::F, 15, LL_GPIO_AF_5},
 	.timing =
 		{
 			.PRESC = 0x00,
@@ -15,6 +18,8 @@ const I2CConfig i2c_conf = {
 	.priority1 = 0,
 	.priority2 = 1,
 };
+
+using mdrivlib::SaiConfig;
 
 const SaiConfig sai_conf = {
 	.sai = SAI2,
@@ -49,4 +54,13 @@ const SaiConfig sai_conf = {
 	.LRCLK = {GPIO::I, 7, LL_GPIO_AF_10},
 	.SD_DAC = {GPIO::I, 6, LL_GPIO_AF_10},	// PI6 = SAI2_SD_A
 	.SD_ADC = {GPIO::F, 11, LL_GPIO_AF_10}, // PF11 = SAI2_SD_B
+	.reset_pin = {GPIO::G, 9},
+
+	.bus_address = 0,
+
+	.num_tdm_ins = 2,
+	.num_tdm_outs = 2,
+
+	.sync_send = SaiConfig::NoSendSync,
+	.sync_receive_from = SaiConfig::NoReceiveSync,
 };
