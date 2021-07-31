@@ -1,5 +1,8 @@
 #include "interrupt.hh"
 
+namespace mdrivlib
+{
+
 static void ISRHandler(unsigned irqnum) {
 	InterruptManager::callISR(irqnum);
 }
@@ -262,5 +265,7 @@ void IRQ_Trampoline_252() { ISRHandler(252); }
 void IRQ_Trampoline_253() { ISRHandler(253); }
 void IRQ_Trampoline_254() { ISRHandler(254); }
 void IRQ_Trampoline_255() { ISRHandler(255); }
-}
 // clang-format on
+}
+
+} // namespace mdrivlib

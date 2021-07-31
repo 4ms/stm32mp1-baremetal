@@ -2,13 +2,7 @@
 #include "register_access.hh"
 #include "stm32xx.h"
 
-namespace mdrivlib
-{
-namespace stm32mp1
-{
-namespace core_a7
-{
-namespace RCC_Enable_LowPower
+namespace mdrivlib::RCC_Enable_LowPower
 {
 // Low Power
 using LP_ADC12_ =
@@ -232,7 +226,4 @@ using LP_USBPHY_ =
 	RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MP_APB4LPENSETR), RCC_MP_APB4LPENSETR_USBPHYLPEN>;
 using LP_VREF_ =
 	RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MP_APB3LPENSETR), RCC_MP_APB3LPENSETR_VREFLPEN>;
-} // namespace RCC_Enable_LowPower
-} // namespace core_a7
-} // namespace stm32mp1
-} // namespace mdrivlib
+} // namespace mdrivlib::RCC_Enable_LowPower

@@ -1,6 +1,8 @@
 #include "doctest.h"
 #include "drivers/frame_buffer_led.hh"
 
+using namespace mdrivlib;
+
 TEST_CASE("frame_buffer_led_tests") {
 	uint32_t fb[12];
 	const uint32_t DUMMYVAL = 55;

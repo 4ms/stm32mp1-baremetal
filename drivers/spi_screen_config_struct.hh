@@ -4,6 +4,8 @@
 #include "spi_config_struct.hh"
 #include "stm32xx.h"
 
+namespace mdrivlib
+{
 struct DefaultSpiScreenConf {
 	struct ScreenSpiConf : DefaultSpiConf {
 		static constexpr uint16_t NumChips = 1;
@@ -17,3 +19,4 @@ struct DefaultSpiScreenConf {
 	static constexpr uint32_t rowstart = 80;
 	static constexpr uint32_t colstart = 0;
 };
+} // namespace mdrivlib

@@ -8,30 +8,30 @@
 // Todo: move to target-specific dir (is shared between H7 and MP1, so one can #include the other)
 namespace mdrivlib
 {
+
 template<typename ConfT>
 struct SpiPeriph {
 public:
 	static inline const unsigned N = ConfT::PeriphNum;
 
 	template<unsigned M>
-	using IER = typename target::SPI<N>::template IER<M>;
+	using IER = typename SPI_<N>::template IER<M>;
 	template<unsigned M>
-	using CR1 = typename target::SPI<N>::template CR1<M>;
+	using CR1 = typename SPI_<N>::template CR1<M>;
 	template<unsigned M>
-	using CR2 = typename target::SPI<N>::template CR2<M>;
+	using CR2 = typename SPI_<N>::template CR2<M>;
 	template<unsigned M>
-	using SR = typename target::SPI<N>::template SR<M>;
+	using SR = typename SPI_<N>::template SR<M>;
 	template<unsigned M>
-	using IFCR = typename target::SPI<N>::template IFCR<M>;
+	using IFCR = typename SPI_<N>::template IFCR<M>;
 	template<unsigned M>
-	using CFG1 = typename target::SPI<N>::template CFG1<M>;
+	using CFG1 = typename SPI_<N>::template CFG1<M>;
 	template<unsigned M>
-	using CFG2 = typename target::SPI<N>::template CFG2<M>;
+	using CFG2 = typename SPI_<N>::template CFG2<M>;
 	template<unsigned M>
-	using CRCPOLY = typename target::SPI<N>::template CRCPOLY<M>;
+	using CRCPOLY = typename SPI_<N>::template CRCPOLY<M>;
 
-	SpiPeriph() {
-	}
+	SpiPeriph() = default;
 
 	void configure() {
 		disable();
@@ -64,7 +64,7 @@ public:
 			static_assert(ConfT::NumChips <= 4, "mdrivlib::SpiPeriph only supports selecting 1-4 chips");
 		}
 
-		target::RCC_Enable::SPI<N>::set();
+		RCC_Enable::SPI<N>::set();
 
 		// Todo: make configurable
 		CR1<SPI_CR1_IOLOCK>::clear();
@@ -205,7 +205,7 @@ public:
 		CFG1<SPI_CFG1_TXDMAEN>::set();
 	}
 	uint32_t get_tx_datareg_addr() {
-		return reinterpret_cast<uint32_t>(target::SPI<N>::TXDR::BaseAddress);
+		return reinterpret_cast<uint32_t>(SPI_<N>::TXDR::BaseAddress);
 	}
 
 	// Status flags
@@ -245,22 +245,22 @@ public:
 		CFG1<SPI_CFG1_FTHLV>::write((num_bytes - 1) << SPI_CFG1_FTHLV_Pos);
 	}
 	void load_tx_data(uint16_t data0, uint16_t data1) {
-		target::SPI<N>::TXDR::write(data0 << 16 | data1);
+		SPI_<N>::TXDR::write(data0 << 16 | data1);
 	}
 	void load_tx_data(uint32_t data) {
 		// Todo: Do we need to have variable-sized writes?
 		// if constexpr (ConfT::data_size == 16)
-		// 	target::SPI<N>::TXDR_16::write((uint16_t)data);
+		// 	SPI_<N>::TXDR_16::write((uint16_t)data);
 		// if constexpr (ConfT::data_size == 8)
-		// 	target::SPI<N>::TXDR_8::write((uint8_t)data);
+		// 	SPI_<N>::TXDR_8::write((uint8_t)data);
 		// if constexpr (ConfT::data_size > 16)
-		target::SPI<N>::TXDR::write(data);
+		SPI_<N>::TXDR::write(data);
 	}
 	void start_transfer() {
 		CR1<SPI_CR1_CSTART>::set();
 	}
 	uint16_t received_data() {
-		return target::SPI<N>::RXDR::read();
+		return SPI_<N>::RXDR::read();
 	}
 
 	// Half-duplex mode

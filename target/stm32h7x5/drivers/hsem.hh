@@ -4,8 +4,9 @@
 #include "stm32xx.h"
 #include <functional>
 
-namespace mdrivlib::stm32h7x5
+namespace mdrivlib
 {
+
 struct HSEM_ {
 	template<uint32_t Mask>
 	using IER = RegisterBits<ReadWrite, HSEM_BASE + offsetof(HSEM_Common_TypeDef, IER), Mask>;
@@ -19,13 +20,13 @@ struct HSEM_ {
 	template<uint32_t Mask>
 	using MISR = RegisterBits<ReadWrite, HSEM_BASE + offsetof(HSEM_Common_TypeDef, MISR), Mask>;
 };
-} // namespace mdrivlib::stm32h7x5
 
 enum class HWSemaphoreFlag {
 	LockFailed = 0,
 	LockedOk = 1,
 	// AlreadySet, SameCoreAlreadySet, OtherCoreAlreadySet
 };
+
 template<uint32_t SemaphoreID>
 struct HWSemaphore {
 	HWSemaphore() = delete;
@@ -142,3 +143,5 @@ struct HWSemaphoreGlobalBase {
 
 	static inline CallbackT funcs[32];
 };
+
+} // namespace mdrivlib

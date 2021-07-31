@@ -30,13 +30,12 @@
 
 #include "codec.hh"
 #include "i2c.hh"
-#include "sai.hh"
-#include <stdint.h>
+#include <cstdint>
 
 namespace mdrivlib
 {
 
-class CodecWM8731 : public ICodec {
+class CodecWM8731 : public CodecBase {
 public:
 	enum Error {
 		CODEC_NO_ERR = 0,
@@ -57,21 +56,15 @@ public:
 
 	CodecWM8731(I2CPeriph &i2c, const SaiConfig &saidef);
 
-	virtual void init();
-	virtual void start();
-	virtual uint32_t get_samplerate();
-	virtual void set_txrx_buffers(uint8_t *tx_buf_ptr, uint8_t *rx_buf_ptr, uint32_t block_size);
-	virtual void set_callbacks(std::function<void()> &&tx_complete_cb, std::function<void()> &&tx_half_complete_cb);
+	Error init();
+	void start();
+	uint32_t get_samplerate();
 
 	Error init_at_samplerate(uint32_t sample_rate);
 	Error power_down();
 
-	DMA_HandleTypeDef *get_rx_dmahandle();
-	DMA_HandleTypeDef *get_tx_dmahandle();
-
 private:
 	I2CPeriph &i2c_;
-	SaiPeriph sai_;
 	uint32_t samplerate_;
 
 	Error _write_register(uint8_t RegisterAddr, uint16_t RegisterValue);
@@ -79,7 +72,8 @@ private:
 	Error _reset();
 	uint16_t _calc_samplerate(uint32_t sample_rate);
 
-	// const static inline uint32_t I2C_BASE_ADDRESS = 0b10000000;
+	const uint8_t I2C_address; // I2C_BASE_ADDRESS = 0b10000000;
 	const static inline auto REGISTER_ADDR_SIZE = I2C_MEMADD_SIZE_8BIT;
 };
+
 } // namespace mdrivlib

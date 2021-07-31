@@ -6,6 +6,7 @@
 
 namespace mdrivlib
 {
+
 class SaiPeriph {
 public:
 	enum Error {
@@ -32,8 +33,6 @@ public:
 
 	void start();
 	void stop();
-	DMA_HandleTypeDef *get_tx_dmahandle();
-	DMA_HandleTypeDef *get_rx_dmahandle();
 
 private:
 	const SaiConfig &saidef_;

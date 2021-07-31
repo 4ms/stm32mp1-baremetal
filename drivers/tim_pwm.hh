@@ -5,6 +5,7 @@
 
 namespace mdrivlib
 {
+
 enum class TimChannelNum {
 	_1 = LL_TIM_CHANNEL_CH1,
 	_1N = LL_TIM_CHANNEL_CH1N,

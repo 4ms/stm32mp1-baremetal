@@ -5,7 +5,6 @@
 #include "rcc.hh"
 #include "register_access.hh"
 #include "stm32xx.h"
-#include "system.hh"
 
 namespace mdrivlib
 {
@@ -121,7 +120,7 @@ I2CPeriph::Error I2CPeriph::init(const I2CConfig &defs) {
 			PinSpeed::High,
 			PinOType::OpenDrain};
 
-	target::I2C::init(defs);
+	I2C::init(defs);
 	return _init_periph(defs.I2Cx, defs.timing);
 }
 
@@ -170,17 +169,17 @@ I2CPeriph::Error I2CPeriph::_init_periph(I2C_TypeDef *periph, const I2CTimingCon
 
 void I2CPeriph::enable_IT(uint8_t pri1, uint8_t pri2) {
 	event_isr.registerISR(i2c_irq_num_, [this]() { i2c_event_handler(); });
-	target::System::set_irq_priority(i2c_irq_num_, pri1, pri2);
-	target::System::enable_irq(i2c_irq_num_);
+	InterruptControl::set_irq_priority(i2c_irq_num_, pri1, pri2);
+	InterruptControl::enable_irq(i2c_irq_num_);
 
 	error_isr.registerISR(i2c_err_irq_num_, [this]() { i2c_error_handler(); });
-	target::System::set_irq_priority(i2c_err_irq_num_, pri1, pri2);
-	target::System::enable_irq(i2c_err_irq_num_);
+	InterruptControl::set_irq_priority(i2c_err_irq_num_, pri1, pri2);
+	InterruptControl::enable_irq(i2c_err_irq_num_);
 }
 
 void I2CPeriph::disable_IT() {
-	target::System::disable_irq(i2c_irq_num_);
-	target::System::disable_irq(i2c_err_irq_num_);
+	InterruptControl::disable_irq(i2c_irq_num_);
+	InterruptControl::disable_irq(i2c_err_irq_num_);
 }
 
 void I2CPeriph::i2c_event_handler() {

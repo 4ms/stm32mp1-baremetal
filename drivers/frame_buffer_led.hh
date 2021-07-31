@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+namespace mdrivlib
+{
 // Todo: template param for bit depth
 class FrameBufferLED {
 	const uint8_t LEDBitDepth = 8;
@@ -16,19 +18,16 @@ public:
 	}
 
 private:
-	uint32_t *buffer;
+	uint32_t *buffer{nullptr};
 
 protected:
-	FrameBufferLED()
-		: buffer(nullptr) {
-	}
+	FrameBufferLED() = default;
 };
 
 class NoFrameBufferLED : public FrameBufferLED {
 public:
-	NoFrameBufferLED() {
-	}
+	NoFrameBufferLED() = default;
 	void set(uint32_t val) const {
 	}
 };
-
+} // namespace mdrivlib

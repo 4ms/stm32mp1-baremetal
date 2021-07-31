@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+namespace mdrivlib
+{
 
 template<typename DACType, typename BufferT>
 struct DacStream : DACType {
@@ -50,3 +52,4 @@ struct GPIOStream {
 	BufferT state_buffer;
 	PinT init_pin;
 };
+} // namespace mdrivlib

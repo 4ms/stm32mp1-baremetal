@@ -5,6 +5,8 @@
 #include "drivers/rotary.hh"
 // clang-format on
 
+using namespace mdrivlib;
+
 static void set_fake_rotary(uint8_t AB);
 static void set_fake_rotary(uint8_t AB) {
 	set_fake_pin(FakeGPIO::A, 0, AB & 0b10 ? false : true);

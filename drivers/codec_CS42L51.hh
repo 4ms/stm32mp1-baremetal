@@ -31,18 +31,18 @@
 #include "codec.hh"
 #include "i2c.hh"
 #include "sai.hh"
-#include <stdint.h>
+#include <cstdint>
 
 namespace mdrivlib
 {
 
-class CodecCS42L51 : public ICodec {
+class CodecCS42L51 : public CodecBase {
 public:
 	enum Error {
 		CODEC_NO_ERR = 0,
 		CODEC_I2C_ERR,
 		I2C_INIT_ERR,
-		I2S_CLK_INIT_ERR,
+		SAI_INIT_ERR,
 		I2STX_INIT_ERR,
 		I2SRX_INIT_ERR,
 		I2STX_DMA_INIT_ERR,
@@ -55,31 +55,26 @@ public:
 		INVALID_PARAM
 	};
 
-	CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef);
+	CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef, PinNoInit reset_pin, uint8_t address_bit = 1);
 
-	virtual void init();
-	virtual void start();
-	virtual uint32_t get_samplerate();
-	virtual void set_txrx_buffers(uint8_t *tx_buf_ptr, uint8_t *rx_buf_ptr, uint32_t block_size);
-	virtual void set_callbacks(std::function<void()> &&tx_complete_cb, std::function<void()> &&tx_half_complete_cb);
+	Error init();
+	void start();
+	uint32_t get_samplerate();
 
 	Error init_at_samplerate(uint32_t sample_rate);
 	Error power_down();
-
-	DMA_HandleTypeDef *get_rx_dmahandle();
-	DMA_HandleTypeDef *get_tx_dmahandle();
+	Error power_up();
 
 private:
 	I2CPeriph &i2c_;
-	SaiPeriph sai_;
 	uint32_t samplerate_;
+	Pin reset_pin_;
 
 	Error _write_register(uint8_t RegisterAddr, uint16_t RegisterValue);
 	Error _write_all_registers(uint32_t sample_rate);
-	Error _reset();
-	uint16_t _calc_samplerate(uint32_t sample_rate);
+	auto _calc_samplerate(uint32_t sample_rate);
 
-	// The address of the audio codec is 0x4A = 0b1001010x: 0x94 to write and 0x95 to read
+	const uint8_t I2C_address;
 	const static inline auto REGISTER_ADDR_SIZE = I2C_MEMADD_SIZE_8BIT;
 };
 } // namespace mdrivlib

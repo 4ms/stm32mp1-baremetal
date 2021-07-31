@@ -6,13 +6,6 @@
 
 namespace mdrivlib
 {
-DMA_HandleTypeDef *SaiPeriph::get_rx_dmahandle() {
-	return &hdma_rx;
-}
-
-DMA_HandleTypeDef *SaiPeriph::get_tx_dmahandle() {
-	return &hdma_tx;
-}
 
 SaiPeriph::Error SaiPeriph::init() {
 	_init_pins();
@@ -45,12 +38,12 @@ SaiPeriph::Error SaiPeriph::init() {
 	__HAL_SAI_ENABLE(&hsai_tx);
 
 	tx_irqn = saidef_.dma_init_tx.IRQn;
-	target::System::set_irq_priority(tx_irqn, saidef_.dma_init_tx.pri, saidef_.dma_init_tx.subpri);
-	target::System::disable_irq(tx_irqn);
+	InterruptControl::set_irq_priority(tx_irqn, saidef_.dma_init_tx.pri, saidef_.dma_init_tx.subpri);
+	InterruptControl::disable_irq(tx_irqn);
 
 	rx_irqn = saidef_.dma_init_rx.IRQn;
-	target::System::set_irq_priority(rx_irqn, saidef_.dma_init_rx.pri, saidef_.dma_init_rx.subpri);
-	target::System::disable_irq(rx_irqn);
+	InterruptControl::set_irq_priority(rx_irqn, saidef_.dma_init_rx.pri, saidef_.dma_init_rx.subpri);
+	InterruptControl::disable_irq(rx_irqn);
 
 	return SAI_NO_ERR;
 }
@@ -287,14 +280,14 @@ void SaiPeriph::start() {
 		}
 	});
 
-	target::System::enable_irq(_irqn);
+	InterruptControl::enable_irq(_irqn);
 
 	HAL_SAI_Transmit_DMA(&hsai_tx, tx_buf_ptr_, block_size_);
 	HAL_SAI_Receive_DMA(&hsai_rx, rx_buf_ptr_, block_size_);
 }
 
 void SaiPeriph::stop() {
-	target::System::disable_irq(tx_irqn);
-	target::System::disable_irq(rx_irqn);
+	InterruptControl::disable_irq(tx_irqn);
+	InterruptControl::disable_irq(rx_irqn);
 }
 } // namespace mdrivlib

@@ -1,6 +1,9 @@
 #pragma once
 #include <cstdint>
 
+namespace mdrivlib
+{
+
 struct ST77XX {
 	constexpr static uint8_t ST_CMD_DELAY = 0x80;
 
@@ -87,3 +90,4 @@ static const uint8_t generic_st7789[] =  {
 
 // clang-format on
 
+} // namespace mdrivlib

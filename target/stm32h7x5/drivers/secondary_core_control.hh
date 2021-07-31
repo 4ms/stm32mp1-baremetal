@@ -1,4 +1,9 @@
+namespace mdrivlib
+{
 
 struct SecondaryCore {
-	static void send_sgi(){}
+	static void send_sgi() {
+	}
 };
+
+} // namespace mdrivlib

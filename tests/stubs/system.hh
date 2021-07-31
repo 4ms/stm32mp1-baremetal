@@ -4,7 +4,7 @@
 namespace TestProject
 {
 using IRQn_Type = uint32_t;
-struct System {
+struct InterruptControl {
 	static void set_irq_priority(IRQn_Type irqn, uint32_t pri1, uint32_t pri2) {
 	}
 

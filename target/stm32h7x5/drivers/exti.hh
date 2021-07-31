@@ -2,11 +2,7 @@
 #include "drivers/register_access.hh"
 #include "drivers/stm32xx.h"
 
-namespace mdrivlib
-{
-namespace stm32h7x5
-{
-namespace EXTI_
+namespace mdrivlib::EXTI_
 {
 using Pin0 = RegisterSection<ReadWrite, SYSCFG_BASE + offsetof(SYSCFG_TypeDef, EXTICR[0]), 0, 3>;
 using Pin1 = RegisterSection<ReadWrite, SYSCFG_BASE + offsetof(SYSCFG_TypeDef, EXTICR[0]), 4, 3>;
@@ -66,7 +62,7 @@ using FTSR1 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, FTSR1),
 // D3PCR3H
 //
 
-// Interrupt and Event enables for Core 1 and Core 2:
+// Interrupt and Event enables for Core 1:
 using IMR1 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, IMR1), 0xFFFFFFFF>;
 using IMR2 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, IMR2), 0xFFFFFFFF>;
 using IMR3 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, IMR3), 0xFFFFFFFF>;
@@ -75,6 +71,7 @@ using EMR1 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, EMR1), 0
 using EMR2 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, EMR2), 0xFFFFFFFF>;
 using EMR3 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, EMR3), 0xFFFFFFFF>;
 
+// Interrupt and Event enables for Core 2:
 using C2IMR1 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, C2IMR1), 0xFFFFFFFF>;
 using C2IMR2 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, C2IMR2), 0xFFFFFFFF>;
 using C2IMR3 = RegisterBits<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, C2IMR3), 0xFFFFFFFF>;
@@ -100,11 +97,22 @@ template<uint32_t PinNum>
 using PinFallingTrig = RegisterBits<ReadWrite, FTSR1::BaseAddress, (1 << PinNum)>;
 
 template<uint32_t PinNum>
-using PinTrigPending = RegisterBits<ReadWrite, PR1::BaseAddress, (1 << PinNum)>;
+using PinTrigPendingCore1 = RegisterBits<ReadWrite, PR1::BaseAddress, (1 << PinNum)>;
 
 template<uint32_t PinNum>
-using PinInterruptMask = RegisterBits<ReadWrite, IMR1::BaseAddress, (1 << PinNum)>;
+using PinInterruptMaskCore1 = RegisterBits<ReadWrite, IMR1::BaseAddress, (1 << PinNum)>;
 
-} // namespace EXTI_
-} // namespace stm32h7x5
-} // namespace mdrivlib
+template<uint32_t PinNum>
+using PinTrigPendingCore2 = RegisterBits<ReadWrite, C2PR1::BaseAddress, (1 << PinNum)>;
+
+template<uint32_t PinNum>
+using PinInterruptMaskCore2 = RegisterBits<ReadWrite, C2IMR1::BaseAddress, (1 << PinNum)>;
+
+// Default to using Core1 if not specified
+template<uint32_t PinNum>
+using PinTrigPending = PinTrigPendingCore1<PinNum>;
+
+template<uint32_t PinNum>
+using PinInterruptMask = PinInterruptMaskCore1<PinNum>;
+
+} // namespace mdrivlib::EXTI_

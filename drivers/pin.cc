@@ -2,6 +2,8 @@
 #include "arch.hh"
 #include "rcc.hh"
 
+namespace mdrivlib
+{
 Pin::Pin(GPIO port,
 		 uint8_t pin,
 		 PinMode mode,
@@ -15,7 +17,7 @@ Pin::Pin(GPIO port,
 	, polarity_(polarity) {
 	// Todo: test this next line instead of the rest of the function
 	// _init(mode, other.af, pull, speed, otype);
-	target::RCC_Enable::GPIO::enable(GPIOPort(port_));
+	RCC_Enable::GPIO::enable(GPIOPort(port_));
 	set_mode(mode);
 	set_pull(pull);
 	set_speed(speed);
@@ -40,7 +42,7 @@ void Pin::init(
 }
 
 void Pin::_init(PinMode mode, uint8_t af, PinPull pull, PinSpeed speed, PinOType otype) {
-	target::RCC_Enable::GPIO::enable(GPIOPort(port_));
+	RCC_Enable::GPIO::enable(GPIOPort(port_));
 	set_mode(mode);
 	set_pull(pull);
 	set_speed(speed);
@@ -103,3 +105,4 @@ void Pin::set_alt(uint8_t af) {
 void Pin::set_otype(PinOType otype) {
 	LL_GPIO_SetPinOutputType(GPIOPort(port_), pin_, HALParam(otype));
 }
+} // namespace mdrivlib

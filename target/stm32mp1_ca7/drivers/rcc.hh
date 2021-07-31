@@ -6,11 +6,6 @@
 
 namespace mdrivlib
 {
-namespace stm32mp1
-{
-namespace core_a7
-{
-
 namespace RCC_Enable
 {
 using RegisterDataT = uint32_t;
@@ -185,7 +180,4 @@ using SPI = typename std::variant_alternative_t<N - 1, SPI_variant>;
 namespace RCC_Clocks
 {} // namespace RCC_Clocks
 
-} // namespace core_a7
-
-} // namespace stm32mp1
 } // namespace mdrivlib

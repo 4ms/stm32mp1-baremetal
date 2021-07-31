@@ -4,12 +4,8 @@
 
 namespace mdrivlib
 {
-namespace stm32mp1
-{
-namespace core_a7
-{
 template<unsigned ChannelNum>
-struct MDMAx {
+struct MDMA_ {
 	static constexpr uint32_t BASE = ChannelNum == 0  ? MDMA_Channel0_BASE
 								   : ChannelNum == 1  ? MDMA_Channel1_BASE
 								   : ChannelNum == 2  ? MDMA_Channel2_BASE
@@ -96,6 +92,4 @@ struct MDMAx {
 	// Todo: CMAR
 	// Todo: CMDR
 };
-} // namespace core_a7
-} // namespace stm32mp1
 } // namespace mdrivlib

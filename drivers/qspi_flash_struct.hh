@@ -1,6 +1,8 @@
 #pragma once
 #include "pin.hh"
 
+namespace mdrivlib
+{
 // Todo: add clock division and maybe other QSPI conf
 struct QSPIFlashConfig {
 	PinNoInit io0;
@@ -14,4 +16,4 @@ struct QSPIFlashConfig {
 	uint32_t IRQ_pri = 2;
 	uint32_t IRQ_subpri = 2;
 };
-
+} // namespace mdrivlib

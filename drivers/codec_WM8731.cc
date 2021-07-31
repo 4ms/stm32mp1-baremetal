@@ -1,5 +1,5 @@
 /*
- * codec_i2c.c
+ * codec_WM8731.cc
  *
  * Author: Dan Green (danngreen1@gmail.com)
  *
@@ -28,51 +28,55 @@
 
 #include "codec_WM8731.hh"
 #include "codec_WM8731_registers.h"
-
-// #ifdef STM32H7
-static constexpr bool DISABLE_I2C = false;
-// #else
-// static constexpr bool DISABLE_I2C = true;
-// #endif
+#include "stm32xx.h"
+#include "util/bitfield.hh"
 
 namespace mdrivlib
 {
-using namespace _CodecWM8731;
 
-uint16_t default_codec_init_data[] = {
-	VOL_0dB,   // Reg 00: Left Line In
-	VOL_0dB,   // Reg 01: Right Line In
-	HPVOL_0dB, // Reg 02: Left Headphone out
-	HPVOL_0dB, // Reg 03: Right Headphone out
-	(MUTEMIC   // Reg 04: Analog Audio Path Control (maximum attenuation on sidetone, sidetone disabled, DAC selected,
-			 // Mute Mic, no bypass)
-	 | INSEL_line | DACSEL | SIDEATT_neg6dB),
-	(DEEMPH_disable // Reg 05: Digital Audio Path Control: HPF, De-emp at 48kHz on DAC, do not soft mute dac
-	 | ADCHPFEnable),
-	(PD_MIC | PD_OSC | PD_CLKOUT), // Reg 06: Power Down Control (Clkout, Osc, Mic Off) 0x062
-	(format_24b					   // Reg 07: Digital Audio Interface Format (24-bit, slave)
-	 | format_I2S),
-	0x000, // Reg 08: Sampling Control (USB_NORM=Normal, BOSR=256x, MCLK=12.288MHz, SR=48k)
-	0x001  // Reg 09: Active Control
+static constexpr bool DISABLE_I2C = false;
+
+using namespace CodecWM8731Registers;
+
+const uint16_t default_codec_init_data[] = {
+	// Reg 00: Left Line In
+	VOL_0dB,
+	// Reg 01: Right Line In
+	VOL_0dB,
+	// Reg 02: Left Headphone out
+	HPVOL_0dB,
+	// Reg 03: Right Headphone out
+	HPVOL_0dB,
+	// Reg 04: Analog Audio Path Control (maximum attenuation on sidetone, sidetone disabled, DAC selected,
+	// Mute Mic, no bypass)
+	(MUTEMIC | INSEL_line | DACSEL | SIDEATT_neg6dB),
+	// Reg 05: Digital Audio Path Control: HPF, De-emp at 48kHz on DAC, do not soft mute dac
+	(DEEMPH_disable | ADCHPFEnable),
+	// Reg 06: Power Down Control (Clkout, Osc, Mic Off) 0x062
+	(PD_MIC | PD_OSC | PD_CLKOUT),
+	// Reg 07: Digital Audio Interface Format (24-bit, slave)
+	(format_24b | format_I2S),
+	// Reg 08: Sampling Control (USB_NORM=Normal, BOSR=256x, MCLK=12.288MHz, SR=48k)
+	0x000,
+	// Reg 09: Active Control
+	0x001,
 };
 
 CodecWM8731::CodecWM8731(I2CPeriph &i2c, const SaiConfig &saidef)
-	: i2c_(i2c)
-	, sai_{saidef}
-	, samplerate_{saidef.samplerate} {
+	: CodecBase{saidef}
+	, i2c_(i2c)
+	, samplerate_{saidef.samplerate}
+	, I2C_address{static_cast<uint8_t>((WM8731_ADDR_0 + (saidef.bus_address & 0b1)) << 1)} {
 }
 
-void CodecWM8731::init() {
+CodecWM8731::Error CodecWM8731::init() {
 	init_at_samplerate(samplerate_);
-	sai_.init();
-}
 
-void CodecWM8731::set_txrx_buffers(uint8_t *tx_buf_ptr, uint8_t *rx_buf_ptr, uint32_t block_size) {
-	sai_.set_txrx_buffers(tx_buf_ptr, rx_buf_ptr, block_size);
-}
+	auto err = sai_.init();
+	if (err != SaiTdmPeriph::SAI_NO_ERR)
+		return I2S_CLK_INIT_ERR;
 
-void CodecWM8731::set_callbacks(std::function<void()> &&tx_complete_cb, std::function<void()> &&tx_half_complete_cb) {
-	sai_.set_callbacks(std::move(tx_complete_cb), std::move(tx_half_complete_cb));
+	return CODEC_NO_ERR;
 }
 
 uint32_t CodecWM8731::get_samplerate() {
@@ -95,7 +99,7 @@ CodecWM8731::Error CodecWM8731::_reset() {
 }
 
 CodecWM8731::Error CodecWM8731::_write_all_registers(uint32_t sample_rate) {
-	CodecWM8731::Error err;
+	CodecWM8731::Error err{};
 
 	for (uint8_t i = 0; i < WM8731_NUM_REGS; i++) {
 		if (i != WM8731_REG_SAMPLE_CTRL)
@@ -134,20 +138,12 @@ CodecWM8731::Error CodecWM8731::_write_register(uint8_t reg_address, uint16_t re
 	if constexpr (DISABLE_I2C)
 		return CODEC_NO_ERR;
 
-	auto err = i2c_.write(CODEC_ADDRESS, data, 2);
-	// auto err = i2c_.mem_write(CODEC_ADDRESS, Byte1, REGISTER_ADDR_SIZE, &Byte2, 1);
+	auto err = i2c_.write(I2C_address, data, 2);
+	// auto err = i2c_.mem_write(I2C_address, Byte1, REGISTER_ADDR_SIZE, &Byte2, 1);
 	return (err == I2CPeriph::I2C_NO_ERR) ? CODEC_NO_ERR : CODEC_I2C_ERR;
 }
 
-CodecWM8731::Error CodecWM8731::power_down(void) {
+CodecWM8731::Error CodecWM8731::power_down() {
 	return _write_register(WM8731_REG_POWERDOWN, 0xFF); // Power Down enable all
-}
-
-// FixMe: Why is this exposed?
-DMA_HandleTypeDef *CodecWM8731::get_rx_dmahandle() {
-	return sai_.get_rx_dmahandle();
-}
-DMA_HandleTypeDef *CodecWM8731::get_tx_dmahandle() {
-	return sai_.get_tx_dmahandle();
 }
 } // namespace mdrivlib

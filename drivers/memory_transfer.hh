@@ -4,8 +4,11 @@
 #include "mdma_registers.hh"
 #include "rcc.hh"
 #include "stm32xx.h"
-
 #include <cstddef>
+
+namespace mdrivlib
+{
+
 struct MemoryTransferDefaultConfT {
 	static constexpr unsigned channel = 0;
 
@@ -33,23 +36,20 @@ struct MemoryTransferDefaultConfT {
 	static constexpr bool bufferable_write_mode = false;
 };
 
-namespace mdrivlib
-{
 // Todo: create `register_channel_isr` and `enable_global_isr` like HSEM does, to handle multiple MemoryTransfer active
 // at once, on different channels.
 // - Add ability to choose which ISR flags are set (CTC, BRTC, BTC, etc), and which ISR gets the callback (or is it
 // always CTC?)
 template<typename ConfT = MemoryTransferDefaultConfT>
 struct MemoryTransfer {
-	using MDMAX = target::MDMAx<ConfT::channel>;
+	using MDMAX = MDMA_<ConfT::channel>;
 
 	uint32_t _src_addr;
 	uint32_t _dst_addr;
 	uint32_t _transfer_block_size;
 	uint32_t _num_blocks;
 
-	MemoryTransfer() {
-	}
+	MemoryTransfer() = default;
 
 	template<typename CallbackT>
 	void register_callback(CallbackT &&callback) {
@@ -81,7 +81,7 @@ struct MemoryTransfer {
 		_dst_addr = reinterpret_cast<uint32_t>(dst);
 		_src_addr = reinterpret_cast<uint32_t>(src);
 
-		target::RCC_Enable::MDMA_::set();
+		RCC_Enable::MDMA_::set();
 		MDMAX::Enable::clear();
 
 		_transfer_block_size = sz;

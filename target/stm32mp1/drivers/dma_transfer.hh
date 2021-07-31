@@ -8,10 +8,6 @@
 // Todo: Finish converting to using CMSIS instead of STM32-HAL
 namespace mdrivlib
 {
-namespace stm32mp1
-{
-namespace core_a7
-{
 template<typename ConfT>
 struct DMATransfer {
 	uint32_t _src_addr;
@@ -32,10 +28,10 @@ struct DMATransfer {
 	DMA_HandleTypeDef hdma_tx;
 
 	DMATransfer() {
-		target::RCC_Enable::DMAMUX_::set();
+		RCC_Enable::DMAMUX_::set();
 
 		if constexpr (ConfT::DMAx == 1) {
-			target::RCC_Enable::DMA1_::set();
+			RCC_Enable::DMA1_::set();
 
 			if constexpr (ConfT::StreamNum == 0) {
 				stream = DMA1_Stream0;
@@ -72,7 +68,7 @@ struct DMATransfer {
 		}
 
 		if constexpr (ConfT::DMAx == 2) {
-			target::RCC_Enable::DMA2_::set();
+			RCC_Enable::DMA2_::set();
 
 			if constexpr (ConfT::StreamNum == 0) {
 				stream = DMA2_Stream0;
@@ -116,7 +112,7 @@ struct DMATransfer {
 
 	template<typename CallbackT>
 	void register_callback(CallbackT &&callback) {
-		target::System::disable_irq(ConfT::IRQn);
+		InterruptControl::disable_irq(ConfT::IRQn);
 		InterruptManager::registerISR(ConfT::IRQn, ConfT::pri, ConfT::subpri, [callback, this]() {
 			if (*dma_isr_reg & dma_tc_flag_index) {
 				*dma_ifcr_reg = dma_tc_flag_index;
@@ -229,7 +225,7 @@ struct DMATransfer {
 	}
 
 	void start_transfer() {
-		target::System::enable_irq(ConfT::IRQn);
+		InterruptControl::enable_irq(ConfT::IRQn);
 		HAL_DMA_Start_IT(&hdma_tx, _src_addr, _dst_addr, _transfer_size / 2);
 
 		// BDMA_::ClearGlobalISRFlag::set();
@@ -292,6 +288,4 @@ private:
 	// 	using ClearFlag = RegisterBits<WriteOnly, DMAMUX1_BASE, 0x000000FF>;
 	// };
 };
-} // namespace core_a7
-} // namespace stm32mp1
 } // namespace mdrivlib

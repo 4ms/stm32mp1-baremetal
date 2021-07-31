@@ -3,7 +3,6 @@
 #include "drivers/memory_transfer.hh"
 #include "interrupt.hh"
 #include "spi.hh"
-#include "system.hh"
 #include "util/math.hh"
 
 namespace mdrivlib
@@ -13,8 +12,7 @@ template<typename ConfT, typename DmaTransferT>
 struct DmaSpiScreenDriver {
 	enum PacketType { Cmd, Data };
 
-	DmaSpiScreenDriver() {
-	}
+	DmaSpiScreenDriver() = default;
 
 	void init() {
 		spi.disable();

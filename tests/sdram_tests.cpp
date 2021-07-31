@@ -1,6 +1,7 @@
 #include "doctest.h"
 #include "drivers/sdram.hh"
 
+using namespace mdrivlib;
 SDRAMPeriph::SDRAMPeriph(const SDRAMConfig &defs) noexcept
 	: defs{defs} {
 }
@@ -22,4 +23,3 @@ TEST_CASE("SDRAM math tests") {
 	CHECK(SDRAMPeriphMath::ns_to_hclks(160000000, 60) == 10);
 	CHECK(SDRAMPeriphMath::ns_to_hclks(160000000, 18) == 3);
 }
-

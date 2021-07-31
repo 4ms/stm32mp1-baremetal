@@ -3,6 +3,9 @@
 #include <array>
 #include <cstdint>
 
+namespace mdrivlib
+{
+
 struct SDRAMTimingConfig {
 	uint8_t tRC_ns;	 // Row Cycle time (same bank)
 	uint8_t tRP_ns;	 // Precharge to refresh/row activate
@@ -80,4 +83,4 @@ struct SDRAMConfig {
 	uint8_t connected_bank;
 	uint32_t fmc_kernel_clock_MHz;
 };
-
+} // namespace mdrivlib

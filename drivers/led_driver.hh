@@ -1,6 +1,9 @@
 #pragma once
 #include <cstdint>
 
+namespace mdrivlib
+{
+
 enum class LEDDriverError {
 	None = 0,
 	HAL_INIT_ERR = 1,
@@ -21,3 +24,5 @@ enum class LEDDriverError {
 
 // 	virtual uint32_t *const get_buf_addr(const uint32_t chipid, const uint32_t ledid) = 0;
 // };
+
+} // namespace mdrivlib

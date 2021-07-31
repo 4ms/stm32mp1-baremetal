@@ -2,6 +2,11 @@
 #include "pin.hh"
 #include "stm32xx.h"
 
+// Not a real driver: for testing a UART only!
+
+namespace mdrivlib
+{
+
 class Uart {
 public:
 	Uart() {
@@ -34,3 +39,4 @@ public:
 private:
 	UART_HandleTypeDef hal_h;
 };
+} // namespace mdrivlib

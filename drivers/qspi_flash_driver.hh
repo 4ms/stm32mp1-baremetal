@@ -5,6 +5,9 @@
 #include "qspi_flash_struct.hh"
 #include "stm32xx.h"
 
+namespace mdrivlib
+{
+
 class QSpiFlash {
 
 public:
@@ -34,8 +37,7 @@ private:
 	HAL_StatusTypeDef EnterMemory_QPI(void);
 	void init_command(QSPI_CommandTypeDef *s_command);
 
-	bool done_TXing(void)
-	{
+	bool done_TXing(void) {
 		return QSPI_status == STATUS_TX_COMPLETE;
 	}
 
@@ -44,8 +46,7 @@ private:
 public:
 	QSpiFlash(const QSPIFlashConfig &defs);
 
-	bool is_ready(void)
-	{
+	bool is_ready(void) {
 		return QSPI_status == STATUS_READY;
 	}
 
@@ -59,8 +60,7 @@ public:
 	HAL_StatusTypeDef Reset(void);
 
 	bool Read(uint8_t *pData, uint32_t read_addr, uint32_t num_bytes, UseInterruptFlags use_interrupt);
-	bool Read_Background(uint8_t *pData, uint32_t read_addr, uint32_t num_bytes)
-	{
+	bool Read_Background(uint8_t *pData, uint32_t read_addr, uint32_t num_bytes) {
 		return Read(pData, read_addr, num_bytes, EXECUTE_BACKGROUND);
 	}
 
@@ -68,15 +68,14 @@ public:
 	bool Write_Page(uint8_t *pData, uint32_t write_addr, uint32_t num_bytes, UseInterruptFlags use_interrupt);
 
 	bool Erase(uint32_t size, uint32_t BaseAddress, UseInterruptFlags use_interrupt);
-	bool Erase_Background(ErasableSizes size, uint32_t BaseAddress)
-	{
+	bool Erase_Background(ErasableSizes size, uint32_t BaseAddress) {
 		return Erase(size, BaseAddress, EXECUTE_FOREGROUND);
 	}
-	bool Erase_Block_Background(uint32_t BaseAddress)
-	{
+	bool Erase_Block_Background(uint32_t BaseAddress) {
 		return Erase(BLOCK_32K, BaseAddress, EXECUTE_BACKGROUND);
 	}
 
 	static QSpiFlash *instance_;
 };
 
+} // namespace mdrivlib

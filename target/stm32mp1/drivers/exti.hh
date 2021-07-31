@@ -2,14 +2,7 @@
 #include "drivers/register_access.hh"
 #include "drivers/stm32xx.h"
 
-namespace mdrivlib
-{
-namespace stm32mp1
-{
-namespace core_a7
-{
-
-namespace EXTI_
+namespace mdrivlib::EXTI_
 {
 using Pin0 = RegisterSection<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, EXTICR[0]), 0, 8>;
 using Pin1 = RegisterSection<ReadWrite, EXTI_BASE + offsetof(EXTI_TypeDef, EXTICR[0]), 8, 8>;
@@ -86,8 +79,4 @@ using Core1PinInterruptMask = RegisterBits<ReadWrite, C1IMR1::BaseAddress, (1 <<
 
 template<uint32_t PinNum>
 using Core2PinInterruptMask = RegisterBits<ReadWrite, C2IMR1::BaseAddress, (1 << PinNum)>;
-} // namespace EXTI_
-
-} // namespace core_a7
-} // namespace stm32mp1
-} // namespace mdrivlib
+} // namespace mdrivlib::EXTI_

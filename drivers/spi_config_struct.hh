@@ -2,6 +2,8 @@
 #include "interrupt.hh"
 #include "pin.hh"
 
+namespace mdrivlib
+{
 enum SpiDataDir { Duplex, TXOnly, RXOnly, HalfDuplex };
 
 struct DefaultSpiConf {
@@ -39,3 +41,4 @@ struct DefaultSpiConf {
 
 	static constexpr uint8_t FifoThreshold = 1;
 };
+} // namespace mdrivlib
