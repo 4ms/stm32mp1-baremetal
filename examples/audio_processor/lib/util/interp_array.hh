@@ -53,7 +53,7 @@ struct InterpArray {
 		return (data[idx1] * phase) + (data[idx0] * ((PhaseT)(1.) - phase));
 	}
 
-	// Return an interpolated value where phase = 0 and phase = 1 return the first element
+	// Return an interpolated value where phase = 0 and phase = N (any integer) return the first element
 	constexpr T interp_wrap(const PhaseT phase) const
 	{
 		const auto index = phase * Size;
@@ -61,6 +61,8 @@ struct InterpArray {
 	}
 
 	// Return an interpolated value where phase = 0 returns the first element, and phase = 1 returns the last element
+	// phase > 1 or phase < 0 will cause undefined behavior! Caller must ensure 0 <= phase =< 1.
+	// Use interp_wrap() if you can't ensure this.
 	constexpr T interp(const PhaseT phase) const
 	{
 		const PhaseT index = phase * (Size - 1);

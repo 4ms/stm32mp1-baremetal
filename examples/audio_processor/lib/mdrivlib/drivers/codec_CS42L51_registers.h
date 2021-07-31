@@ -81,7 +81,10 @@ constexpr uint8_t ADC_INPUT_AINB_MUX(uint8_t x) {
 constexpr uint8_t ADC_INPUT_AINA_MUX(uint8_t x) {
 	return (((x)&3) << 4);
 }
-constexpr uint8_t ADC_INPUT_INV_ADCB = (1 << 3);
+constexpr uint8_t MUX_AIN1 = 0b00;
+constexpr uint8_t MUX_AIN2 = 0b01;
+constexpr uint8_t MUX_AIN3_MIC = 0b10;
+constexpr uint8_t MUX_INV_ADCB = (1 << 3);
 constexpr uint8_t ADC_INPUT_INV_ADCA = (1 << 2);
 constexpr uint8_t ADC_INPUT_ADCB_MUTE = (1 << 1);
 constexpr uint8_t ADC_INPUT_ADCA_MUTE = (1 << 0);

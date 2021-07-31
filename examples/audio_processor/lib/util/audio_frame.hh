@@ -1,15 +1,16 @@
+#pragma once
 #include "math.hh"
+#include <array>
 #include <stdint.h>
 
-template<typename SampleType, int UsedBits = sizeof(SampleType) * 8>
-struct GenericAudioFrame {
-	SampleType l;
-	SampleType r;
+template<typename SampleType, int UsedBits = sizeof(SampleType) * 8, int NumChannels = 2>
+struct AudioFrame {
+	std::array<SampleType, NumChannels> chan;
 
 public:
-	static const inline unsigned kSampleTypeBits = sizeof(SampleType) * 8;
-	static const inline unsigned kMaxValue = MathTools::ipow(2, UsedBits - 1);
-	static const inline float kOutScaling = static_cast<float>(kMaxValue);
+	static constexpr inline unsigned kSampleTypeBits = sizeof(SampleType) * 8;
+	static constexpr inline unsigned kMaxValue = MathTools::ipow(2, UsedBits - 1);
+	static constexpr inline float kOutScaling = static_cast<float>(kMaxValue);
 
 	static inline constexpr float scaleInput(SampleType val)
 	{
@@ -34,4 +35,3 @@ public:
 		}
 	}
 };
-

@@ -42,18 +42,17 @@ struct RegisterData {
 };
 
 static RegisterData default_codec_init[] = {
-	// {POWER_CTL1, 0},
-	{MIC_POWER_CTL, MIC_POWER_CTL_AUTO},
 	{INTF_CTL, INTF_CTL_DAC_FORMAT(DAC_DIF_I2S) | INTF_CTL_ADC_I2S},
 
-	//... etc
+	// Todo: allow user config of input channels
+	{ADC_INPUT, ADC_INPUT_AINA_MUX(MUX_AIN3_MIC) | ADC_INPUT_AINB_MUX(MUX_AIN2)},
 };
 
-CodecCS42L51::CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef, PinNoInit reset_pin, uint8_t address_bit)
+CodecCS42L51::CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef, uint8_t address_bit)
 	: CodecBase{saidef}
 	, i2c_(i2c)
 	, samplerate_{saidef.samplerate}
-	, reset_pin_{reset_pin, PinMode::Output}
+	, reset_pin_{saidef.reset_pin, PinMode::Output}
 	, I2C_address{static_cast<uint8_t>(0x4A + (address_bit ? 1 : 0))} {
 	reset_pin_.low();
 }
@@ -78,25 +77,24 @@ CodecCS42L51::Error CodecCS42L51::init_at_samplerate(uint32_t sample_rate) {
 	reset_pin_.high();
 	HAL_Delay(1);
 
-	// Set Power Down bit to 1 to enter Software Mode (must do it <10ms from reset pin going high). See CS42L51
-	// datasheet, section 4.8
+	// Set Power Down bit to 1 to enter Software Mode (must do it <10ms from reset pin going high).
+	// See CS42L51 datasheet, section 4.8
 	power_down();
 
-	return _write_all_registers(sample_rate);
+	auto err = _write_samplerate_register(sample_rate);
+	if (err != CODEC_NO_ERR)
+		return err;
+	return _write_all_registers();
 }
 
-CodecCS42L51::Error CodecCS42L51::_write_all_registers(uint32_t sample_rate) {
+CodecCS42L51::Error CodecCS42L51::_write_samplerate_register(uint32_t sample_rate) {
 	CodecCS42L51::Error err;
 
-	for (auto packet : default_codec_init) {
-		err = _write_register(packet.reg_num, packet.value);
-		if (err != CODEC_NO_ERR)
-			return err;
-	}
-	return err;
+	auto sr_mode = _calc_samplerate(sample_rate);
+	return _write_register(MIC_POWER_CTL, MIC_POWER_CTL_AUTO | sr_mode);
 }
 
-auto CodecCS42L51::_calc_samplerate(uint32_t sample_rate) {
+uint8_t CodecCS42L51::_calc_samplerate(uint32_t sample_rate) {
 	if (sample_rate > 50000)
 		return DSM_MODE;
 	else if (sample_rate == 16000)
@@ -109,6 +107,17 @@ auto CodecCS42L51::_calc_samplerate(uint32_t sample_rate) {
 		return (uint8_t)0;
 }
 
+CodecCS42L51::Error CodecCS42L51::_write_all_registers() {
+	CodecCS42L51::Error err;
+
+	for (auto packet : default_codec_init) {
+		err = _write_register(packet.reg_num, packet.value);
+		if (err != CODEC_NO_ERR)
+			return err;
+	}
+	return err;
+}
+
 CodecCS42L51::Error CodecCS42L51::_write_register(uint8_t reg_address, uint16_t reg_value) {
 	uint8_t Byte1 = ((reg_address << 1) & 0xFE) | ((reg_value >> 8) & 0x01);
 	uint8_t Byte2 = reg_value & 0xFF;
@@ -117,8 +126,8 @@ CodecCS42L51::Error CodecCS42L51::_write_register(uint8_t reg_address, uint16_t 
 	if constexpr (DISABLE_I2C)
 		return CODEC_NO_ERR;
 
-	auto err = i2c_.write(I2C_address, data, 2);
-	// auto err = i2c_.mem_write(CODEC_ADDRESS, Byte1, REGISTER_ADDR_SIZE, &Byte2, 1);
+	// auto err = i2c_.write(I2C_address, data, 2);
+	auto err = i2c_.mem_write(I2C_address, Byte1, REGISTER_ADDR_SIZE, &Byte2, 1);
 	return (err == I2CPeriph::I2C_NO_ERR) ? CODEC_NO_ERR : CODEC_I2C_ERR;
 }
 

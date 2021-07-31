@@ -137,10 +137,10 @@ constexpr float setPitchMultiple(float val)
 {
 	float pitchMultiple = 1;
 	if (val >= 0)
-		pitchMultiple = expTable.interp(constrain(val, 0.0f, 1.0f));
+		pitchMultiple = exp5Table.interp(constrain(val, 0.0f, 1.0f));
 	else {
 		float invertPitch = val * -1.0f;
-		pitchMultiple = 1.0f / expTable.interp(constrain(invertPitch, 0.0f, 1.0f));
+		pitchMultiple = 1.0f / exp5Table.interp(constrain(invertPitch, 0.0f, 1.0f));
 	}
 
 	return pitchMultiple;
@@ -154,4 +154,43 @@ static inline float audioFreqToNorm(float input) // normalized filter frequency 
 	output = (temp1 - 2.99573f) / (6.90776f);
 	return output;
 }
+
+// Returns 2^x
+static inline float pow2(float x)
+{
+	x = x / 5.0f;
+	float res = 1.f;
+	for (;;) {
+		if (x < 1.f) {
+			// Note: exp5Table.interp(x) = 2^(x*5), where 0 <= x <= 1
+			res *= exp5Table.interp(x);
+			break;
+		} else {
+			res *= 32.f;
+			x -= 1.f;
+		}
+	}
+	return res;
+}
+
+static inline float cos(float x)
+{
+	return sinTable.interp_wrap((x / (2.f * M_PI)) + 0.25f);
+}
+
+static inline float cos_close(float x)
+{
+	return sinTable.closest_wrap((x / (2.f * M_PI)) + 0.25f);
+}
+
+static inline float tan(float x)
+{
+	return tanTable.interp_wrap(x / M_PI);
+}
+
+static inline float tan_close(float x)
+{
+	return tanTable.closest_wrap(x / M_PI);
+}
+
 }; // namespace MathTools

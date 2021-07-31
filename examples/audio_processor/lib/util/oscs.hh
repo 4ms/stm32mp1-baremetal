@@ -71,10 +71,18 @@ struct PhaseAccum {
 	PhaseAccum()
 		: increment_(0)
 	{}
-	uint32_t Process()
+	uint32_t process()
 	{
 		phase_ += increment_;
 		return phase_;
+	}
+	uint32_t Process()
+	{
+		return process();
+	}
+	float process_float()
+	{
+		return static_cast<float>(process()) / 4294967295.f;
 	}
 
 	void set_frequency(uint32_t freq)
@@ -92,4 +100,3 @@ private:
 	uint32_t phase_ = 0;
 	uint32_t increment_;
 };
-

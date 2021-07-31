@@ -285,3 +285,40 @@ TEST_CASE("log2int")
 		CHECK(MathTools::log2_floor(15) == MathTools::log2_floor(8));
 	}
 }
+
+TEST_CASE("cos")
+{
+	CHECK(MathTools::cos(0) == doctest::Approx(cosf(0)));
+	CHECK(MathTools::cos(M_PI / 2.f) == doctest::Approx(cosf(M_PI / 2.f)));
+	CHECK(MathTools::cos(M_PI) == doctest::Approx(cosf(M_PI)));
+	CHECK(MathTools::cos(2.f * M_PI) == doctest::Approx(cosf(2.f * M_PI)));
+	CHECK(MathTools::cos(1) == doctest::Approx(cosf(1)));
+	CHECK(MathTools::cos(999) == doctest::Approx(cosf(999)));
+}
+
+TEST_CASE("tan")
+{
+	CHECK(MathTools::tan(0) == doctest::Approx(tanf(0)));
+	CHECK(MathTools::tan(M_PI / 2.f) == doctest::Approx(tanf(M_PI / 2.f)));
+	CHECK(MathTools::tan(M_PI) == doctest::Approx(tanf(M_PI)));
+	CHECK(MathTools::tan(2.f * M_PI) == doctest::Approx(tanf(2.f * M_PI)));
+	CHECK(MathTools::tan(1) == doctest::Approx(tanf(1)));
+	CHECK(MathTools::tan(999) == doctest::Approx(tanf(999)));
+}
+
+TEST_CASE("pow2")
+{
+	float x;
+	x = 0;
+	CHECK(MathTools::pow2(x) == doctest::Approx(powf(2.f, x)));
+	x = 1;
+	CHECK(MathTools::pow2(x) == doctest::Approx(powf(2.f, x)));
+	x = 2;
+	CHECK(MathTools::pow2(x) == doctest::Approx(powf(2.f, x)));
+	x = 1.1;
+	CHECK(MathTools::pow2(x) == doctest::Approx(powf(2.f, x)));
+	x = 0.001;
+	CHECK(MathTools::pow2(x) == doctest::Approx(powf(2.f, x)));
+	x = 15.324234;
+	CHECK(MathTools::pow2(x) == doctest::Approx(powf(2.f, x)));
+}
