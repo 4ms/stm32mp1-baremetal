@@ -78,6 +78,8 @@ static uint32_t Sect_Normal_RO;	 // as Sect_Normal_Cod, but not executable
 static uint32_t Sect_Normal_RW;	 // as Sect_Normal_Cod, but writeable and not executable
 static uint32_t Sect_Device_RO;	 // device, non-shareable, non-executable, ro, domain 0, base addr 0
 static uint32_t Sect_Device_RW;	 // as Sect_Device_RO, but writeable
+static uint32_t Sect_StronglyOrdered;
+static uint32_t Sect_Normal_NonCache;
 
 static uint32_t Page_L1_4k = 0x0;	// generic
 static uint32_t Page_L1_64k = 0x0;	// generic
@@ -97,6 +99,8 @@ void MMU_CreateTranslationTable(void)
 	section_normal_rw(Sect_Normal_RW, region);
 	section_device_ro(Sect_Device_RO, region);
 	section_device_rw(Sect_Device_RW, region);
+	section_so(Sect_StronglyOrdered, region);
+	section_normal_nc(Sect_Normal_NonCache, region);
 	page64k_device_rw(Page_L1_64k, Page_64k_Device_RW, region);
 	page4k_device_rw(Page_L1_4k, Page_4k_Device_RW, region);
 
@@ -125,11 +129,12 @@ void MMU_CreateTranslationTable(void)
 	MMU_TTSection(TTB_BASE, 0x40000000, 0x10000000 / 0x100000, Sect_Device_RW);
 	MMU_TTSection(TTB_BASE, 0x50000000, 0x10000000 / 0x100000, Sect_Device_RW);
 
-	// SYSRAM (256kB MCU RAM)
-	MMU_TTSection(TTB_BASE, A7_SYSRAM_1MB_SECTION_BASE, 1, Sect_Normal_RW);
+	// SYSRAM (256kB MCU RAM): Non cacheable (strongly-ordered has slightly better performance when tested using a
+	// SAI DMA buffer. YMMV)
+	MMU_TTSection(TTB_BASE, A7_SYSRAM_1MB_SECTION_BASE, 1, Sect_StronglyOrdered);
 
 	// GIC, aka "Private peripherals". Starts at the address returned by __get_CBAR()
-	// For no particular reason, we use 4kb pages here instead of a 1MB section. 
+	// For no particular reason, we use 4kb pages here instead of a 1MB section.
 	// Mostly I just wanted to document-by-example the process of using 4kb pages.
 	//
 	// Create (256 * 4k)=1MB faulting entries

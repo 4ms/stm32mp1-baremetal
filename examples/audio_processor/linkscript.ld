@@ -108,6 +108,15 @@ SECTIONS
 		_ram_aligned_end = .;
     } > RAM
 
+	.sysram (NOLOAD):
+	{
+		. = ALIGN(8);
+		*(.sysram)
+		*(.noncachable)
+		. = ALIGN(8);
+		_end_of_sysram = .;
+	} > SYSRAM
+
 	.heap (NOLOAD):
 	{
 		. = ALIGN(8);

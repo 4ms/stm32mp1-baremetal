@@ -15,10 +15,11 @@ class AudioStream {
 	I2CPeriph i2c;
 	CodecCS42L51 codec;
 
-	// These must be in a region of RAM that's not cached -- OR -- we have to clean/invalidate the cache before and
-	// after processing DMA data
-	static inline __attribute__((section(".sysram"))) AudioInBlock audio_in_dma_block;
-	static inline __attribute__((section(".sysram"))) AudioOutBlock audio_out_dma_block;
+	// These must be in a region of RAM that's not cached
+	// -- OR else we have to invalidate the cache before we use incoming DMA data
+	// and clean it after processing and writing to the outgoing DMA buffer
+	static inline __attribute__((section(".noncachable"))) AudioInBlock audio_in_dma_block;
+	static inline __attribute__((section(".noncachable"))) AudioOutBlock audio_out_dma_block;
 
 public:
 	using AudioProcessFunction = std::function<void(AudioInBuffer &, AudioOutBuffer &)>;
