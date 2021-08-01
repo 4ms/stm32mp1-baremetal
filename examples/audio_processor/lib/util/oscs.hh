@@ -20,10 +20,14 @@ struct TriangleOscillator {
 	{
 		return (phase_ > max_ / 2) ? (max_ - phase_ * 2) : (phase_ * 2);
 	}
-	uint32_t Process()
+	uint32_t process()
 	{
 		update();
 		return val();
+	}
+	uint32_t process_float()
+	{
+		return static_cast<float>(process()) / 4294967295.f;
 	}
 
 	void set_period_ms(uint32_t period_ms)
