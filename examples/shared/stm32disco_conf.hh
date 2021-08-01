@@ -1,5 +1,6 @@
 #pragma once
 #include "drivers/leds.hh"
+#include "lib/mdrivlib/drivers/debounced_switch.hh"
 
 namespace STM32MP1Disco {
 
@@ -14,5 +15,8 @@ using LD7 = OrangeLED;
 
 using BlueLED = Led<GPIOD_BASE, 11, LedActive::Low>;
 using LD8 = BlueLED;
+
+using User1Button = mdrivlib::DebouncedPin<mdrivlib::GPIO::A, 14, mdrivlib::PinPolarity::Inverted>;
+using User2Button = mdrivlib::DebouncedPin<mdrivlib::GPIO::A, 13, mdrivlib::PinPolarity::Inverted>;
 
 }
