@@ -1,6 +1,8 @@
 #include "audio.hh"
 #include "drivers/stm32xx.h"
 #include "dual_fm_osc.hh"
+#include "shared/disco_conf.hh"
+#include "shared/drivers/delay.hh"
 #include "shared/drivers/leds.hh"
 #include "shared/drivers/uart.hh"
 #include "util/math.hh"
@@ -10,8 +12,6 @@
 
 using AudioInBuffer = AudioStreamConf::AudioInBuffer;
 using AudioOutBuffer = AudioStreamConf::AudioOutBuffer;
-using AudioInFrame = AudioStreamConf::AudioInFrame;
-using AudioOutFrame = AudioStreamConf::AudioOutFrame;
 
 void main()
 {
@@ -19,12 +19,10 @@ void main()
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nStarting Audio Processor\r\n");
 
-	// LEDs
-	Led<GPIOI_BASE, 8, LedActive::Low> red_led1;
-	Led<GPIOI_BASE, 9, LedActive::Low> green_led1;
-
-	red_led1.on();
-	green_led1.on();
+	STM32MP1Disco::GreenLED green_led;
+	STM32MP1Disco::RedLED red_led;
+	red_led.on();
+	green_led.on();
 
 	AudioStream audio;
 
@@ -35,13 +33,28 @@ void main()
 		}
 	};
 
+	DualFMOsc<AudioStreamConf> dual_fm_osc;
+
+	auto dual_fm_osc_process = [&dual_fm_osc](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
+		dual_fm_osc.process(in_buffer, out_buffer);
+	};
+
 	// Select one of these:
-	// audio.set_process_function(passthrough);
-	audio.set_process_function(DualFMOsc<AudioStreamConf>::process);
+	audio.set_process_function(passthrough);
+	audio.set_process_function(dual_fm_osc_process);
 
 	audio.start();
 
 	while (true) {
+
+		red_led.on();
+		Delay::cycles(5000000);
+		red_led.off();
+
+		green_led.on();
+		Delay::cycles(5000000);
+		green_led.off();
+
 		// blink the lights
 		//
 		// switch Processor if button0 pressed

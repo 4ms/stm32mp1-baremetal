@@ -5,15 +5,14 @@
 
 template<typename AudioStreamConf>
 class DualFMOsc {
-	DualFMOsc() = delete;
-	static inline TriangleOscillator<48000> modulator;
-	static inline TriangleOscillator<48000> carrier;
+	TriangleOscillator<48000> modulator;
+	TriangleOscillator<48000> carrier;
 
 	using AudioInBuffer = typename AudioStreamConf::AudioInBuffer;
 	using AudioOutBuffer = typename AudioStreamConf::AudioOutBuffer;
 
 public:
-	static void process(AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer)
+	void process(AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer)
 	{
 		uint32_t freq_control_sum = 0;
 		for (auto in : in_buffer)
