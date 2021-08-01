@@ -8,7 +8,6 @@ struct AudioStreamConf {
 	static constexpr int SampleBits = 24;
 	static constexpr int NumInChans = 2;
 	static constexpr int NumOutChans = 2;
-	static constexpr int NumCodecs = 1;
 	static constexpr int NumDMAHalfTransfers = 2;
 
 	using AudioInFrame = AudioFrame<SampleT, SampleBits, NumInChans>;

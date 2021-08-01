@@ -1,13 +1,17 @@
-#include "audio_codec_conf.hh"
-#include "drivers/codec_CS42L51.hh"
-#include "drivers/i2c.hh"
-#include "drivers/leds.hh"
-#include "drivers/uart.hh"
-// #include "interrupt.hh"
-#include "stm32xx.h"
+#include "audio.hh"
+#include "drivers/stm32xx.h"
+#include "dual_fm_osc.hh"
+#include "shared/drivers/leds.hh"
+#include "shared/drivers/uart.hh"
+#include "util/math.hh"
+#include "util/oscs.hh"
+#include "util/zip.hh"
 #include <cstdint>
 
-FPin<GPIO::G, 9> CodecResetPin;
+using AudioInBuffer = AudioStreamConf::AudioInBuffer;
+using AudioOutBuffer = AudioStreamConf::AudioOutBuffer;
+using AudioInFrame = AudioStreamConf::AudioInFrame;
+using AudioOutFrame = AudioStreamConf::AudioOutFrame;
 
 void main()
 {
@@ -22,9 +26,29 @@ void main()
 	red_led1.on();
 	green_led1.on();
 
-	mdrivlib::I2CPeriph codec_i2c{i2c_conf};
-	mdrivlib::CodecCS42L51 codec{codec_i2c, sai_conf};
+	AudioStream audio;
 
-	codec.init();
+	auto passthrough = [](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
+		for (auto [in, out] : zip(in_buffer, out_buffer)) {
+			out.chan[0] = in.chan[0];
+			out.chan[1] = in.chan[1];
+		}
+	};
+
+	// Select one of these:
+	// audio.set_process_function(passthrough);
+	audio.set_process_function(DualFMOsc<AudioStreamConf>::process);
+
+	audio.start();
+
+	while (true) {
+		// blink the lights
+		//
+		// switch Processor if button0 pressed
+		//
+		// print out the processor load if button1 pressed
+		//
+	}
 }
+
 extern "C" void aux_core_main() {}
