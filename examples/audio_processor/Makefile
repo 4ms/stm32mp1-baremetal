@@ -10,6 +10,7 @@ mdrivlibdir = lib/mdrivlib
 
 SOURCES = main.cc \
 		  mmu_ca7.c \
+		  lib/util/math_tables.cc \
 		  $(mdrivlibdir)/drivers/i2c.cc \
 		  $(mdrivlibdir)/drivers/pin.cc \
 		  $(mdrivlibdir)/drivers/codec_CS42L51.cc \
