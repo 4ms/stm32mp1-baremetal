@@ -10,7 +10,7 @@ const I2CConfig i2c_conf = {
 	.SDA = {GPIO::F, 15, LL_GPIO_AF_5},
 	.timing =
 		{
-			.PRESC = 0x00,
+			.PRESC = 0x20,
 			.SCLDEL_SDADEL = 0x90,
 			.SCLH = 0x19,
 			.SCLL = 0x45,

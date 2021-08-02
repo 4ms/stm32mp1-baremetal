@@ -5,16 +5,14 @@
 #include "drivers/cycle_counter.hh"
 #include "drivers/i2c.hh"
 
-using mdrivlib::CodecCS42L51;
-using mdrivlib::I2CPeriph;
 using AudioInBuffer = AudioStreamConf::AudioInBuffer;
 using AudioOutBuffer = AudioStreamConf::AudioOutBuffer;
 using AudioInBlock = AudioStreamConf::AudioInBlock;
 using AudioOutBlock = AudioStreamConf::AudioOutBlock;
 
 class AudioStream {
-	I2CPeriph i2c;
-	CodecCS42L51 codec;
+	mdrivlib::I2CPeriph i2c;
+	mdrivlib::CodecCS42L51 codec;
 
 	// These must be in a region of RAM that's not cached
 	// -- OR else we have to invalidate the cache before we use incoming DMA data
