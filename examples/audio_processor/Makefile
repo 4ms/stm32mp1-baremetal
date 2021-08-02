@@ -1,7 +1,7 @@
 BINARYNAME = main
 BUILDDIR = build
 
-OPTFLAG = -O1
+OPTFLAG = -O0
 
 EXTLIBDIR = ../../third-party
 SHAREDDIR = ../shared
@@ -10,6 +10,7 @@ mdrivlibdir = lib/mdrivlib
 
 SOURCES = main.cc \
 		  mmu_ca7.c \
+		  startup.s \
 		  lib/util/math_tables.cc \
 		  $(mdrivlibdir)/drivers/i2c.cc \
 		  $(mdrivlibdir)/drivers/pin.cc \
@@ -20,9 +21,8 @@ SOURCES = main.cc \
 		  $(mdrivlibdir)/target/stm32mp1_ca7/drivers/cycle_counter.cc \
 		  $(mdrivlibdir)/target/stm32mp1_ca7/drivers/hal_handlers.cc \
 		  $(mdrivlibdir)/target/stm32mp1_ca7/drivers/interrupt_handler.cc \
-		  $(mdrivlibdir)/target/stm32mp1_ca7/boot/startup_ca7.s \
-		  $(mdrivlibdir)/target/stm32mp1_ca7/boot/system_ca7.c \
 		  $(mdrivlibdir)/target/stm32mp1_ca7/boot/irq_ctrl.c \
+		  $(SHAREDDIR)/system/system_ca7.c \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/system/new.cc \
@@ -36,7 +36,9 @@ SOURCES = main.cc \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_sai.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \
-		  #$(STM32HALDIR)/Src/stm32mp1xx_ll_gpio.c \
+
+		  # $(STM32HALDIR)/Src/stm32mp1xx_ll_gpio.c \
+		  # $(mdrivlibdir)/target/stm32mp1_ca7/boot/startup_ca7.s \
 
 INCLUDES = -I. \
 		   -I.. \
