@@ -48,6 +48,8 @@ void main()
 	audio.start();
 
 	while (true) {
+		button1.update();
+		button2.update();
 
 		if (button1.is_just_pressed()) {
 			switch (current_fx) {
@@ -75,7 +77,7 @@ void main()
 		if (button2.is_just_pressed()) {
 			uart.write("Current load: ");
 			uart.write(audio.get_load_measurement());
-			uart.write("\r\n");
+			uart.write("%\r\n");
 		}
 	}
 }
