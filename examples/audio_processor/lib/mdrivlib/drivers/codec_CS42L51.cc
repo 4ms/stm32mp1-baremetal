@@ -45,15 +45,15 @@ static RegisterData default_codec_init[] = {
 	{INTF_CTL, INTF_CTL_DAC_FORMAT(DAC_DIF_I2S) | INTF_CTL_ADC_I2S},
 
 	// Todo: allow user config of input channels
-	{ADC_INPUT, ADC_INPUT_AINA_MUX(MUX_AIN3_MIC) | ADC_INPUT_AINB_MUX(MUX_AIN2)},
+	{ADC_INPUT, ADC_INPUT_AINA_MUX(MUX_AIN3_MIC) | ADC_INPUT_AINB_MUX(MUX_AIN3_MIC)},
 };
 
-CodecCS42L51::CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef, uint8_t address_bit)
+CodecCS42L51::CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef)
 	: CodecBase{saidef}
 	, i2c_(i2c)
 	, samplerate_{saidef.samplerate}
 	, reset_pin_{saidef.reset_pin, PinMode::Output}
-	, I2C_address{static_cast<uint8_t>(0x4A + (address_bit ? 1 : 0))} {
+	, I2C_address{static_cast<uint8_t>((0x4A + (saidef.bus_address ? 1 : 0)) << 1)} {
 	reset_pin_.low();
 }
 

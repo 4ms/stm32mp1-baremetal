@@ -55,7 +55,7 @@ public:
 		INVALID_PARAM
 	};
 
-	CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef, uint8_t address_bit = 1);
+	CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef);
 
 	Error init();
 	void start();
