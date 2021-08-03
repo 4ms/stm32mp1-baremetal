@@ -28,8 +28,8 @@ public:
 		, codec{i2c, sai_conf}
 	{
 		codec.init();
-		codec.set_rx_buffers(audio_in_dma_block);
-		codec.set_tx_buffers(audio_out_dma_block);
+		codec.set_rx_buffers(audio_in_dma_block[0]);
+		codec.set_tx_buffers(audio_out_dma_block[0]);
 		load_measurer.init();
 	}
 
