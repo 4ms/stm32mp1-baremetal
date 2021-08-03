@@ -1,6 +1,26 @@
 #pragma once
 #include <cstdint>
 
+// template<int UpdateRateHz>
+// struct ProtoOscillator {
+// 	ProtoOscillator(uint32_t freq);
+// 	ProtoOscillator(float freq);
+
+// 	void set_frequency(uint32_t freq);
+// 	void set_frequency(float freq);
+// 	void set_phase(float phase);
+
+// 	void update();
+// 	uint32_t val();
+// 	uint32_t get_int() {return val();}
+// 	float get_float();
+// 	float get_bipolar_float();
+
+// 	uint32_t process() {update(); return val();}
+// 	uint32_t process_as_float() {update(); return get_float();}
+// 	uint32_t process_as_bipolar_float() {update(); return get_bipolar_float();}
+// };
+
 // actual freq = update_rate(Hz) * increment(#) / 2^32
 // increment = 2^32 * freq / update_rate
 template<int UpdateRateHz>

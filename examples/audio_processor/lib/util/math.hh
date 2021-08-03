@@ -173,6 +173,17 @@ static inline float pow2(float x)
 	return res;
 }
 
+static inline float sin(float x)
+{
+	return sinTable.interp_wrap(x / (2.f * M_PI));
+}
+
+//
+static inline float sin01(float x)
+{
+	return sinTable.interp_wrap(x);
+}
+
 static inline float cos(float x)
 {
 	return sinTable.interp_wrap((x / (2.f * M_PI)) + 0.25f);
