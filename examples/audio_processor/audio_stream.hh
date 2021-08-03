@@ -4,6 +4,7 @@
 #include "drivers/codec_CS42L51.hh"
 #include "drivers/cycle_counter.hh"
 #include "drivers/i2c.hh"
+#include "drivers/cache.hh"
 
 using AudioInBuffer = AudioStreamConf::AudioInBuffer;
 using AudioOutBuffer = AudioStreamConf::AudioOutBuffer;
@@ -17,8 +18,10 @@ class AudioStream {
 	// These must be in a region of RAM that's not cached
 	// -- OR else we have to invalidate the cache before we use incoming DMA data
 	// and clean it after processing and writing to the outgoing DMA buffer
-	static inline __attribute__((section(".noncachable"))) AudioInBlock audio_in_dma_block;
-	static inline __attribute__((section(".noncachable"))) AudioOutBlock audio_out_dma_block;
+	// static inline __attribute__((section(".noncachable"))) AudioInBlock audio_in_dma_block;
+	// static inline __attribute__((section(".noncachable"))) AudioOutBlock audio_out_dma_block;
+	 static inline AudioInBlock audio_in_dma_block;
+	 static inline AudioOutBlock audio_out_dma_block;
 
 public:
 	using AudioProcessFunction = std::function<void(AudioInBuffer &, AudioOutBuffer &)>;
@@ -31,6 +34,14 @@ public:
 		codec.set_rx_buffers(audio_in_dma_block[0]);
 		codec.set_tx_buffers(audio_out_dma_block[0]);
 		load_measurer.init();
+		for (auto &out_buffer : audio_out_dma_block) {
+			for (auto &out : out_buffer) {
+				out.chan[0] = 0xAAAAAA;
+				out.chan[1] = 0x111111;
+			}
+		}
+
+		mdrivlib::SystemCache::clean_dcache();	
 	}
 
 	void set_process_function(AudioProcessFunction &&process)
@@ -40,13 +51,17 @@ public:
 			[this] {
 				audio_load = load_measurer.get_last_measurement_load_percent();
 				load_measurer.start_measurement();
-				_process(audio_in_dma_block[0], audio_out_dma_block[0]);
+				mdrivlib::SystemCache::invalidate_dcache_by_range(audio_in_dma_block[1].data(), sizeof(AudioInBuffer));	
+				_process(audio_in_dma_block[1], audio_out_dma_block[1]);
+				mdrivlib::SystemCache::clean_dcache_by_range(audio_out_dma_block[1].data(), sizeof(AudioOutBuffer));	
 				load_measurer.end_measurement();
 			},
 			[this] {
 				audio_load = load_measurer.get_last_measurement_load_percent();
 				load_measurer.start_measurement();
-				_process(audio_in_dma_block[1], audio_out_dma_block[1]);
+				mdrivlib::SystemCache::invalidate_dcache_by_range(audio_in_dma_block[0].data(), sizeof(AudioInBuffer));	
+				_process(audio_in_dma_block[0], audio_out_dma_block[0]);
+				mdrivlib::SystemCache::clean_dcache_by_range(audio_out_dma_block[0].data(), sizeof(AudioOutBuffer));	
 				load_measurer.end_measurement();
 			});
 	}
