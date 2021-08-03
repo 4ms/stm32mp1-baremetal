@@ -1,4 +1,4 @@
-#include "audio.hh"
+#include "audio_stream.hh"
 #include "drivers/stm32xx.h"
 #include "dual_fm_osc.hh"
 #include "shared/drivers/delay.hh"

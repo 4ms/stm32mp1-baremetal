@@ -15,8 +15,6 @@ SOURCES = main.cc \
 		  $(mdrivlibdir)/drivers/i2c.cc \
 		  $(mdrivlibdir)/drivers/pin.cc \
 		  $(mdrivlibdir)/drivers/codec_CS42L51.cc \
-		  $(mdrivlibdir)/drivers/timekeeper.cc \
-		  $(mdrivlibdir)/drivers/tim.cc \
 		  $(mdrivlibdir)/target/stm32mp1/drivers/sai_tdm.cc \
 		  $(mdrivlibdir)/target/stm32mp1_ca7/drivers/cycle_counter.cc \
 		  $(mdrivlibdir)/target/stm32mp1_ca7/drivers/hal_handlers.cc \
@@ -32,7 +30,6 @@ SOURCES = main.cc \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_dma_ex.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_i2c.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_i2c_ex.c \
-		  $(STM32HALDIR)/Src/stm32mp1xx_hal_mdma.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_sai.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \
