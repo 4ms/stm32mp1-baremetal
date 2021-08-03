@@ -35,6 +35,10 @@ public:
 			value /= 10;
 		} while (value && (len < MAX_DIGITS));
 		buf[len] = '\0';
+
+		for (int i=0; i<len/2; i++) 
+			std::swap(buf[i], buf[len-i-1]);
+
 		write(buf);
 	}
 
