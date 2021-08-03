@@ -1,0 +1,4 @@
+CompileFlags:
+	Add: [
+		"-I../../third-party/DaisySP/Source",
+	]
