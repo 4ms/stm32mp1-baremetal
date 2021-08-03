@@ -99,7 +99,7 @@ $(OBJDIR)/%.o: %.c[cp]* $(OBJDIR)/%.d
 
 $(ELF): $(OBJECTS) $(LINKSCR)
 	$(info Linking...)
-	@$(LD) $(LFLAGS) -o $@ $(OBJECTS)
+	@$(LD) $(LFLAGS) -o $@ $(OBJECTS) 
 
 $(BIN): $(ELF)
 	$(OBJCPY) -O binary $< $@

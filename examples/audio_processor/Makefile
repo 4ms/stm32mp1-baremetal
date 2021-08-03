@@ -33,6 +33,8 @@ SOURCES = main.cc \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_sai.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \
+		  $(EXTLIBDIR)/DaisySP/Source/Control/adenv.cpp \
+		
 
 		  # $(STM32HALDIR)/Src/stm32mp1xx_ll_gpio.c \
 		  # $(mdrivlibdir)/target/stm32mp1_ca7/boot/startup_ca7.s \
@@ -51,6 +53,7 @@ INCLUDES = -I. \
 		   -I$(STM32HALDIR)/Inc \
 		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
+		   -I$(EXTLIBDIR)/DaisySP/Source \
 
 EXTRACFLAGS = -DUSE_HAL_DRIVER \
 			  -DUSE_FULL_LL_DRIVER \
