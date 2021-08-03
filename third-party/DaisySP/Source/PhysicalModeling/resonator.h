@@ -103,8 +103,8 @@ class ResonatorSvf
     static constexpr float kPiPow5 = kPiPow3 * PI_F * PI_F;
     static inline float    fasttan(float f)
     {
-        const float a  = 3.260e-01 * kPiPow3;
-        const float b  = 1.823e-01 * kPiPow5;
+        const float a  = 3.260e-01f * kPiPow3;
+        const float b  = 1.823e-01f * kPiPow5;
         float       f2 = f * f;
         return f * (PI_F + f2 * (a + b * f2));
     }

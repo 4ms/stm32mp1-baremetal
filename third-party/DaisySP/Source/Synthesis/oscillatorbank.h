@@ -73,7 +73,7 @@ class OscillatorBank
     float sample_rate_;
     bool  recalc_, recalc_gain_;
 
-    bool cmp(float a, float b) { return fabsf(a - b) > .0000001; }
+    bool cmp(float a, float b) { return fabsf(a - b) > .0000001f; }
 };
 } // namespace daisysp
 #endif

@@ -232,8 +232,8 @@ class HiHat
     void SetDecay(float decay)
     {
         decay_ = fmax(decay, 0.f);
-        decay_ *= 1.7;
-        decay_ -= 1.2;
+        decay_ *= 1.7f;
+        decay_ -= 1.2f;
     }
 
     /** Sets the mix between tone and noise
