@@ -74,7 +74,7 @@ void main()
 				case FX::DualFMOsc:
 					current_fx = FX::MonoTriOsc;
 					audio.set_process_function(simple_osc_process);
-					uart.write("Using Mono Tri Osc FX\r\n");
+					uart.write("Using Dual Osc FX\r\n");
 					blue_led.off();
 					orange_led.on();
 					break;

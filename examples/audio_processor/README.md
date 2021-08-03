@@ -1,14 +1,14 @@
 ## Audio Processor project
 
 This project runs on the STM32MP157 Discovery board, using the board's codec
-and mic/line jack.  The OSD32BRK board does not have a Codec, so you would need to
-he appropriate pins to a board with a codec for it to run (I've done this and
-it works... you also need to change the button and LED pins to match your
-board). See `audio_codec_conf.h` for the pinout. 
+and mic/line jack. The OSD32BRK board does not have a Codec, so you would need
+to connect the appropriate pins to a board with a codec for it to run (I've
+done this and it works... you also need to change the button and LED pins to
+match your board). See `audio_codec_conf.h` for the pinout. 
 
-Various effects (FX) can be selected by pressing the User1 button. There are only two
-right now, more added shortly...  Pressing the User2 button will print the
-current processor load consumed by the current effect.
+Three different effects (actually synths) can be selected by pressing the User1
+button. Pressing the User2 button will print the current processor load
+consumed by the current effect.
 
 To use, first make sure U-Boot is installed on an SD card, as usual (see README
 in the project root directory). 
@@ -22,6 +22,33 @@ make
 In the `build/` dir, you should see the `a7-main.uimg` file. Copy it to the 4th
 partition of the SD-card, as usual (again, see README in the project root
 dir). Power up and play!
+
+Press the buttons to change effect.  You'll see a message like:
+
+```
+Starting Audio Processor
+Using Passthrough FX
+Current load: 0%
+Using DualFMOsc FX
+Current load: 1%
+Using Dual Osc FX
+Current load: 0%
+```
+
+(I'm adding more effects that use more processor load, to showcase that!)
+
+*Passthrough*: Just copies the inputs to the outputs. Unfortunately the Disco
+board has a TRRS jack and I haven't yet found a mic that works well with it.
+You may need to adjust the codec's biasing and boost settings to get it to
+work. With a scope you can verify it's passing the input signal to the
+output, it's just usually getting noise from the mic.
+
+*DualFMOsc*: Ramp Osc frequency modulatates (FM's) a triangle oscillator which
+is heard on the left output. The triangle oscillator FM's a sine oscillator,
+which is heard on the right output.
+
+*Dual Osc*: Left output has a 400Hz triangle wave. Right output has a 600Hz
+sine wave.
 
 #### lib/mdrivlib
 
