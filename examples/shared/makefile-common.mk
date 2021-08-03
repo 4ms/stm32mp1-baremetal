@@ -92,12 +92,7 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d
 	$(info Building $< at $(OPTFLAG))
 	@$(CC) -c $(DEPFLAGS) $(OPTFLAG) $(CFLAGS) $< -o $@
 
-$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d
-	@mkdir -p $(dir $@)
-	$(info Building $< at $(OPTFLAG))
-	$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
-
-$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d
+$(OBJDIR)/%.o: %.c[cp]* $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
 	@$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
