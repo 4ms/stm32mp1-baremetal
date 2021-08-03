@@ -1,5 +1,5 @@
 #pragma once
-#include <stdint.h>
+#include <cstdint>
 
 // actual freq = update_rate(Hz) * increment(#) / 2^32
 // increment = 2^32 * freq / update_rate
@@ -16,16 +16,22 @@ struct TriangleOscillator {
 	{
 		phase_ += increment_;
 	}
+
+	// Returns 0 .. 0xFFFFFFFF
 	uint32_t val()
 	{
 		return (phase_ > max_ / 2) ? (max_ - phase_ * 2) : (phase_ * 2);
 	}
+
+	// Returns 0 .. 0xFFFFFFFF
 	uint32_t process()
 	{
 		update();
 		return val();
 	}
-	uint32_t process_float()
+
+	// Returns 0 .. 1
+	float process_float()
 	{
 		return static_cast<float>(process()) / 4294967295.f;
 	}
@@ -75,10 +81,18 @@ struct PhaseAccum {
 	PhaseAccum()
 		: increment_(0)
 	{}
-	uint32_t process()
+	void update()
 	{
 		phase_ += increment_;
+	}
+	uint32_t val()
+	{
 		return phase_;
+	}
+	uint32_t process()
+	{
+		update();
+		return val();
 	}
 	uint32_t Process()
 	{
@@ -86,7 +100,7 @@ struct PhaseAccum {
 	}
 	float process_float()
 	{
-		return static_cast<float>(process()) / 4294967295.f;
+		return static_cast<float>(process()) * _to_float_convert;
 	}
 
 	void set_frequency(uint32_t freq)
@@ -100,7 +114,62 @@ struct PhaseAccum {
 
 private:
 	static constexpr uint32_t max_ = 0xFFFFFFFF;
+	static constexpr float _to_float_convert = 1.0f / 4294967295.f; // stores as 0x2f800000
 	static constexpr uint32_t freq_units = max_ / UpdateRateHz;
 	uint32_t phase_ = 0;
 	uint32_t increment_;
+};
+
+template<int UpdateRateHz>
+using RampOscillator = PhaseAccum<UpdateRateHz>;
+
+#include <util/math_tables.hh>
+
+template<int UpdateRateHz>
+struct SineOscillator {
+	SineOscillator(uint32_t freq)
+		: _phaseacc{freq}
+	{}
+	SineOscillator() = default;
+
+	void update()
+	{
+		_phaseacc.update();
+	}
+	uint32_t val()
+	{
+		return process();
+	}
+
+	// Returns -1 .. +1
+	float process_bipolar()
+	{
+		return sinTable.interp_wrap(_phaseacc.process_float());
+	}
+
+	// Returns 0 .. +1
+	float process_unipolar()
+	{
+		return process_bipolar() * 0.5f + 0.5f;
+	}
+
+	// Returns 0 .. almost 0xFFFFFFFF
+	uint32_t process()
+	{
+		return static_cast<uint32_t>(process_unipolar() * _to_u32_convert);
+	}
+
+	void set_frequency(uint32_t freq)
+	{
+		_phaseacc.set_frequency(freq);
+	}
+	void set_phase(uint32_t phase)
+	{
+		_phaseacc.set_phase(phase);
+	}
+
+private:
+	PhaseAccum<UpdateRateHz> _phaseacc;
+	static constexpr uint32_t max_ = 0xFFFFFFFF;
+	static constexpr float _to_u32_convert = 4294967040.f; // largest value less than 4294967296.f
 };
