@@ -46,6 +46,7 @@ CXXFLAGS = $(CFLAGS) \
 		-Werror=return-type \
 		-Wdouble-promotion \
 		-Wno-register \
+		-Wno-volatile \
 		 $(EXTRACXXFLAGS) \
 
 LFLAGS = -Wl,--gc-sections \
