@@ -4,7 +4,11 @@ struct AudioStreamConf {
 
 	// BlockSize: Number of Frames processed each time AudioStream::process() is called
 	static constexpr int BlockSize = 32;
-	using SampleT = int32_t;
+
+	// Oddly, the codec on the MP1 Disco board does not seem to work with two's-complement
+	// data, despite the datasheet saying it does. So we use unsigned data. TODO: Figure out why
+	using SampleT = uint32_t;
+
 	static constexpr int SampleBits = 24;
 	static constexpr int NumInChans = 2;
 	static constexpr int NumOutChans = 2;
