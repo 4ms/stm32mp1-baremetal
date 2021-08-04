@@ -15,7 +15,7 @@ MEMORY
 
 }
 
-__HEAP_SIZE = 0x40000;
+__HEAP_SIZE = 0x10000000;
 
 SECTIONS
 {
@@ -126,7 +126,7 @@ SECTIONS
 	} > HEAP
 
     _user_stack_start = _ram_aligned_end; 
-    _user_stack_end = _user_stack_start + 0x10000;
+    _user_stack_end = _user_stack_start + 0x100000;
 
     _svc_stack_start = _user_stack_end;
     _svc_stack_end = _svc_stack_start + 0x1000;
