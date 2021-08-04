@@ -71,8 +71,8 @@ static int DelayLineMaxSamples(float sr, float i_pitch_mod, int n)
     float max_del;
 
     max_del = kReverbParams[n][0];
-    max_del += (kReverbParams[n][1] * (float)i_pitch_mod * 1.125);
-    return (int)(max_del * sr + 16.5);
+    max_del += (kReverbParams[n][1] * (float)i_pitch_mod * 1.125f);
+    return (int)(max_del * sr + 16.5f);
 }
 
 static int DelayLineBytesAlloc(float sr, float i_pitch_mod, int n)
@@ -94,20 +94,20 @@ void ReverbSc::NextRandomLineseg(ReverbScDl *lp, int n)
     if(lp->seed_val >= 0x8000)
         lp->seed_val -= 0x10000;
     /* length of next segment in samples */
-    lp->rand_line_cnt = (int)((sample_rate_ / kReverbParams[n][2]) + 0.5);
+    lp->rand_line_cnt = (int)((sample_rate_ / kReverbParams[n][2]) + 0.5f);
     prv_del           = (float)lp->write_pos;
     prv_del -= ((float)lp->read_pos
                 + ((float)lp->read_pos_frac / (float)DELAYPOS_SCALE));
-    while(prv_del < 0.0)
+    while(prv_del < 0.0f)
         prv_del += lp->buffer_size;
     prv_del = prv_del / sample_rate_; /* previous delay time in seconds */
-    nxt_del = (float)lp->seed_val * kReverbParams[n][1] / 32768.0;
+    nxt_del = (float)lp->seed_val * kReverbParams[n][1] / 32768.0f;
     /* next delay time in seconds */
     nxt_del = kReverbParams[n][0] + (nxt_del * (float)i_pitch_mod_);
     /* calculate phase increment per sample */
     phs_inc_val           = (prv_del - nxt_del) / (float)lp->rand_line_cnt;
-    phs_inc_val           = phs_inc_val * sample_rate_ + 1.0;
-    lp->read_pos_frac_inc = (int)(phs_inc_val * DELAYPOS_SCALE + 0.5);
+    phs_inc_val           = phs_inc_val * sample_rate_ + 1.0f;
+    lp->read_pos_frac_inc = (int)(phs_inc_val * DELAYPOS_SCALE + 0.5f);
 }
 
 int ReverbSc::InitDelayLine(ReverbScDl *lp, int n)
@@ -120,14 +120,14 @@ int ReverbSc::InitDelayLine(ReverbScDl *lp, int n)
     lp->dummy       = 0;
     lp->write_pos   = 0;
     /* set random seed */
-    lp->seed_val = (int)(kReverbParams[n][3] + 0.5);
+    lp->seed_val = (int)(kReverbParams[n][3] + 0.5f);
     /* set initial delay time */
     read_pos     = (float)lp->seed_val * kReverbParams[n][1] / 32768;
     read_pos     = kReverbParams[n][0] + (read_pos * (float)i_pitch_mod_);
     read_pos     = (float)lp->buffer_size - (read_pos * sample_rate_);
     lp->read_pos = (int)read_pos;
     read_pos     = (read_pos - (float)lp->read_pos) * (float)DELAYPOS_SCALE;
-    lp->read_pos_frac = (int)(read_pos + 0.5);
+    lp->read_pos_frac = (int)(read_pos + 0.5f);
     /* initialise first random line segment */
     NextRandomLineseg(lp, n);
     /* clear delay line to zero */
@@ -203,18 +203,18 @@ int ReverbSc::Process(const float &in1,
         if(lp->read_pos >= buffer_size)
             lp->read_pos -= buffer_size;
         read_pos = lp->read_pos;
-        frac     = (float)lp->read_pos_frac * (1.0 / (float)DELAYPOS_SCALE);
+        frac     = (float)lp->read_pos_frac * (1.0f / (float)DELAYPOS_SCALE);
 
         /* calculate interpolation coefficients */
 
         a2 = frac * frac;
-        a2 -= 1.0;
-        a2 *= (1.0 / 6.0);
+        a2 -= 1.0f;
+        a2 *= (1.0f / 6.0f);
         a1 = frac;
-        a1 += 1.0;
-        a1 *= 0.5;
-        am1 = a1 - 1.0;
-        a0  = 3.0 * a2;
+        a1 += 1.0f;
+        a1 *= 0.5f;
+        am1 = a1 - 1.0f;
+        a0  = 3.0f * a2;
         a1 -= a0;
         am1 -= a2;
         a0 -= frac;
