@@ -1,8 +1,6 @@
 #include "audio_stream.hh"
-#include "daisy_harm_osc.hh"
 #include "daisysp.h"
 #include "drivers/stm32xx.h"
-#include "dual_fm_osc.hh"
 #include "shared/drivers/delay.hh"
 #include "shared/drivers/leds.hh"
 #include "shared/drivers/uart.hh"
@@ -11,6 +9,11 @@
 #include "util/oscs.hh"
 #include "util/zip.hh"
 #include <cstdint>
+
+// Synths:
+#include "daisy_harm_osc.hh"
+#include "daisy_reverb_osc.hh"
+#include "dual_fm_osc.hh"
 
 using AudioInBuffer = AudioStreamConf::AudioInBuffer;
 using AudioOutBuffer = AudioStreamConf::AudioOutBuffer;
@@ -28,9 +31,9 @@ void main()
 	blue_led.on();
 	orange_led.on();
 
-	// FX
-	enum class FX { Passthrough, DualFMOsc, MonoTriOsc, HarmonicOsc };
-	FX current_fx = FX::Passthrough;
+	// Synths
+	enum class Synths { Passthrough, DualFMOsc, MonoTriOsc, HarmonicOsc, ReverbOsc };
+	Synths current_synth = Synths::Passthrough;
 
 	auto passthrough = [](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
 		for (auto [in, out] : zip(in_buffer, out_buffer)) {
@@ -39,6 +42,7 @@ void main()
 		}
 	};
 
+	// Dual FM Osc
 	DualFMOsc<AudioStreamConf> dual_fm_osc;
 	auto dual_fm_osc_process = [&dual_fm_osc](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
 		dual_fm_osc.process(in_buffer, out_buffer);
@@ -54,9 +58,16 @@ void main()
 		}
 	};
 
+	// Daisy Harmonic Osc + Env + Seqeuncer
 	DaisyHarmonicExample<AudioStreamConf> harmonic_sequencer;
 	auto harm_osc_process = [&harmonic_sequencer](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
 		harmonic_sequencer.process(in_buffer, out_buffer);
+	};
+
+	// Daisy Harmonic Osc + Env + Seqeuncer
+	DaisyReverbExample<AudioStreamConf> reverb_example;
+	auto reverb_process = [&reverb_example](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
+		reverb_example.process(in_buffer, out_buffer);
 	};
 
 	// AudioStream
@@ -73,33 +84,42 @@ void main()
 
 		// Change FX
 		if (button1.is_just_pressed()) {
-			switch (current_fx) {
-				case FX::Passthrough:
-					current_fx = FX::DualFMOsc;
+
+			switch (current_synth) {
+				case Synths::Passthrough:
+					current_synth = Synths::DualFMOsc;
 					audio.set_process_function(dual_fm_osc_process);
 					uart.write("Using DualFMOsc\r\n");
 					blue_led.on();
 					orange_led.off();
 					break;
 
-				case FX::DualFMOsc:
-					current_fx = FX::MonoTriOsc;
+				case Synths::DualFMOsc:
+					current_synth = Synths::MonoTriOsc;
 					audio.set_process_function(simple_osc_process);
 					uart.write("Using Dual Osc\r\n");
 					blue_led.off();
 					orange_led.on();
 					break;
 
-				case FX::MonoTriOsc:
-					current_fx = FX::HarmonicOsc;
+				case Synths::MonoTriOsc:
+					current_synth = Synths::HarmonicOsc;
 					audio.set_process_function(harm_osc_process);
 					uart.write("Using Harmonic Osc\r\n");
 					blue_led.on();
 					orange_led.off();
 					break;
 
-				case FX::HarmonicOsc:
-					current_fx = FX::Passthrough;
+				case Synths::HarmonicOsc:
+					current_synth = Synths::ReverbOsc;
+					audio.set_process_function(reverb_process);
+					uart.write("Using Reverb\r\n");
+					blue_led.off();
+					orange_led.on();
+					break;
+
+				case Synths::ReverbOsc:
+					current_synth = Synths::Passthrough;
 					audio.set_process_function(passthrough);
 					uart.write("Using Passthrough\r\n");
 					blue_led.on();
