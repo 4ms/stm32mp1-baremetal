@@ -38,11 +38,12 @@ public:
 	void set_process_function(AudioProcessFunction &&process)
 	{
 		_process_func = std::move(process);
-		codec.set_callbacks([this] { _process<1>(); }, [this] { _process<0>(); });
 	}
 
-	void start()
+	void start(AudioProcessFunction &&process)
 	{
+		_process_func = std::move(process);
+		codec.set_callbacks([this] { _process<1>(); }, [this] { _process<0>(); });
 		codec.start();
 	}
 

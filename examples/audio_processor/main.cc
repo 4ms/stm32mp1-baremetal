@@ -74,9 +74,8 @@ void main()
 
 	// AudioStream
 	AudioStream audio;
-	audio.set_process_function(passthrough);
 	uart.write("Using Passthrough FX\r\n");
-	audio.start();
+	audio.start(passthrough);
 
 	uint32_t display_load_timer = 1;
 
