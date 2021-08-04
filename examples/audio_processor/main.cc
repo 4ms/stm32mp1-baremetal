@@ -65,9 +65,11 @@ void main()
 	};
 
 	// Daisy Harmonic Osc + Env + Seqeuncer
-	DaisyReverbExample<AudioStreamConf> reverb_example;
+	// Note: Reverb uses a lot of RAM (~385kB) so we put it on the heap, which has 256MB available (and there is no
+	// noticeable slow-down vs Reverb in internal RAM)
+	DaisyReverbExample<AudioStreamConf> *reverb_example = new DaisyReverbExample<AudioStreamConf>;
 	auto reverb_process = [&reverb_example](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
-		reverb_example.process(in_buffer, out_buffer);
+		reverb_example->process(in_buffer, out_buffer);
 	};
 
 	// AudioStream
@@ -124,6 +126,9 @@ void main()
 					uart.write("Using Passthrough\r\n");
 					blue_led.on();
 					orange_led.on();
+					break;
+
+				default:
 					break;
 			}
 			display_load_timer = 1000000;
