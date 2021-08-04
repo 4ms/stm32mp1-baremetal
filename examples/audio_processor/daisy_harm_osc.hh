@@ -1,7 +1,7 @@
 #include "daisysp.h"
 
 // Taken from https://github.com/electro-smith/DaisyExamples/blob/master/seed/harmonic_osc/harmonic_osc.cpp
-// and modified to make it a class
+// and adapted for 4ms/stm32mp1-baremetal project
 
 template<typename AudioStreamConf>
 class DaisyHarmonicExample {
@@ -41,11 +41,11 @@ public:
 
 	DaisyHarmonicExample()
 	{
-		harm.Init(48000);
+		harm.Init(AudioStreamConf::SampleRate);
 		harm.SetFirstHarmIdx(1);
 
 		// init envelope
-		env.Init(48000);
+		env.Init(AudioStreamConf::SampleRate);
 		env.SetTime(daisysp::ADENV_SEG_ATTACK, 0.05f);
 		env.SetTime(daisysp::ADENV_SEG_DECAY, 0.35f);
 		env.SetMin(0.0);

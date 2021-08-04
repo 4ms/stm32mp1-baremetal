@@ -44,8 +44,9 @@ void main()
 		dual_fm_osc.process(in_buffer, out_buffer);
 	};
 
-	TriangleOscillator<48000> tri_osc{400};
-	SineOscillator<48000> sine_osc{600};
+	// Tri + Sine osc
+	TriangleOscillator<AudioStreamConf::SampleRate> tri_osc{400}; // 400Hz
+	SineOscillator<AudioStreamConf::SampleRate> sine_osc{600};	  // 600Hz
 	auto simple_osc_process = [&tri_osc, &sine_osc](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
 		for (auto &out : out_buffer) {
 			out.chan[0] = tri_osc.process() >> 8;
