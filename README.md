@@ -72,7 +72,7 @@ You need:
   - A USB-to-serial cable (only if you use the OSD32 board) such as the [FTDI cable](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/TTL-232R-3V3/1836393)
   - Optionally, a J-link or ST-LINK debugger (only if you use the OSD32 board)
 
-![Image of STM32MP157A-DK1 board](https://www.st.com/bin/ecommerce/api/image.PF267131.en.feature-description-include-personalized-no-cpn-large.jpg)
+![Image of STM32MP157A-DK1 board](https://www.st.com/bin/ecommerce/api/image.PF268547.en.feature-description-include-personalized-no-cpn-large.jpg)
 *STM32MP157A-DK1 Discovery board*
 
 ![Image of OSD32MP1-BRK board](https://octavosystems.com/octavosystems.com/wp-content/uploads/2020/02/OSD32MP1-BRK-Features-product-carousel.png)
