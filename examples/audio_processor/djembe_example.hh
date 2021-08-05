@@ -15,7 +15,7 @@ class DjembeExample {
 
 	static constexpr uint32_t trigger_pulse_width = 10;
 	float trigger_period_samples[NumDjembes];
-	uint32_t trigger_counter[NumDjembes]{0, 0};
+	uint32_t trigger_counter[NumDjembes];
 
 	using AudioInBuffer = typename AudioStreamConf::AudioInBuffer;
 	using AudioOutBuffer = typename AudioStreamConf::AudioOutBuffer;
@@ -27,13 +27,16 @@ public:
 			float f = i;
 
 			// Distinct rhythm for each djembe:
-			trigger_period_samples[i] = ((f + 3.f) / 10.f) * AudioStreamConf::SampleRate;
+			trigger_period_samples[i] = ((f + 3.f) / 12.f) * AudioStreamConf::SampleRate;
+			trigger_counter[i] = 0;
 
 			// Distinct freq and "strike" for each djembe:
-			djembe.set_param(Djembe::Freq, 1.f / (f + 2.3f));
+			djembe.set_param(Djembe::Freq, 1.f / (f + 3.3f));
 			djembe.set_param(Djembe::Gain, 0.9f);
 			djembe.set_param(Djembe::Sharpness, 0.9f);
-			djembe.set_param(Djembe::Strike, 3.f / (f * 2.f + 4.f));
+			djembe.set_param(Djembe::Strike, 0.75f);
+
+			djembe.update();
 		}
 	}
 

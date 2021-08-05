@@ -43,7 +43,7 @@ struct SynthList {
 
 	DaisyReverbExample<AudioStreamConf> *reverb_example;
 
-	DjembeExample<AudioStreamConf, 4> djembes;
+	DjembeExample<AudioStreamConf, 5> djembes;
 
 	std::array<AudioProcessFunction, NumSynths> process_func;
 
