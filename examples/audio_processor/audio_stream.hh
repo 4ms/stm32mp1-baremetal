@@ -35,14 +35,14 @@ public:
 		load_measurer.init();
 	}
 
-	void set_process_function(AudioProcessFunction &&process)
+	void set_process_function(AudioProcessFunction &process)
 	{
-		_process_func = std::move(process);
+		_process_func = process;
 	}
 
-	void start(AudioProcessFunction &&process)
+	void start(AudioProcessFunction &process)
 	{
-		_process_func = std::move(process);
+		_process_func = process;
 		codec.set_callbacks([this] { _process<1>(); }, [this] { _process<0>(); });
 		codec.start();
 	}
@@ -59,6 +59,7 @@ public:
 		load_measurer.start_measurement();
 		_process_func(audio_in_dma_block[buffer_half], audio_out_dma_block[buffer_half]);
 		load_measurer.end_measurement();
+		// Todo: do a long-range average of load
 	}
 
 private:
