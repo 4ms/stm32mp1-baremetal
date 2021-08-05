@@ -49,21 +49,23 @@ public:
 
 	uint32_t get_load_measurement()
 	{
-		return audio_load;
+		return (uint32_t)(audio_load_smoothed * 100.f);
 	}
 
 	template<uint32_t buffer_half>
 	void _process()
 	{
-		audio_load = load_measurer.get_last_measurement_load_percent();
+		float last_audio_load = load_measurer.get_last_measurement_load_float();
+		audio_load_smoothed = last_audio_load * kSmoothCoef + audio_load_smoothed * kinvSmoothCoef;
 		load_measurer.start_measurement();
 		_process_func(audio_in_dma_block[buffer_half], audio_out_dma_block[buffer_half]);
 		load_measurer.end_measurement();
-		// Todo: do a long-range average of load
 	}
 
 private:
 	AudioProcessFunction _process_func;
 	mdrivlib::CycleCounter load_measurer;
-	uint32_t audio_load;
+	float audio_load_smoothed = 0.f;
+	static constexpr float kSmoothCoef = 0.01; // 100 process blocks = 6400 samples: tau=0.133s
+	static constexpr float kinvSmoothCoef = 1.f - kSmoothCoef;
 };

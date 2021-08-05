@@ -29,7 +29,7 @@ void main()
 	AudioStream audio;
 	audio.start(synths.process_func[current_synth]);
 
-	constexpr uint32_t LoadTimerStartingValue = 1000000;
+	constexpr uint32_t LoadTimerStartingValue = 5000000;
 	uint32_t display_load_timer = LoadTimerStartingValue;
 
 	while (true) {
