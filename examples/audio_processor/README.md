@@ -26,12 +26,6 @@ Press the buttons to change effect.  You'll see a message like:
 ```
 Starting Audio Processor
 
-Using Synth: Dual FM Osc
-Current load: 0%
-
-Using Synth: Sine and Tri Osc
-Current load: 0%
-
 Using Synth: Harmonic Osc
 Current load: 12%
 
@@ -39,6 +33,20 @@ Using Synth: Reverb Osc
 Current load: 9%
 
 ```
+
+
+*Harmonic Osc*: Example project from [DaisySP
+library](https://github.com/electro-smith/DaisyExamples). AD Envelope sweeps
+the harmonics of a 16-osc harmonic oscillator, as well as a VCA to make notes.
+A simple sequencer of pitches plays, too.
+
+*Reverb Osc*: Example project from [DaisySP
+library](https://github.com/electro-smith/DaisyExamples). AD envelope + VCA +
+triangle oscillator playing a simple sequencer. This is fed into a stereo
+reverb effect.
+
+*Djembe*: Plays five physical modeled djembes. Algorithm taken from Faust
+library, and optimized for NEON instructions by me. TODO: 
 
 *Passthrough*: Just copies the inputs to the outputs. Unfortunately the Disco
 board has a TRRS jack and I haven't yet found a mic that works well with it.
@@ -53,23 +61,20 @@ which is heard on the right output.
 *Sine and Tri Osc*: Left output has a 400Hz triangle wave. Right output has a 600Hz
 sine wave.
 
-*Harmonic Osc*: Example project from [DaisySP
-library](https://github.com/electro-smith/DaisyExamples). AD Envelope sweeps
-the harmonics of a 16-osc harmonic oscillator, as well as a VCA to make notes.
-A simple sequencer of pitches plays, too.
-
-*Reverb Osc*: Example project from [DaisySP
-library](https://github.com/electro-smith/DaisyExamples). AD envelope + VCA +
-triangle oscillator playing a simple sequencer. This is fed into a stereo
-reverb effect.
-
 ### What's under the hood
 
 #### DaisySP
 
-DaisySP is "A Powerful, Open Source DSP Library in C++" that works with the
-Daisy embedded platform. 
+[DaisySP](https://github.com/electro-smith/DaisySP) is "A Powerful, Open Source
+DSP Library in C++" that works with the Daisy embedded platform. I've taken a
+couple of the example projects and converted them to run on the Cortex-A7.
 
+#### Faust
+
+[Faust](https://faust.grame.fr/) is "a functional programming language for sound
+synthesis and audio processing..." I've taken the Djembe physical model algorithm
+and converted it to run on Cortex-A7 (optimizing it by using NEON SIMD
+instructions).
 
 #### lib/mdrivlib
 

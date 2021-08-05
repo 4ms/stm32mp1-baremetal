@@ -30,7 +30,9 @@ Here's a list of the example projects:
   * **Multicore_a7**: Demonstrates running both A7 cores in parallel.
   * **Copro_rproc**: Using the rproc feature of U-Boot to load and run firmware on the M4 core in parallel with the A7 core.
   * **Copro_embedded**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
-  * **Audio Processor**: A fun practical project that lets you select one of several audio synths to play. Requires STM32MP1 Discovery board. Uses STM32-HAL, some DaisySP example projects.
+  * **Audio Processor**: A fun practical project that lets you select one of
+	several audio synths to play. Requires STM32MP1 Discovery board. Uses
+	STM32-HAL, some DaisySP example projects, and some Faust algorithms. TODO: use multi-core A7.
 
 ## Overview
 
