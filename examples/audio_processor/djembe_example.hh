@@ -1,5 +1,5 @@
 #pragma once
-#include "lib/CoreModules/djembeCore_neon.h"
+#include "lib/CoreModules/djembeCore.h"
 #include "util/countzip.hh"
 #include "util/math.hh"
 #include "util/math_tables.hh"
@@ -9,11 +9,11 @@
 template<typename AudioStreamConf, size_t NumDjembes = 4>
 class DjembeExample {
 
-	using Djembe = DjembeCoreNeon<AudioStreamConf::SampleRate>;
+	using Djembe = DjembeCore<AudioStreamConf::SampleRate>;
 
 	std::array<Djembe, NumDjembes> djembes;
 
-	static constexpr uint32_t trigger_pulse_width = 10;
+	static constexpr uint32_t trigger_pulse_width = 1000;
 	float trigger_period_samples[NumDjembes];
 	uint32_t trigger_counter[NumDjembes];
 
@@ -27,14 +27,14 @@ public:
 			float f = i;
 
 			// Distinct rhythm for each djembe:
-			trigger_period_samples[i] = ((f + 3.f) / 12.f) * AudioStreamConf::SampleRate;
+			trigger_period_samples[i] = ((f + 3.f) / 6.f) * AudioStreamConf::SampleRate;
 			trigger_counter[i] = 0;
 
-			// Distinct freq and "strike" for each djembe:
-			djembe.set_param(Djembe::Freq, 1.f / (f + 3.3f));
-			djembe.set_param(Djembe::Gain, 0.9f);
+			// Distinct freq for each djembe:
+			djembe.set_param(Djembe::Freq, 1.f / (f + 1.3f));
+			djembe.set_param(Djembe::Gain, 0.5f + (f / 16.f));
 			djembe.set_param(Djembe::Sharpness, 0.9f);
-			djembe.set_param(Djembe::Strike, 0.75f);
+			djembe.set_param(Djembe::Strike, 0.6f + (f / 12.f));
 
 			djembe.update();
 		}
@@ -47,7 +47,7 @@ public:
 			float right_mix = 0.f;
 
 			for (auto [i, djembe] : countzip(djembes)) {
-				if (trigger_counter[i] == trigger_pulse_width)
+				if (trigger_counter[i] >= trigger_pulse_width)
 					djembe.set_input(Djembe::Trigger, 1.f);
 				else if (trigger_counter[i] == 0) {
 					djembe.set_input(Djembe::Trigger, 0.f);
@@ -63,10 +63,8 @@ public:
 				right_mix += o * (1.f - pan);
 			}
 
-			left_mix *= 2.f / static_cast<float>(NumDjembes);
-			right_mix *= 2.f / static_cast<float>(NumDjembes);
-			out.chan[0] = AudioStreamConf::AudioOutFrame::scaleOutput(left_mix);
-			out.chan[1] = AudioStreamConf::AudioOutFrame::scaleOutput(right_mix);
+			out.chan[0] = AudioStreamConf::AudioOutFrame::scaleOutput(left_mix * 2.f);
+			out.chan[1] = AudioStreamConf::AudioOutFrame::scaleOutput(right_mix * 2.f);
 		}
 	};
 };

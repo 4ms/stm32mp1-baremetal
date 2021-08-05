@@ -66,8 +66,15 @@ EXTRACFLAGS = -DUSE_HAL_DRIVER \
 			  -DSTM32MP157Cxx \
 			  -DSTM32MP1 \
 			  -DCORE_CA7 \
+				-mfpu=neon-vfpv4 \
+				-mfloat-abi=hard \
+				-mthumb-interwork \
+				-mtune=cortex-a7 \
+				-mno-unaligned-access \
+				-funsafe-math-optimizations \
+				-mvectorize-with-neon-quad \
 			  
-EXTRACXXFLAGS = -Wno-volatile
+EXTRACXXFLAGS =  \
 
 
 include ../shared/makefile-common.mk

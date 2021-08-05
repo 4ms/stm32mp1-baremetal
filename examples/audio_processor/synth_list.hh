@@ -31,7 +31,7 @@ struct SynthList {
 		"Sine and Tri Osc",
 		"Harmonic Osc",
 		"Reverb Osc",
-		"Dual Djembes",
+		"Eight Djembes",
 	};
 
 	DualFMOsc<AudioStreamConf> dual_fm_osc;
@@ -43,7 +43,7 @@ struct SynthList {
 
 	DaisyReverbExample<AudioStreamConf> *reverb_example;
 
-	DjembeExample<AudioStreamConf, 5> djembes;
+	DjembeExample<AudioStreamConf, 8> djembes;
 
 	std::array<AudioProcessFunction, NumSynths> process_func;
 

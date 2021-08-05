@@ -45,8 +45,8 @@ library](https://github.com/electro-smith/DaisyExamples). AD envelope + VCA +
 triangle oscillator playing a simple sequencer. This is fed into a stereo
 reverb effect.
 
-*Djembe*: Plays five physical modeled djembes. Algorithm taken from Faust
-library, and optimized for NEON instructions by me. TODO: 
+*Djembes*: Plays eight physical modeled djembes hand-drums, panned in stereo.
+Algorithm taken from Faust library.
 
 *Passthrough*: Just copies the inputs to the outputs. Unfortunately the Disco
 board has a TRRS jack and I haven't yet found a mic that works well with it.
@@ -72,9 +72,8 @@ couple of the example projects and converted them to run on the Cortex-A7.
 #### Faust
 
 [Faust](https://faust.grame.fr/) is "a functional programming language for sound
-synthesis and audio processing..." I've taken the Djembe physical model algorithm
-and converted it to run on Cortex-A7 (optimizing it by using NEON SIMD
-instructions).
+synthesis and audio processing..." I'm using the Djembe physical model algorithm.
+
 
 #### lib/mdrivlib
 
