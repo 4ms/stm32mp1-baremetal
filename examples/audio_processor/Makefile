@@ -55,6 +55,7 @@ INCLUDES = -I. \
 		   -I$(mdrivlibdir)/target/stm32mp1_ca7/boot \
 		   -I$(mdrivlibdir)/target/stm32mp1_ca7/drivers \
 		   -I$(STM32HALDIR)/Inc \
+		   -I$(EXTLIBDIR)/gcem/include \
 		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(EXTLIBDIR)/DaisySP/Source \

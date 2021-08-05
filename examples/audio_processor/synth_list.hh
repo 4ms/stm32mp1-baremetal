@@ -5,6 +5,7 @@
 #include "audio_stream_conf.hh"
 #include "daisy_harm_osc.hh"
 #include "daisy_reverb_osc.hh"
+#include "djembe_dual.hh"
 #include "dual_fm_osc.hh"
 
 using AudioInBuffer = AudioStreamConf::AudioInBuffer;
@@ -18,6 +19,7 @@ struct SynthList {
 		MonoTriOsc,
 		HarmonicOsc,
 		ReverbOsc,
+		DualDjembe,
 
 		NumSynths,
 	};
@@ -29,13 +31,19 @@ struct SynthList {
 		"Sine and Tri Osc",
 		"Harmonic Osc",
 		"Reverb Osc",
+		"Dual Djembes",
 	};
 
 	DualFMOsc<AudioStreamConf> dual_fm_osc;
+
 	TriangleOscillator<AudioStreamConf::SampleRate> tri_osc{400}; // 400Hz
 	SineOscillator<AudioStreamConf::SampleRate> sine_osc{600};	  // 600Hz
+
 	DaisyHarmonicExample<AudioStreamConf> harmonic_sequencer;
-	DaisyReverbExample<AudioStreamConf> *reverb_example = new DaisyReverbExample<AudioStreamConf>;
+
+	DaisyReverbExample<AudioStreamConf> *reverb_example;
+
+	DjembeDual<AudioStreamConf> djembes;
 
 	std::array<AudioProcessFunction, NumSynths> process_func;
 
@@ -63,8 +71,14 @@ struct SynthList {
 			harmonic_sequencer.process(in_buffer, out_buffer);
 		};
 
+		// Put reverb object on the heap because it's large (~385kB) and our linker script sets aside ~256MB of heap
+		reverb_example = new DaisyReverbExample<AudioStreamConf>;
 		process_func[ReverbOsc] = [this](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
 			reverb_example->process(in_buffer, out_buffer);
+		};
+
+		process_func[DualDjembe] = [this](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
+			djembes.process(in_buffer, out_buffer);
 		};
 	}
 
