@@ -131,6 +131,11 @@ export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`  ##or add it to your 
 
 ## 2) Build and load U-Boot:
 
+I've added some pre-built images for U-boot, so you can up and running more quickly.
+If you want to use the pre-built images, skip the next step.
+
+### Building U-boot (optional)
+
 Build U-Boot using the script. The output will be in `third-party/u-boot/build/`:
 ```
 cd stm32mp1-baremetal
@@ -146,6 +151,8 @@ Verify the output files were created:
 ls -l third-party/u-boot/build/u-boot-spl.stm32
 ls -l third-party/u-boot/build/u-boot.img
 ```
+
+### Loading U-boot onto your SD card
 
 Now you need to format and partition an SD card.  Insert a card and do:
 ```
@@ -173,49 +180,63 @@ scripts/partition-sdcard.sh /dev/XXX
 This script will create four partitions, and format the fourth to FAT32.
 
 Then run the script to copy the bootloader (u-boot and spl) to the first three partitions:
-```
-# MacOS:
-scripts/copy-bootloader.sh third-party/u-boot/build/
 
-# Linux:
-sudo dd if=third-party/u-boot/u-boot-spl.stm32 of=/dev/sdX1
-sudo dd if=third-party/u-boot/u-boot-spl.stm32 of=/dev/sdX2
-sudo dd if=third-party/u-boot/u-boot.img of=$/dev/sdX3
-# Where /dev/sdX# is something like /dev/sdc1
+```
+# To use pre-built images for OSD32MP1 board:
+scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/images/osd32mp1-brk/
+
+# To use pre-built images for STM32MP157A-DK1 Discovery board:
+scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/images/stm32mp157a-dk1-disco/
+
+# To use images that you built yourself:
+scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/build/
+
+# Where /dev/diskX is something like /dev/disk2 or /dev/sdc1
 ```
 
-## 3) Power up the OSD32 board
+## 3) Power up the board
 
 This is a good moment to test your hardware setup. You can skip this step if
 you've done this before.  Remove the SD card from the computer and insert into
-the OSD32 board.  Attach a USB-to-UART device to the UART pins on the OSD32
-board (use UART4 if you've got a custom board-- only TX/RX and GND are needed).
-Start a terminal session that connects to the USB driver (I use minicom; there
-are many fine alternatives). The baud rate is 115200, 8N1.
+the OSD32 or STM32MP1 Discovery board.  Attach a USB-to-UART device to the UART
+pins on the OSD32 board, or a micro-USB cable to the Discovery board's ST-LINK
+jack.  Start a terminal session that connects to the USB driver (I use minicom;
+there are many fine alternatives). The baud rate is 115200, 8N1 (which you
+might have to set up, so read the minicom help file if you don't know how).
 
 Example:
 ```
 minicom -D /dev/cu.usbmodemXXXXX
 ```
 
-Insert the card into the OSD32 board and power it on. You should see boot
+Insert the card into the board and power it on. You should see boot
 messages, and then finally an error when it can't find `a7-main.uimg`. Now it's
 time to build that file. 
 
 ## 4) Build the application
+
 ```
 cd examples/minimal_boot
 make 
 ls -l build/main.elf
 ls -l build/a7-main.uimg
 ```
+
 You should see the elf and the uimg files. Each of these is the compiled application, and either one must be loaded
-in SDRAM at 0xC2000040. You can load the elf file by using a debugger/programmer such as J-link connected to the SWD pins.
-Or, you can copy the uimg file to the SD card's fourth partition the same way you would copy any file. 
+in SDRAM at 0xC2000040. You can load the elf file by using a
+debugger/programmer such as J-link connected to the SWD pins (OSD32 board
+only).  Or, you can copy the uimg file to the SD card's fourth partition the
+same way you would copy any file. 
 
-The SWD method is only temporary, requires a debugger to be attached, and will not persist after power down. However, it's much more convenient so it's preferred for Debug builds. That said, not everything gets reset/cleared when you do it this way, so sometimes you need to do a cold boot and run your firmware from the SD card.
+The SWD method is only temporary, requires a debugger to be attached, and will
+not persist after power down. However, it's much more convenient so it's
+preferred for Debug builds. That said, not everything gets reset/cleared when
+you do it this way, so sometimes you need to do a cold boot and run your
+firmware from the SD card.
 
-With the copy-to-SD-card method, the application firmware is stored on the SD card, so this is the method for production or long-term testing. With this method, the bootloader will load the application into 0xC2000040 on boot.
+With the copy-to-SD-card method, the application firmware is stored on the SD
+card, so this is the method for production or long-term testing. With this
+method, the bootloader will load the application into 0xC2000040 on boot.
 
 ## 5) Copy the application to the SD card
 
@@ -227,7 +248,7 @@ There are two ways to do this:
 
 ##### The Simple Way:
 
-Physically remove the SD card from the OSD32 board and insert it into your computer. Then do:
+Physically remove the SD card from the OSD32 or Discovery board and insert it into your computer. Then do:
 
 ```
 cp build/a7-main.uimg /Volumes/BAREAPP/
