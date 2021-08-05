@@ -1,19 +1,12 @@
 #include "audio_stream.hh"
-#include "daisysp.h"
 #include "drivers/stm32xx.h"
-#include "shared/drivers/delay.hh"
 #include "shared/drivers/leds.hh"
 #include "shared/drivers/uart.hh"
 #include "shared/stm32disco_conf.hh"
-#include "util/math.hh"
-#include "util/oscs.hh"
-#include "util/zip.hh"
-#include <cstdint>
+
+#include "synth_list.hh"
 
 using namespace STM32MP1Disco;
-
-// Synths:
-#include "synth_list.hh"
 
 void main()
 {
@@ -22,7 +15,7 @@ void main()
 	uart.write("\r\n\r\nStarting Audio Processor\r\n");
 	uart.write("Press User1 button to select a synth\r\n");
 
-	BlueLED blue_led;
+	// BlueLED blue_led;
 	User1Button button1;
 	User2Button button2;
 
@@ -49,10 +42,7 @@ void main()
 			if (current_synth == SynthList::NumSynths)
 				current_synth = 0;
 
-			// Takes <150ns to switch functions
-			blue_led.on();
 			audio.set_process_function(synths.process_func[current_synth]);
-			blue_led.off();
 
 			uart.write("Using Synth: ");
 			uart.write(synths.name[current_synth]);
