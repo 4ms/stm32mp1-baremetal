@@ -5,7 +5,7 @@
 #include "audio_stream_conf.hh"
 #include "daisy_harm_osc.hh"
 #include "daisy_reverb_osc.hh"
-#include "djembe_dual.hh"
+#include "djembe_example.hh"
 #include "dual_fm_osc.hh"
 
 using AudioInBuffer = AudioStreamConf::AudioInBuffer;
@@ -43,7 +43,7 @@ struct SynthList {
 
 	DaisyReverbExample<AudioStreamConf> *reverb_example;
 
-	DjembeDual<AudioStreamConf> djembes;
+	DjembeExample<AudioStreamConf, 4> djembes;
 
 	std::array<AudioProcessFunction, NumSynths> process_func;
 
