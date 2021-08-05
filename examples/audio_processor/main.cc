@@ -10,132 +10,60 @@
 #include "util/zip.hh"
 #include <cstdint>
 
-// Synths:
-#include "daisy_harm_osc.hh"
-#include "daisy_reverb_osc.hh"
-#include "dual_fm_osc.hh"
+using namespace STM32MP1Disco;
 
-using AudioInBuffer = AudioStreamConf::AudioInBuffer;
-using AudioOutBuffer = AudioStreamConf::AudioOutBuffer;
+// Synths:
+#include "synth_list.hh"
 
 void main()
 {
 	// UI
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nStarting Audio Processor\r\n");
+	uart.write("Press User1 button to select a synth\r\n");
 
-	STM32MP1Disco::BlueLED blue_led;
-	STM32MP1Disco::OrangeLED orange_led;
-	STM32MP1Disco::User1Button button1;
-	STM32MP1Disco::User2Button button2;
-	blue_led.on();
-	orange_led.on();
+	BlueLED blue_led;
+	User1Button button1;
+	User2Button button2;
 
-	// Synths
-	enum class Synths { Passthrough, DualFMOsc, MonoTriOsc, HarmonicOsc, ReverbOsc };
-	Synths current_synth = Synths::Passthrough;
+	SynthList synths;
+	int current_synth = SynthList::Synths::DualFMOscillators;
 
-	auto passthrough = [](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
-		for (auto [in, out] : zip(in_buffer, out_buffer)) {
-			out.chan[0] = in.chan[0];
-			out.chan[1] = in.chan[1];
-		}
-	};
+	uart.write("Using Synth: ");
+	uart.write(synths.name[current_synth]);
+	uart.write("\r\n");
 
-	// Dual FM Osc
-	DualFMOsc<AudioStreamConf> dual_fm_osc;
-	auto dual_fm_osc_process = [&dual_fm_osc](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
-		dual_fm_osc.process(in_buffer, out_buffer);
-	};
-
-	// Tri + Sine osc
-	TriangleOscillator<AudioStreamConf::SampleRate> tri_osc{400}; // 400Hz
-	SineOscillator<AudioStreamConf::SampleRate> sine_osc{600};	  // 600Hz
-	auto simple_osc_process = [&tri_osc, &sine_osc](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
-		for (auto &out : out_buffer) {
-			out.chan[0] = tri_osc.process() >> 8;
-			out.chan[1] = sine_osc.process() >> 8;
-		}
-	};
-
-	// Daisy Harmonic Osc + Env + Seqeuncer
-	DaisyHarmonicExample<AudioStreamConf> harmonic_sequencer;
-	auto harm_osc_process = [&harmonic_sequencer](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
-		harmonic_sequencer.process(in_buffer, out_buffer);
-	};
-
-	// Daisy Harmonic Osc + Env + Seqeuncer
-	// Note: Reverb uses a lot of RAM (~385kB) so we put it on the heap, which has 256MB available (and there is no
-	// noticeable slow-down vs Reverb in internal RAM)
-	DaisyReverbExample<AudioStreamConf> *reverb_example = new DaisyReverbExample<AudioStreamConf>;
-	auto reverb_process = [&reverb_example](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
-		reverb_example->process(in_buffer, out_buffer);
-	};
-
-	// AudioStream
 	AudioStream audio;
-	audio.set_process_function(passthrough);
-	uart.write("Using Passthrough FX\r\n");
-	audio.start();
+	audio.start(synths.process_func[current_synth]);
 
-	uint32_t display_load_timer = 1;
+	constexpr uint32_t LoadTimerStartingValue = 1000000;
+	uint32_t display_load_timer = LoadTimerStartingValue;
 
 	while (true) {
 		button1.update();
 		button2.update();
 
-		// Change FX
+		// Select synth
 		if (button1.is_just_pressed()) {
+			current_synth++;
+			if (current_synth == SynthList::NumSynths)
+				current_synth = 0;
 
-			switch (current_synth) {
-				case Synths::Passthrough:
-					current_synth = Synths::DualFMOsc;
-					audio.set_process_function(dual_fm_osc_process);
-					uart.write("Using DualFMOsc\r\n");
-					blue_led.on();
-					orange_led.off();
-					break;
+			// Takes <150ns to switch functions
+			blue_led.on();
+			audio.set_process_function(synths.process_func[current_synth]);
+			blue_led.off();
 
-				case Synths::DualFMOsc:
-					current_synth = Synths::MonoTriOsc;
-					audio.set_process_function(simple_osc_process);
-					uart.write("Using Dual Osc\r\n");
-					blue_led.off();
-					orange_led.on();
-					break;
+			uart.write("Using Synth: ");
+			uart.write(synths.name[current_synth]);
+			uart.write("\r\n");
 
-				case Synths::MonoTriOsc:
-					current_synth = Synths::HarmonicOsc;
-					audio.set_process_function(harm_osc_process);
-					uart.write("Using Harmonic Osc\r\n");
-					blue_led.on();
-					orange_led.off();
-					break;
-
-				case Synths::HarmonicOsc:
-					current_synth = Synths::ReverbOsc;
-					audio.set_process_function(reverb_process);
-					uart.write("Using Reverb\r\n");
-					blue_led.off();
-					orange_led.on();
-					break;
-
-				case Synths::ReverbOsc:
-					current_synth = Synths::Passthrough;
-					audio.set_process_function(passthrough);
-					uart.write("Using Passthrough\r\n");
-					blue_led.on();
-					orange_led.on();
-					break;
-
-				default:
-					break;
-			}
-			display_load_timer = 1000000;
+			// Let the new synth run for a bit, so we get an accurate load measurement
+			display_load_timer = LoadTimerStartingValue;
 		}
 
 		if (button2.is_just_pressed()) {
-			// Do something!
+			// we can do something here... send a signal to a synth, or adjust a parameter?
 		}
 
 		if (display_load_timer == 1) {

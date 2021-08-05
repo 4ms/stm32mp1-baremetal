@@ -1,3 +1,4 @@
+#pragma once
 #include "util/audio_frame.hh"
 
 struct AudioStreamConf {

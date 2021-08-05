@@ -1,14 +1,12 @@
 ## Audio Processor project
 
 This project runs on the STM32MP157 Discovery board, using the board's codec
-and mic/line jack. The OSD32BRK board does not have a Codec, so you would need
-to connect the appropriate pins to a board with a codec for it to run (I've
-done this and it works... you also need to change the button and LED pins to
-match your board). See `audio_codec_conf.h` for the pinout. 
+and mic/headphone jack. 
 
-Three different effects (actually synths) can be selected by pressing the User1
-button. Pressing the User2 button will print the current processor load
-consumed by the current effect.
+Note that the OSD32BRK board is not supported in this project since it lacks a codec.
+(although you could connect it to a breakout board with a codec).
+
+Six different synths can be selected by pressing the User1 button. 
 
 To use, first make sure U-Boot is installed on an SD card, as usual (see README
 in the project root directory). 
@@ -27,28 +25,51 @@ Press the buttons to change effect.  You'll see a message like:
 
 ```
 Starting Audio Processor
-Using Passthrough FX
-Current load: 0%
-Using DualFMOsc FX
-Current load: 1%
-Using Dual Osc FX
-Current load: 0%
-```
 
-(I'm adding more effects that use more processor load, to showcase that!)
+Using Synth: Dual FM Osc
+Current load: 0%
+
+Using Synth: Sine and Tri Osc
+Current load: 0%
+
+Using Synth: Harmonic Osc
+Current load: 12%
+
+Using Synth: Reverb Osc
+Current load: 9%
+
+```
 
 *Passthrough*: Just copies the inputs to the outputs. Unfortunately the Disco
 board has a TRRS jack and I haven't yet found a mic that works well with it.
-You may need to adjust the codec's biasing and boost settings to get it to
-work. With a scope you can verify it's passing the input signal to the
-output, it's just usually getting noise from the mic.
+I'm still looking...  We may need to adjust the codec's biasing and boost
+settings to get it to work. With a scope you can verify it's passing the input
+signal to the output, it's getting noise from the mic.
 
 *DualFMOsc*: Ramp Osc frequency modulatates (FM's) a triangle oscillator which
 is heard on the left output. The triangle oscillator FM's a sine oscillator,
 which is heard on the right output.
 
-*Dual Osc*: Left output has a 400Hz triangle wave. Right output has a 600Hz
+*Sine and Tri Osc*: Left output has a 400Hz triangle wave. Right output has a 600Hz
 sine wave.
+
+*Harmonic Osc*: Example project from [DaisySP
+library](https://github.com/electro-smith/DaisyExamples). AD Envelope sweeps
+the harmonics of a 16-osc harmonic oscillator, as well as a VCA to make notes.
+A simple sequencer of pitches plays, too.
+
+*Reverb Osc*: Example project from [DaisySP
+library](https://github.com/electro-smith/DaisyExamples). AD envelope + VCA +
+triangle oscillator playing a simple sequencer. This is fed into a stereo
+reverb effect.
+
+### What's under the hood
+
+#### DaisySP
+
+DaisySP is "A Powerful, Open Source DSP Library in C++" that works with the
+Daisy embedded platform. 
+
 
 #### lib/mdrivlib
 
@@ -92,7 +113,9 @@ before I can release it.
 - `math\_tables`: Trig and expo tables. Uses InterpArray, which provides a
   interpolation for both periodic and non-periodic tables.
 
+
 ### Program flow and potential optimizations 
+
 There is some degree of indirection in the audio stream method used here,
 in order to provide a flexible interface for setting and changing the audio
 processing function on the fly. It could easily be made more efficient if your
@@ -109,5 +132,5 @@ application required it. Here's what happens in this project:
   TX-Half-Complete IRQ
 
   4) This callback function (which is a lambda created by the AudioStream
-  object) calls the function that you set using `set_process_function()`. It
+  object) calls the function that you set using `audio.set_process_function()`. It
   also measures the processor load that the processing function takes.

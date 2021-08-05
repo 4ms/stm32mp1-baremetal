@@ -1,3 +1,4 @@
+#pragma once
 #include "daisysp.h"
 
 // Taken from https://github.com/electro-smith/DaisyExamples/blob/master/seed/harmonic_osc/harmonic_osc.cpp

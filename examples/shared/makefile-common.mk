@@ -37,7 +37,7 @@ CFLAGS = -g2 \
 		 $(EXTRACFLAGS)\
 
 CXXFLAGS = $(CFLAGS) \
-		-std=c++2a \
+		-std=c++20 \
 		-fno-rtti \
 		-fno-exceptions \
 		-fno-unwind-tables \

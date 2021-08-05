@@ -30,8 +30,7 @@ Here's a list of the example projects:
   * **Multicore_a7**: Demonstrates running both A7 cores in parallel.
   * **Copro_rproc**: Using the rproc feature of U-Boot to load and run firmware on the M4 core in parallel with the A7 core.
   * **Copro_embedded**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
-  * **STM32Cube HAL**: [TODO] demonstrates using ST's HAL.
-  * **Audio Processor**: [TODO] not a simple example, but a real-world practical project that uses all of the above features to create an audio effect.
+  * **Audio Processor**: A fun practical project that lets you select one of several audio synths to play. Requires STM32MP1 Discovery board. Uses STM32-HAL, some DaisySP example projects.
 
 ## Overview
 
@@ -352,7 +351,10 @@ anyone else finds this interesting too!
 ## TODO
 
  [ ] Try TFA (trusted firmware), make sure we start app in secure mode
+
  [ ] Try latest U-Boot from STM32MP1 Ecosystem v3.0
- [ ] Audio processing example on Discovery board
+
+ [x] Audio processing example on Discovery board
+
  [ ] STM32-HAL example
 
