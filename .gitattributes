@@ -1,1 +1,2 @@
 examples/** -linguist-documentation 
+third-party/** linguist-vendored
