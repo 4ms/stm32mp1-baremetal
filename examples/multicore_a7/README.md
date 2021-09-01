@@ -24,8 +24,10 @@ ROM code manually to figure out what's happening with the Core1 at startup.
 You can follow along if you like reading assembly, I'll put the addresses in [ ].
 
 [0000] Both cores clear their registers, and then part ways [007C]. Let's follow Core1:
+
 [0210] Core1 sets up some temporary stacks for each processing mode BOOTROM
 uses: Abort, IRQ, Undefined, Supervisor, and Monitor.
+
 [0264-02DC] Then it sets up the vector table address, which is used for responding to
 execeptions (though I haven't seen where it uses these besides IRQ).  It
 enables and disables various caches, disables the MMU, does a few other
@@ -39,10 +41,12 @@ Core0 has to send Core1 a Software Generated Interrupt (SGI).
 But this isn't the wakeup call we perform in order to start Core1. This wakeup
 call is done by U-boot (I think -- it may be done by Core0 while still in
 BOOTROM. I'll update this if I discover more). Anyways, it soon wakes up,
-[A25C] acknowledges and [A308] ends the IRQ, and [04E0] then goes back to sleep
-if it wasn't IRQ0.  If it was IRQ0, it [5fe4] proceeds to [333a] check and
-clear some RCC flags registers and then [600E] reads backup register 4 in the
-TAMP peripheral for a [6012] magic number (0xCA7FACE0). I don't understand
+[A25C] acknowledges and [A308] ends the IRQ.
+
+[04E0] Then it goes back to sleep if it wasn't IRQ0.  If it was IRQ0, it [5fe4]
+proceeds to [333a] check and clear some RCC flags registers and then [600E]
+reads backup register 4 in the TAMP peripheral for a [6012] magic number
+(0xCA7FACE0). I don't understand
 under what circumstances this particular magic number is used, I suspect this
 code is shared between Core0 and Core1.  In any case, Core1 doesn't ever get
 this magic number, but it continues along and [6028] clears that backup
