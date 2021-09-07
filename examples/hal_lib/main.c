@@ -11,6 +11,7 @@ const char *global_constant_string = "And hi to you too!\r\n";
 
 void main() {
 	HAL_Init();
+	HAL_Delay(1);
 	GPIO_Init();
 	UART4_Init();
 	
