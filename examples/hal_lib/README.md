@@ -6,7 +6,7 @@ This project adds to the CTest Project HAL Libraries and some system calls that 
 
 The startup code calls SystemInit, which initializes the MMU by enabling the caches for the instruction and data memory. Without the MMU, the Cortex-A7 runs incredibly slow (comparable to a 20MHz ATTINY chip, except with half a gigabyte of RAM). 
 
-This project was designed using a MYIR STM32MP1 board, but any STM32MP157-based board with header pins for UART4 exposed and maybe some LEDs to blink will suffice. LED port and pins are defined in main.h. 
+This project was designed using a MYIR STM32MP1 board, and works without modification on the STM32MP1 Discovery board. Any STM32MP157-based board with header pins for UART4 exposed and maybe some LEDs to blink will suffice. LED port and pins are defined in main.h. 
 
 To use, first make sure u-boot is installed on an SD-card, as usual (see README in the project root directory). 
 
@@ -30,7 +30,7 @@ The ABC is output by the assembly code in startup.s.
 Next, the LEDs will toggle and you should see
 
 ```
-!Hello from HAL Driver!
+Hello from HAL Driver!
 And hi to you too!
 0
 1
