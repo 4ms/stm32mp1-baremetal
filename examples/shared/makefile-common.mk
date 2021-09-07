@@ -32,12 +32,11 @@ CFLAGS = -g2 \
 		 $(INCLUDES) \
 		 -fdata-sections -ffunction-sections \
 		 -nostartfiles \
-		 -nostdlib \
 		 -ffreestanding \
 		 $(EXTRACFLAGS)\
 
 CXXFLAGS = $(CFLAGS) \
-		-std=c++20 \
+		-std=c++2a \
 		-fno-rtti \
 		-fno-exceptions \
 		-fno-unwind-tables \
@@ -49,11 +48,13 @@ CXXFLAGS = $(CFLAGS) \
 		-Wno-volatile \
 		 $(EXTRACXXFLAGS) \
 
+LINK_STDLIB ?= -nostdlib
+
 LFLAGS = -Wl,--gc-sections \
 		 -Wl,-Map,$(BUILDDIR)/$(BINARYNAME).map,--cref \
 		 $(MCU)  \
 		 -T $(LINKSCR) \
-		 -nostdlib \
+		 $(LINK_STDLIB) \
 		 -nostartfiles \
 		 -ffreestanding \
 		 $(EXTRALDFLAGS) \

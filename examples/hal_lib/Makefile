@@ -29,5 +29,7 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(SHAREDDIR)\
 
-include makefile-common.mk
+LINK_STDLIB =
+
+include ../shared/makefile-common.mk
 
