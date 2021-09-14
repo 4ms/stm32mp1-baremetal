@@ -1,0 +1,10 @@
+-std=c++2a
+-fno-rtti
+-fno-exceptions
+-fno-unwind-tables
+-ffreestanding
+-fno-threadsafe-statics
+-Werror=return-type
+-Wdouble-promotion
+-Wno-register
+-Wno-volatile
