@@ -14,14 +14,14 @@ add_executable(${EXECUTABLE}
 set(LINKSCRIPT ${PROJECT_SOURCE_DIR}/linkscript.ld)
 
 target_include_directories(${EXECUTABLE} PRIVATE
-	${EXTLIB_DIR}/STM32MP1xx_HAL_Driver/Inc
-	${EXTLIB_DIR}/CMSIS/Core_A/Include
-	${EXTLIB_DIR}/CMSIS/Device/ST/STM32MP1xx/Include
+	${THIRDPARTY_DIR}/STM32MP1xx_HAL_Driver/Inc
+	${THIRDPARTY_DIR}/CMSIS/Core_A/Include
+	${THIRDPARTY_DIR}/CMSIS/Device/ST/STM32MP1xx/Include
 	${SHARED_DIR}
 	)
 
 target_compile_definitions(${EXECUTABLE} PRIVATE
-	${default_defines}
+	${DEFAULT_DEFINES}
 	)
 
 target_compile_options(${EXECUTABLE} PRIVATE

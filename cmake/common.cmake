@@ -9,16 +9,16 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(EXECUTABLE ${PROJECT_NAME}.elf)
 
 # Directories with source files shared between projects
-set(EXTLIB_DIR ../../third-party)
+set(THIRDPARTY_DIR ../../third-party)
 set(SHARED_DIR ../shared)
-set(UBOOT_DIR ../../third-party/u-boot/build)
+set(UBOOT_DIR ${THIRDPARTY_DIR}/u-boot/build)
 
 # where uimg will be loaded and entered
 set(LOADADDR 0xC2000040)
 set(ENTRYPOINT 0xC2000040)
 
 # Defines and flags
-set(default_defines
+set(DEFAULT_DEFINES
 	-DUSE_FULL_LL_DRIVER
 	-DSTM32MP157Cxx
 	-DSTM32MP1
