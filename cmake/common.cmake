@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-set(EXECUTABLE ${PROJECT_NAME}.elf)
+set(ELF ${PROJECT_NAME}.elf)
 
 # Directories with source files shared between projects
 set(THIRDPARTY_DIR ../../third-party)
@@ -31,4 +31,19 @@ set(MCU_FLAGS
 	-mfpu=neon-vfpv4
 	-mlittle-endian
 	-mfloat-abi=hard
+	)
+
+set(DEFAULT_COMPILE_OPTIONS
+	${MCU_FLAGS}
+	-fno-common
+	-fdata-sections
+	-ffunction-sections
+	-ffreestanding
+	-nostartfiles
+	-nostdlib
+	-g3
+	$<$<COMPILE_LANGUAGE:CXX>:@${PROJECT_SOURCE_DIR}/../../cmake/gcc-compile-options-cxx.txt>
+	$<$<CONFIG:Debug>:-O0>
+	$<$<CONFIG:Release>:-O3>
+
 	)
