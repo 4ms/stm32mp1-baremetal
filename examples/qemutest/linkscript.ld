@@ -8,8 +8,6 @@ MEMORY
     RAM (rwx): ORIGIN = 0x70000000, LENGTH = 32M
 }
 
-__HEAP_SIZE = 0x40000;
-
 SECTIONS
 {
 	.text : {
@@ -56,4 +54,7 @@ SECTIONS
 
     _irq_stack_size = _irq_stack_end - _irq_stack_start;
     _fiq_stack_size = _fiq_stack_end - _fiq_stack_start;
+
+	/* Heap start: */
+	end = _stack_end;
 }
