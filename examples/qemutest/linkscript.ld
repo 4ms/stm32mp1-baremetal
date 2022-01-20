@@ -11,7 +11,7 @@ MEMORY
 SECTIONS
 {
 	.text : {
-		startup.o (.vector_table)
+		*(.vector_table)
 		*(.text)
 		*(.rodata)
 	} > ROM
