@@ -41,6 +41,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx_hal.h"
 #include "stm32mp1xx_ll_rcc.h"
+#include <stdlib.h> //For ldiv
 
 /** @addtogroup STM32MP1xx_LL_USB_DRIVER
   * @{
@@ -168,8 +169,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
-		//HAL_Delay(10);
-		local_delay_ms(10);
+		HAL_Delay(10);
+		//local_delay_ms(10);
 
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
 			;

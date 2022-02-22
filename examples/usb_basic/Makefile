@@ -26,6 +26,7 @@ SOURCES = startup.s \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_gpio.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \
+		  $(STM32HALDIR)/Src/stm32mp1xx_ll_rcc.c \
 		  ../hal_lib/syscalls.c \
 		  usbd_conf.c \
 		  usbd_desc.c \
