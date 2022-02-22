@@ -99,9 +99,11 @@ typedef struct
 	HAL_LockTypeDef Lock;			/*!< PCD peripheral status             */
 	__IO PCD_StateTypeDef State;	/*!< PCD communication state           */
 	__IO uint32_t ErrorCode;		/*!< PCD Error code                    */
-	uint32_t Setup[12];				/*!< Setup packet buffer               */
+	// uint32_t Setup[12];				/*!< Setup packet buffer               */ //H7 has Setup here
 	PCD_LPM_StateTypeDef LPM_State; /*!< LPM State                         */
 	uint32_t BESL;
+	__ALIGN_BEGIN uint32_t Setup[12] __ALIGN_END;
+	/*!< Setup packet buffer               */ // hftrx has Setup here, aligned
 
 	uint32_t lpm_active; /*!< Enable or disable the Link Power Management .
                                        This parameter can be set to ENABLE or DISABLE        */
@@ -109,6 +111,7 @@ typedef struct
 	uint32_t battery_charging_active; /*!< Enable or disable Battery charging.
                                        This parameter can be set to ENABLE or DISABLE        */
 	void *pData;					  /*!< Pointer to upper stack Handler */
+	// uint_fast8_t            run_later_ctrl_comp;	// Renesas hardware specific item -- added in hftrx
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
 	void (*SOFCallback)(struct __PCD_HandleTypeDef *hpcd);		  /*!< USB OTG PCD SOF callback                */

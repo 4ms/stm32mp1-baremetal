@@ -1186,6 +1186,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			for (i = 0U; i < hpcd->Init.dev_endpoints; i++) {
 				USBx_INEP(i)->DIEPINT = 0xFB7FU;
 				USBx_INEP(i)->DIEPCTL &= ~USB_OTG_DIEPCTL_STALL;
+				USBx_INEP(i)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK; // Line copied from hfrtx version
 				USBx_OUTEP(i)->DOEPINT = 0xFB7FU;
 				USBx_OUTEP(i)->DOEPCTL &= ~USB_OTG_DOEPCTL_STALL;
 				USBx_OUTEP(i)->DOEPCTL |= USB_OTG_DOEPCTL_SNAK;
@@ -1218,7 +1219,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			hpcd->Init.speed = USB_GetDevSpeed(hpcd->Instance);
 
 			/* Set USB Turnaround time */
-			(void)USB_SetTurnaroundTime(hpcd->Instance, HAL_RCC_GetHCLK1Freq(), (uint8_t)hpcd->Init.speed);
+			(void)USB_SetTurnaroundTime(hpcd->Instance, HAL_RCC_GetAXISSFreq(), (uint8_t)hpcd->Init.speed);
 
 			#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
 			hpcd->ResetCallback(hpcd);
