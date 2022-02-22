@@ -1,25 +1,25 @@
 /**
-  ******************************************************************************
-  * @file    USB_Device/MSC_Standalone/Src/usbd_desc.c
-  * @author  MCD Application Team
-  * @brief   This file provides the USBD descriptors and string formatting method.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    USB_Device/MSC_Standalone/Src/usbd_desc.c
+ * @author  MCD Application Team
+ * @brief   This file provides the USBD descriptors and string formatting method.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2019 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 
 /* Includes ------------------------------------------------------------------ */
-#include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_conf.h"
+#include "usbd_core.h"
 
 /* Private typedef ----------------------------------------------------------- */
 /* Private define ------------------------------------------------------------ */
@@ -244,4 +244,3 @@ static void IntToUnicode(uint32_t value, uint8_t *pbuf, uint8_t len) {
 		pbuf[2 * idx + 1] = 0;
 	}
 }
-

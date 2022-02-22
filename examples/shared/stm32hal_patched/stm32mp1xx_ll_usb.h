@@ -1,20 +1,20 @@
 /**
-  ******************************************************************************
-  * @file    stm32mp1xx_ll_usb.h
-  * @author  MCD Application Team
-  * @brief   Header file of USB Low Layer HAL module.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2017 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    stm32mp1xx_ll_usb.h
+ * @author  MCD Application Team
+ * @brief   Header file of USB Low Layer HAL module.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2017 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef STM32H7xx_LL_USB_H
@@ -29,30 +29,30 @@ extern "C" {
 
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 /** @addtogroup STM32H7xx_HAL_Driver
-  * @{
-  */
+ * @{
+ */
 
 /** @addtogroup USB_LL
-  * @{
-  */
+ * @{
+ */
 
 /* Exported types ------------------------------------------------------------*/
 
 /**
-  * @brief  USB Mode definition
-  */
+ * @brief  USB Mode definition
+ */
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 
 typedef enum { USB_DEVICE_MODE = 0, USB_HOST_MODE = 1, USB_DRD_MODE = 2 } USB_OTG_ModeTypeDef;
 
 /**
-  * @brief  URB States definition
-  */
+ * @brief  URB States definition
+ */
 typedef enum { URB_IDLE = 0, URB_DONE, URB_NOTREADY, URB_NYET, URB_ERROR, URB_STALL } USB_OTG_URBStateTypeDef;
 
 /**
-  * @brief  Host channel States  definition
-  */
+ * @brief  Host channel States  definition
+ */
 typedef enum {
 	HC_IDLE = 0,
 	HC_XFRC,
@@ -66,27 +66,27 @@ typedef enum {
 } USB_OTG_HCStateTypeDef;
 
 /**
-  * @brief  USB Instance Initialization Structure definition
-  */
+ * @brief  USB Instance Initialization Structure definition
+ */
 typedef struct {
 	uint32_t dev_endpoints; /*!< Device Endpoints number.
-                                         This parameter depends on the used USB core.
-                                         This parameter must be a number between Min_Data = 1 and Max_Data = 15 */
+										 This parameter depends on the used USB core.
+										 This parameter must be a number between Min_Data = 1 and Max_Data = 15 */
 
 	uint32_t Host_channels; /*!< Host Channels number.
-                                         This parameter Depends on the used USB core.
-                                         This parameter must be a number between Min_Data = 1 and Max_Data = 15 */
+										 This parameter Depends on the used USB core.
+										 This parameter must be a number between Min_Data = 1 and Max_Data = 15 */
 
 	uint32_t speed; /*!< USB Core speed.
-                                         This parameter can be any value of @ref PCD_Speed/HCD_Speed
-                                                                                 (HCD_SPEED_xxx, HCD_SPEED_xxx) */
+										 This parameter can be any value of @ref PCD_Speed/HCD_Speed
+																				 (HCD_SPEED_xxx, HCD_SPEED_xxx) */
 
 	uint32_t dma_enable; /*!< Enable or disable of the USB embedded DMA used only for OTG HS.        */
 
 	uint32_t ep0_mps; /*!< Set the Endpoint 0 Max Packet size.                                    */
 
 	uint32_t phy_itface; /*!< Select the used PHY interface.
-                                         This parameter can be any value of @ref PCD_PHY_Module/HCD_PHY_Module  */
+										 This parameter can be any value of @ref PCD_PHY_Module/HCD_PHY_Module  */
 
 	uint32_t Sof_enable; /*!< Enable or disable the output of the SOF signal.                        */
 
@@ -106,28 +106,28 @@ typedef struct {
 
 typedef struct {
 	uint8_t num; /*!< Endpoint number
-                                       This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
+									   This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
 
 	uint8_t is_in; /*!< Endpoint direction
-                                       This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
+									   This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
 
 	uint8_t is_stall; /*!< Endpoint stall condition
-                                       This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
+									   This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
 
 	uint8_t type; /*!< Endpoint type
-                                       This parameter can be any value of @ref USB_LL_EP_Type                   */
+									   This parameter can be any value of @ref USB_LL_EP_Type                   */
 
 	uint8_t data_pid_start; /*!< Initial data PID
-                                       This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
+									   This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
 
 	uint8_t even_odd_frame; /*!< IFrame parity
-                                       This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
+									   This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
 
 	uint16_t tx_fifo_num; /*!< Transmission FIFO number
-                                       This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
+									   This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
 
 	uint32_t maxpacket; /*!< Endpoint Max packet size
-                                       This parameter must be a number between Min_Data = 0 and Max_Data = 64KB */
+									   This parameter must be a number between Min_Data = 0 and Max_Data = 64KB */
 
 	uint8_t *xfer_buff; /*!< Pointer to transfer buffer                                               */
 
@@ -140,33 +140,33 @@ typedef struct {
 
 typedef struct {
 	uint8_t dev_addr; /*!< USB device address.
-                                     This parameter must be a number between Min_Data = 1 and Max_Data = 255    */
+									 This parameter must be a number between Min_Data = 1 and Max_Data = 255    */
 
 	uint8_t ch_num; /*!< Host channel number.
-                                     This parameter must be a number between Min_Data = 1 and Max_Data = 15     */
+									 This parameter must be a number between Min_Data = 1 and Max_Data = 15     */
 
 	uint8_t ep_num; /*!< Endpoint number.
-                                     This parameter must be a number between Min_Data = 1 and Max_Data = 15     */
+									 This parameter must be a number between Min_Data = 1 and Max_Data = 15     */
 
 	uint8_t ep_is_in; /*!< Endpoint direction
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+									 This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
 	uint8_t speed; /*!< USB Host Channel speed.
-                                     This parameter can be any value of @ref HCD_Device_Speed:
-                                                                             (HCD_DEVICE_SPEED_xxx)             */
+									 This parameter can be any value of @ref HCD_Device_Speed:
+																			 (HCD_DEVICE_SPEED_xxx)             */
 
 	uint8_t do_ping; /*!< Enable or disable the use of the PING protocol for HS mode.                */
 
 	uint8_t process_ping; /*!< Execute the PING protocol for HS mode.                                     */
 
 	uint8_t ep_type; /*!< Endpoint Type.
-                                     This parameter can be any value of @ref USB_LL_EP_Type                     */
+									 This parameter can be any value of @ref USB_LL_EP_Type                     */
 
 	uint16_t max_packet; /*!< Endpoint Max packet size.
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 64KB   */
+									 This parameter must be a number between Min_Data = 0 and Max_Data = 64KB   */
 
 	uint8_t data_pid; /*!< Initial data PID.
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+									 This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
 	uint8_t *xfer_buff; /*!< Pointer to transfer buffer.                                                */
 
@@ -177,84 +177,84 @@ typedef struct {
 	uint32_t xfer_count; /*!< Partial transfer length in case of multi packet transfer.                  */
 
 	uint8_t toggle_in; /*!< IN transfer current toggle flag.
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+									 This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
 	uint8_t toggle_out; /*!< OUT transfer current toggle flag
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+									 This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
 	uint32_t dma_addr; /*!< 32 bits aligned transfer buffer address.                                   */
 
 	uint32_t ErrCnt; /*!< Host channel error count.                                                  */
 
 	USB_OTG_URBStateTypeDef urb_state; /*!< URB state.
-                                            This parameter can be any value of @ref USB_OTG_URBStateTypeDef */
+											This parameter can be any value of @ref USB_OTG_URBStateTypeDef */
 
 	USB_OTG_HCStateTypeDef state; /*!< Host Channel state.
-                                            This parameter can be any value of @ref USB_OTG_HCStateTypeDef  */
+											This parameter can be any value of @ref USB_OTG_HCStateTypeDef  */
 } USB_OTG_HCTypeDef;
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 
 /* Exported constants --------------------------------------------------------*/
 
 /** @defgroup PCD_Exported_Constants PCD Exported Constants
-  * @{
-  */
+ * @{
+ */
 
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 /** @defgroup USB_OTG_CORE VERSION ID
-  * @{
-  */
+ * @{
+ */
 #define USB_OTG_CORE_ID_300A 0x4F54300AU
 #define USB_OTG_CORE_ID_310A 0x4F54310AU
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_Core_Mode_ USB Core Mode
-  * @{
-  */
+ * @{
+ */
 #define USB_OTG_MODE_DEVICE 0U
 #define USB_OTG_MODE_HOST 1U
 #define USB_OTG_MODE_DRD 2U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL Device Speed
-  * @{
-  */
+ * @{
+ */
 #define USBD_HS_SPEED 0U
 #define USBD_HSINFS_SPEED 1U
 #define USBH_HS_SPEED 0U
 #define USBD_FS_SPEED 2U
 #define USBH_FSLS_SPEED 1U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_Core_Speed USB Low Layer Core Speed
-  * @{
-  */
+ * @{
+ */
 #define USB_OTG_SPEED_HIGH 0U
 #define USB_OTG_SPEED_HIGH_IN_FULL 1U
 #define USB_OTG_SPEED_FULL 3U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_Core_PHY USB Low Layer Core PHY
-  * @{
-  */
+ * @{
+ */
 #define USB_OTG_ULPI_PHY 1U
 #define USB_OTG_EMBEDDED_PHY 2U
 #define USB_OTG_HS_EMBEDDED_PHY 3U // added by hftrx
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_Turnaround_Timeout Turnaround Timeout Value
-  * @{
-  */
+ * @{
+ */
 #ifndef USBD_HS_TRDT_VALUE
 #define USBD_HS_TRDT_VALUE 9U
 #endif /* USBD_HS_TRDT_VALUE */
@@ -263,104 +263,104 @@ typedef struct {
 #define USBD_DEFAULT_TRDT_VALUE 9U
 #endif /* USBD_HS_TRDT_VALUE */
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_Core_MPS USB Low Layer Core MPS
-  * @{
-  */
+ * @{
+ */
 #define USB_OTG_HS_MAX_PACKET_SIZE 512U
 #define USB_OTG_FS_MAX_PACKET_SIZE 64U
 #define USB_OTG_MAX_EP0_SIZE 64U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_Core_PHY_Frequency USB Low Layer Core PHY Frequency
-  * @{
-  */
+ * @{
+ */
 #define DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ (0U << 1)
 #define DSTS_ENUMSPD_FS_PHY_30MHZ_OR_60MHZ (1U << 1)
 #define DSTS_ENUMSPD_FS_PHY_48MHZ (3U << 1)
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_CORE_Frame_Interval USB Low Layer Core Frame Interval
-  * @{
-  */
+ * @{
+ */
 #define DCFG_FRAME_INTERVAL_80 0U
 #define DCFG_FRAME_INTERVAL_85 1U
 #define DCFG_FRAME_INTERVAL_90 2U
 #define DCFG_FRAME_INTERVAL_95 3U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_EP0_MPS USB Low Layer EP0 MPS
-  * @{
-  */
+ * @{
+ */
 #define EP_MPS_64 0U
 #define EP_MPS_32 1U
 #define EP_MPS_16 2U
 #define EP_MPS_8 3U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_EP_Speed USB Low Layer EP Speed
-  * @{
-  */
+ * @{
+ */
 #define EP_SPEED_LOW 0U
 #define EP_SPEED_FULL 1U
 #define EP_SPEED_HIGH 2U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_EP_Type USB Low Layer EP Type
-  * @{
-  */
+ * @{
+ */
 #define EP_TYPE_CTRL 0U
 #define EP_TYPE_ISOC 1U
 #define EP_TYPE_BULK 2U
 #define EP_TYPE_INTR 3U
 #define EP_TYPE_MSK 3U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_STS_Defines USB Low Layer STS Defines
-  * @{
-  */
+ * @{
+ */
 #define STS_GOUT_NAK 1U
 #define STS_DATA_UPDT 2U
 #define STS_XFER_COMP 3U
 #define STS_SETUP_COMP 4U
 #define STS_SETUP_UPDT 6U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_HCFG_SPEED_Defines USB Low Layer HCFG Speed Defines
-  * @{
-  */
+ * @{
+ */
 #define HCFG_30_60_MHZ 0U
 #define HCFG_48_MHZ 1U
 #define HCFG_6_MHZ 2U
 /**
-  * @}
-  */
+ * @}
+ */
 
 /** @defgroup USB_LL_HPRT0_PRTSPD_SPEED_Defines USB Low Layer HPRT0 PRTSPD Speed Defines
-  * @{
-  */
+ * @{
+ */
 #define HPRT0_PRTSPD_HIGH_SPEED 0U
 #define HPRT0_PRTSPD_FULL_SPEED 1U
 #define HPRT0_PRTSPD_LOW_SPEED 2U
 /**
-  * @}
-  */
+ * @}
+ */
 
 #define HCCHAR_CTRL 0U
 #define HCCHAR_ISOC 1U
@@ -406,13 +406,13 @@ typedef struct {
 #define USE_USB_DOUBLE_BUFFER 1U
 #endif /* USE_USB_DOUBLE_BUFFER */
 /**
-  * @}
-  */
+ * @}
+ */
 
 /* Exported macro ------------------------------------------------------------*/
 /** @defgroup USB_LL_Exported_Macros USB Low Layer Exported Macros
-  * @{
-  */
+ * @{
+ */
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 #define USB_MASK_INTERRUPT(__INSTANCE__, __INTERRUPT__) ((__INSTANCE__)->GINTMSK &= ~(__INTERRUPT__))
 #define USB_UNMASK_INTERRUPT(__INSTANCE__, __INTERRUPT__) ((__INSTANCE__)->GINTMSK |= (__INTERRUPT__))
@@ -421,13 +421,13 @@ typedef struct {
 #define CLEAR_OUT_EP_INTR(__EPNUM__, __INTERRUPT__) (USBx_OUTEP(__EPNUM__)->DOEPINT = (__INTERRUPT__))
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 /**
-  * @}
-  */
+ * @}
+ */
 
 /* Exported functions --------------------------------------------------------*/
 /** @addtogroup USB_LL_Exported_Functions USB Low Layer Exported Functions
-  * @{
-  */
+ * @{
+ */
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg);
 HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg);
@@ -493,22 +493,22 @@ HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
 uint_fast8_t USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx); // added by hftrx
 HAL_StatusTypeDef USB_HS_PHYCInit(void);				 // added by hftrx
 HAL_StatusTypeDef USB_HS_PHYCDeInit(void);				 // added by hftrx
-#endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
+#endif													 /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 /**
-  * @}
-  */
+ * @}
+ */
 
 /**
-  * @}
-  */
+ * @}
+ */
 
 /**
-  * @}
-  */
+ * @}
+ */
 
 /**
-  * @}
-  */
+ * @}
+ */
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 
 #ifdef __cplusplus
