@@ -3,6 +3,7 @@
 //#include "drivers/pinchange.hh"
 #include "drivers/uart.hh"
 #include "osd32brk_conf.hh"
+#include "rcc_setup.hh"
 #include "stm32mp1xx.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
@@ -28,6 +29,8 @@ void main() {
 	red2.off();
 	green1.on();
 	green2.off();
+
+	SystemClocks::init();
 	// Test Interrupts
 	// PinChangeISR<GPIOI_BASE, 8> red_led2_pinchange;
 	// const auto red_led2_irqnum = red_led2_pinchange.get_IRQ_num();
