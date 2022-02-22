@@ -21,9 +21,9 @@ _Reset:
     b DAbt_Handler 									// 0x10 Data Abort
     b . 											// 0x14 Reserved 
     b IRQ_Handler 									// 0x18 IRQ 
-    b FIQ_Handler 									// 0x1C FIQ
+    b FIQ_Handler 									// 0x1C FIQ/
 
-.section .text
+.section .resethandler
 Reset_Handler:
 	cpsid   if 										// Mask Interrupts
 
@@ -41,14 +41,14 @@ Reset_Handler:
 	isb
 													// Configure ACTLR
 	mrc     p15, 0, r0, c1, c0, 1 					// Read CP15 Auxiliary Control Register
-	orr     r0, r0, #(1 <<  1) 						// Enable L2 prefetch hint 
+	orr     r0, r0, #(1 <<  1) 						// Enable L2 prefetch hint (UNK/WI since r4p1)
 	mcr     p15, 0, r0, c1, c0, 1 					// Write CP15 Auxiliary Control Register
 
 													// Set Vector Base Address Register (VBAR) to point to this application's vector table
-	ldr    r0, =0xC2000040
-	mcr    p15, 0, r0, c12, c0, 0
+	ldr    R0, =0xC2000040
+	mcr    p15, 0, R0, c12, c0, 0
 
-    												// FIQ stack: Fill with FEFF
+    												// FIQ stack
     msr cpsr_c, MODE_FIQ
     ldr r1, =_fiq_stack_start
     ldr sp, =_fiq_stack_end
@@ -59,7 +59,7 @@ fiq_loop:
     strlt r0, [r1], #4
     blt fiq_loop
 
-   													// IRQ stack: Fill will F1F1
+   													// IRQ stack
     msr cpsr_c, MODE_IRQ
     ldr r1, =_irq_stack_start
     ldr sp, =_irq_stack_end
@@ -70,7 +70,7 @@ irq_loop:
     strlt r0, [r1], #4
     blt irq_loop
 
-   													// Supervisor (SVC) stack: Fill with F5F5
+   													// Supervisor (SVC) stack
     msr cpsr_c, MODE_SVC
     ldr r1, =_svc_stack_start
     ldr sp, =_svc_stack_end
@@ -81,7 +81,7 @@ svc_loop:
     strlt r0, [r1], #4
     blt svc_loop
 
-													// USER and SYS mode stack: Fill with F0F0
+													// USER and SYS mode stack
 	msr cpsr_c, MODE_SYS
     ldr r1, =_user_stack_start
 	ldr sp, =_user_stack_end
@@ -114,18 +114,17 @@ bss_loop:
     blt bss_loop
 
 													// UART: print 'B'
-	mov r5, #66
-	str r5, [r4]
+	mov r0, #66
+	str r0, [r4]
 
-	bl SystemInit 									// Setup MMU, TLB, Caches, FPU, IRQ
-    bl __libc_init_array 							// libc init (static constructors)
+	bl SystemInit 									// System and libc/cpp init
+    bl __libc_init_array
 
 													// UART: print 'C'
 	mov r5, #67
 	str r5, [r4]
 
-	//Do not enable IRQ interrupts, this project doesn't use them
-	//cpsie  i 
+	CPSIE  i 										// enable irq interrupts
 
 run_main:
     bl main
@@ -137,18 +136,10 @@ Abort_Exception:
 Undef_Handler:
 	b .
 
-SVC_Handler:
-	b .
-
 PAbt_Handler:
 	b .
 
 DAbt_Handler:
 	b .
-
-IRQ_Handler:
-	b .
-
-FIQ_Handler:
-	b .
+ 
 

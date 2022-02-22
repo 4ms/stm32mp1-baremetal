@@ -18,6 +18,8 @@ SECTIONS
 {
     .text : {
         *(.vector_table)
+		KEEP (*(.resethandler))
+		KEEP (*(.irqhandler))
         *(.text)
         *(.text*)
 					/* Todo: check if we need the next 3 lines */
@@ -108,6 +110,7 @@ SECTIONS
 		. = ALIGN(256);
 		_ram_aligned_end = .;
 	} > RAM
+	end = . ;
 
     _user_stack_start = _ram_aligned_end; 
     _user_stack_end = _user_stack_start + 0x10000;
