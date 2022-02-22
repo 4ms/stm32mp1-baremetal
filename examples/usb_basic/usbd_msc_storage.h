@@ -63,7 +63,7 @@ extern "C" {
 /** @defgroup USBD_STORAGE_Exported_Variables
  * @{
  */
-extern USBD_StorageTypeDef USBD_MSC_Template_fops;
+extern USBD_StorageTypeDef USBD_MSC_fops;
 /**
  * @}
  */
