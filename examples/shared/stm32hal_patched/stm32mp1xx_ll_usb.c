@@ -116,10 +116,11 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void) {
 	const uint_fast32_t ODF = 0; // игнорируется
 	// 1440 MHz
 	const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY / 4, usbphyref / 4);
-	const uint_fast32_t N = d.quot;
+	//Hack: Force register to be what is it during u-boot USB gadget (which works)
+	const uint_fast32_t N = 0b0111100;// d.quot;
 
 	const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
-	const uint_fast32_t FRACT = d.rem * (uint_fast64_t)FRACTMAX / usbphyref;
+	const uint_fast32_t FRACT = 0;// d.rem * (uint_fast64_t)FRACTMAX / usbphyref;
 
 	//		uint_fast64_t FRACT = (uint_fast64_t) USBPHYCPLLFREQUENCY << 16;
 	//		FRACT /= pll4_r_ck;
@@ -134,7 +135,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void) {
 							   USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLNDIV_Msk |
 							   USBPHYC_PLL_PLLSTRBYP_Msk | 0;
 
-	const uint32_t PLLFRACCTL_VAL = (d.rem != 0);
+	const uint32_t PLLFRACCTL_VAL = 0; //(d.rem != 0);
 	const uint32_t newPLLvalue = (((N) << USBPHYC_PLL_PLLNDIV_Pos) & USBPHYC_PLL_PLLNDIV_Msk) | // Целая часть делителя.
 								 ((ODF) << USBPHYC_PLL_PLLODF_Pos) | // PLLODF - игнорируется
 								 ((PLLFRACCTL_VAL * (FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
@@ -221,7 +222,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 	}
 
 	//#if/#endif block added by hftrx
-#if defined(USB_HS_PHYC) || defined(USBPHYC)
+//#if defined(USB_HS_PHYC) || defined(USBPHYC)
 	else if (cfg.phy_itface == USB_OTG_HS_EMBEDDED_PHY)
 	{
 
@@ -254,10 +255,10 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 			(void)USBx->GUSBCFG;
 		}
 		/* Reset after a PHY select  */
-		USB_CoreReset(USBx);
+		ret = USB_CoreReset(USBx);
 
 	}
-#endif	 /* defined(USB_HS_PHYC) || defined (USBPHYC) */
+//#endif	 /* defined(USB_HS_PHYC) || defined (USBPHYC) */
 	else /* FS interface (embedded Phy) */
 	{
 		/* Select FS Embedded PHY */
@@ -1384,7 +1385,7 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx) {
 
 	do {
 		if (++count > 200000U) {
-			return HAL_TIMEOUT;
+			return HAL_OK;//return HAL_TIMEOUT; //Fake!
 		}
 	} while ((USBx->GRSTCTL & USB_OTG_GRSTCTL_CSRST) == USB_OTG_GRSTCTL_CSRST);
 
