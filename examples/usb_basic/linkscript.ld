@@ -4,24 +4,28 @@ ENTRY(_Reset)
 
 MEMORY
 {
-    ROM (rx) : ORIGIN = 0xC2000040, LENGTH = 1M
-    RAM (rwx): ORIGIN = 0xC0200000, LENGTH = 1M
+    ROM (rx) : ORIGIN = 0xC2000040, LENGTH = 0x0DFFFFC0
+    RAM (rw): ORIGIN = 0xC0200000, LENGTH = 0x01D00000 
+	HEAP (rw) : ORIGIN = 0xD0000000, LENGTH = 0x10000000
 	SRAM1 (rwx) : ORIGIN = 0x10000000, LENGTH = 128K
 	SRAM2 (rwx) : ORIGIN = 0x10020000, LENGTH = 128K
 	SRAM3 (rwx) : ORIGIN = 0x10040000, LENGTH = 64K
 	SRAM4 (rwx) : ORIGIN = 0x10050000, LENGTH = 64K
+	SYSRAM (rw) : ORIGIN = 0x2FFC0000, LENGTH = 256K
+
 }
 
-__HEAP_SIZE = 0x40000;
+__HEAP_SIZE = LENGTH(HEAP);
 
 SECTIONS
 {
     .text : {
         *(.vector_table)
-		KEEP (*(.resethandler))
-		KEEP (*(.irqhandler))
-        *(.text)
+		*(.resethandler)
+		*(.irqhandler)
+		*(.text)
         *(.text*)
+
 					/* Todo: check if we need the next 3 lines */
 		*(.glue_7)         /* glue arm to thumb code */
 		*(.glue_7t)        /* glue thumb to arm code */
@@ -93,12 +97,15 @@ SECTIONS
     } > RAM
 
     .bss : {
+        . = ALIGN(8);
         _bss_start = .;
         *(.bss)
         *(.bss*)   /* required for some malloc calls */
 		*(COMMON)  /* required for libc, such as __lock___atexit_recursive_mutex */
         . = ALIGN(8);
         _bss_end = .;
+		. = ALIGN(256);
+		_ram_aligned_end = .;
     } > RAM
 
 	.heap (NOLOAD):
@@ -107,22 +114,21 @@ SECTIONS
 		_sheap = .;
 		. += __HEAP_SIZE;
 		_eheap = .;
-		. = ALIGN(256);
-		_ram_aligned_end = .;
-	} > RAM
-	end = . ;
+	} > HEAP
+	end = _eheap;
 
     _user_stack_start = _ram_aligned_end; 
     _user_stack_end = _user_stack_start + 0x10000;
 
     _svc_stack_start = _user_stack_end;
-    _svc_stack_end = _svc_stack_start + 0x100;
+    _svc_stack_end = _svc_stack_start + 0x1000;
 
     _irq_stack_start = _svc_stack_end;
-    _irq_stack_end = _irq_stack_start + 0x100; 
+    _irq_stack_end = _irq_stack_start + 0x1000; 
 
     _fiq_stack_start = _irq_stack_end;
-    _fiq_stack_end = _fiq_stack_start + 0x100;
+    _fiq_stack_end = _fiq_stack_start + 0x1000;
+
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :
