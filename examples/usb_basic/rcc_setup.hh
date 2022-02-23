@@ -36,15 +36,15 @@ struct SystemClocks {
 				.PLLM = 4,
 				.PLLN = 99,
 				.PLLP = 6,
-				.PLLQ = 112,
-				.PLLR = 9,
-				.PLLRGE = RCC_PLL4IFRANGE_1,
+				.PLLQ = 8, // 112,
+				.PLLR = 8,
+				.PLLRGE = RCC_PLL4IFRANGE_0, // was 1
 				.PLLFRACV = 0,
 				.PLLMODE = RCC_PLL_INTEGER,
 			},
 
-		.UsbphyClockSelection = RCC_USBPHYCLKSOURCE_HSE,
-		.UsboClockSelection = RCC_USBOCLKSOURCE_PHY,
+		.UsbphyClockSelection = RCC_USBPHYCLKSOURCE_HSE, // HSE = 00, PLL4 = 01, HSE/2 = 0b10
+		.UsboClockSelection = RCC_USBOCLKSOURCE_PHY,	 // PHY = 1, PLL4 = 0
 
 	};
 
