@@ -262,7 +262,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
 	pdev->pData = &hpcd;
 
 	/* Initialize LL Driver */
-	HAL_PCD_Init(&hpcd);
+	if (HAL_PCD_Init(&hpcd) != HAL_OK)
+		__BKPT(9);
 
 	HAL_PCDEx_SetRxFiFo(&hpcd, 0x200);
 	HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x40);
