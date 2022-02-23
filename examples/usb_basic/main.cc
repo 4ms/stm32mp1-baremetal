@@ -16,6 +16,7 @@ using namespace OSD32BRK;
 // IRQn = 0x62 (98) | PRIORITY: Reg 24 bit 2 | CFGR: Reg 16, bit 2 | ENABLE Reg 3, bit2
 // IRQn = 0x63 (99) | PRIORITY: Reg 24 bit 3 | CFGR: Reg 16, bit 3 | ENABLE Reg 3, bit3
 
+extern PCD_HandleTypeDef hpcd;
 void main() {
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nBasic USB test\r\n");
@@ -58,10 +59,10 @@ void main() {
 	// End test Interrupts
 
 	// Start USB:
-	PCD_HandleTypeDef hpcd;
+	// PCD_HandleTypeDef hpcd;
 
-	InterruptManager::registerISR(OTG_IRQn, [&hpcd, &green2] {
-		green2.on();
+	InterruptManager::registerISR(OTG_IRQn, [/*&hpcd, &green2*/] {
+		// green2.on();
 		HAL_PCD_IRQHandler(&hpcd);
 	});
 
@@ -87,9 +88,9 @@ void main() {
 		if (tm > (last_tm + 500)) {
 			last_tm = tm;
 			if (led_state) {
-				green1.off();
+				// green1.off();
 			} else {
-				green1.on();
+				// green1.on();
 			}
 			led_state = !led_state;
 		}
