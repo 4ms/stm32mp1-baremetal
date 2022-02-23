@@ -242,7 +242,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
 	/* Set LL Driver parameters */
 	hpcd.Instance = USB_OTG_HS;
-	hpcd.Init.dev_endpoints = 8;
+	hpcd.Init.dev_endpoints = 9;
 	hpcd.Init.use_dedicated_ep1 = 0;
 
 	/* Be aware that enabling DMA mode will result in data being sent only by
