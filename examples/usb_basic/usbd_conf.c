@@ -43,16 +43,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	if (hpcd->Instance == USB_OTG_HS) {
-		// __HAL_RCC_GPIOA_CLK_ENABLE();
-
-		// /* Configure DM DP Pins */
-		// GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
-		// GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-		// GPIO_InitStruct.Pull = GPIO_NOPULL;
-		// GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-		// GPIO_InitStruct.Alternate = GPIO_AF10_OTG2_FS;
-		// HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
 		// /* Configure VBUS Pin */
 		// GPIO_InitStruct.Pin = GPIO_PIN_9;
 		// GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -66,29 +56,18 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 		// GPIO_InitStruct.Alternate = GPIO_AF10_OTG2_FS;
 		// HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-		/* Enable USB HS Clocks */
-		//__HAL_RCC_USBO_CONFIG(RCC_USBOCLKSOURCE_PHY);
-
 		__HAL_RCC_USBO_FORCE_RESET();
 		__HAL_RCC_USBO_RELEASE_RESET();
 		__HAL_RCC_USBPHY_FORCE_RESET();
 		__HAL_RCC_USBPHY_RELEASE_RESET();
 
 		__HAL_RCC_USBO_CLK_ENABLE();
-		// __HAL_RCC_USBH_CLK_ENABLE();
 		__HAL_RCC_USBPHY_CLK_ENABLE();
-
-		// __HAL_RCC_USBPHY_CLK_SLEEP_DISABLE();
-		// __HAL_RCC_USBH_CLK_SLEEP_DISABLE();
-		// __HAL_RCC_USBO_CLK_SLEEP_DISABLE();
 
 		GIC_SetTarget(OTG_IRQn, 1);
 		GIC_SetPriority(OTG_IRQn, 0b01111000);
 		GIC_SetConfiguration(OTG_IRQn, 0b10); // Edge triggered
 		GIC_EnableIRQ(OTG_IRQn);
-
-		// HAL_NVIC_SetPriority(OTG_IRQn, 6, 0);
-		// HAL_NVIC_EnableIRQ(OTG_IRQn);
 	}
 }
 
@@ -252,7 +231,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
 	hpcd.Init.dma_enable = 0;
 	hpcd.Init.low_power_enable = 0;
 	hpcd.Init.lpm_enable = 0;
-	hpcd.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;//PCD_PHY_ULPI;
+	hpcd.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
 	hpcd.Init.Sof_enable = 0;
 	hpcd.Init.speed = PCD_SPEED_HIGH;
 	hpcd.Init.vbus_sensing_enable = 0;
@@ -264,9 +243,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
 	// Force to null, so ST USB library doesn't try to de-init it
 	((USBD_HandleTypeDef *)hpcd.pData)->pClassData = NULL;
 
-	/* Initialize LL Driver */
 	if (HAL_PCD_Init(&hpcd) != HAL_OK)
-		__BKPT(9);
+		return USBD_FAIL;
 
 	HAL_PCDEx_SetRxFiFo(&hpcd, 0x200);
 	HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x40);
