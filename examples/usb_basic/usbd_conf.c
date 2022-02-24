@@ -261,6 +261,9 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
 	hpcd.pData = pdev;
 	pdev->pData = &hpcd;
 
+	// Force to null, so ST USB library doesn't try to de-init it
+	((USBD_HandleTypeDef *)hpcd.pData)->pClassData = NULL;
+
 	/* Initialize LL Driver */
 	if (HAL_PCD_Init(&hpcd) != HAL_OK)
 		__BKPT(9);
