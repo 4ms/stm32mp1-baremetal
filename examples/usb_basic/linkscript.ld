@@ -115,7 +115,7 @@ SECTIONS
 		. += __HEAP_SIZE;
 		_eheap = .;
 	} > HEAP
-	end = _eheap;
+	end = _sheap;
 
     _user_stack_start = _ram_aligned_end; 
     _user_stack_end = _user_stack_start + 0x10000;
