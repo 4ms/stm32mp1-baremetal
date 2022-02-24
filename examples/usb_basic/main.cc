@@ -32,52 +32,20 @@ void main() {
 	green2.off();
 
 	SystemClocks::init();
-	// Test Interrupts
-	// PinChangeISR<GPIOI_BASE, 8> red_led2_pinchange;
-	// const auto red_led2_irqnum = red_led2_pinchange.get_IRQ_num();
-	// GIC_DisableIRQ(red_led2_irqnum);
-	// red_led2_pinchange.enable_isr_on_rising_falling_edges(true, false);
 
-	// InterruptManager::registerISR(red_led2_irqnum, [&]() {
-	// 	red2.on();
-	// 	// uart.write(" 2) Entering ISR (red LED)\r\n");
-	// 	red_led2_pinchange.clear_falling_isr_flag();
-	// });
-	// GIC_SetTarget(red_led2_irqnum, 1);
-	// GIC_SetPriority(red_led2_irqnum, 0b01111000);
-	// GIC_SetConfiguration(red_led2_irqnum, 0b10); // Edge triggered
-	// red_led2_pinchange.enable();
-	// GIC_EnableIRQ(red_led2_irqnum);
-	// HAL_Delay(5);
-	// uart.write("Triggering ISR: Red LED 2 turning off (PI8 rising edge)\r\n");
-	// HAL_Delay(5);
-	// red2.on();
-	// HAL_Delay(5);
-	// red2.off();
-	// HAL_Delay(5);
-
-	// End test Interrupts
-
-	// Start USB:
-	// PCD_HandleTypeDef hpcd;
-
-	InterruptManager::registerISR(OTG_IRQn, [/*&hpcd, &green2*/] {
-		// green2.on();
+	InterruptManager::registerISR(OTG_IRQn, [&green2] {
+		green2.on();
 		HAL_PCD_IRQHandler(&hpcd);
 	});
 
 	USBD_HandleTypeDef USBD_Device;
 
-	/* Init Device Library */
 	USBD_Init(&USBD_Device, &MSC_Desc, 0);
 
-	/* Add Supported Class */
 	USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
 
-	/* Add Storage callbacks for MSC Class */
 	USBD_MSC_RegisterStorage(&USBD_Device, &USBD_MSC_fops);
 
-	/* Start Device Process */
 	USBD_Start(&USBD_Device);
 
 	// Blink green1 light at 1Hz
@@ -88,9 +56,9 @@ void main() {
 		if (tm > (last_tm + 500)) {
 			last_tm = tm;
 			if (led_state) {
-				// green1.off();
+				green1.off();
 			} else {
-				// green1.on();
+				green1.on();
 			}
 			led_state = !led_state;
 		}
