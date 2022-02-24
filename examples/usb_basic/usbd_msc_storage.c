@@ -38,7 +38,7 @@ EndBSPDependencies */
 #define STORAGE_BLK_NBR 0x80U
 #define STORAGE_BLK_SIZ 0x200U
 
-static uint8_t dummybuffer[STORAGE_BLK_NBR*STORAGE_BLK_SIZ];
+static uint8_t dummybuffer[STORAGE_BLK_NBR * STORAGE_BLK_SIZ];
 
 int8_t STORAGE_Init(uint8_t lun);
 
@@ -57,17 +57,15 @@ int8_t STORAGE_GetMaxLun(void);
 /* USB Mass storage Standard Inquiry Data */
 int8_t STORAGE_Inquirydata[] = /* 36 */
 	{
-
+		// clang-format off
 		/* LUN 0 */
-		0x00, 0x80, 0x02, 0x02, (STANDARD_INQUIRY_DATA_LEN - 5),
-		0x00, 0x00, 0x00, 'S',	'T',
-		'M',  ' ',	' ',  ' ',	' ',
-		' ', /* Manufacturer : 8 bytes */
-		'P',  'r',	'o',  'd',	'u',
-		'c',  't',	' ', /* Product      : 16 Bytes */
-		' ',  ' ',	' ',  ' ',	' ',
-		' ',  ' ',	' ',  '0',	'.',
-		'0',  '1', /* Version      : 4 Bytes */
+		0x00, 0x80, 0x02, 0x02,
+		(STANDARD_INQUIRY_DATA_LEN - 5), 0x00, 0x00, 0x00,
+		'S', 'T', 'M', ' ', ' ', ' ', ' ', ' ', /* Manufacturer : 8 bytes */
+		'P', 'r', 'o', 'd', 'u', 'c', 't', ' ', /* Product      : 16 Bytes */
+		' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+		'0', '.', '0', '1', 					 /* Version      : 4 Bytes */
+		// clang-format on
 };
 
 USBD_StorageTypeDef USBD_MSC_fops = {
