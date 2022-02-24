@@ -28,6 +28,8 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx.h" /* replace 'stm32xxx' with your HAL driver header filename, ex: stm32f4xx.h */
 
+#define USB_USB_HS // used in usbd_core.c
+
 #if (USBD_DEBUG_LEVEL > 0U)
 #include <stdio.h>
 #include <stdlib.h>
