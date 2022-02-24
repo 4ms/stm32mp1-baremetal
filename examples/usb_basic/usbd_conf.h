@@ -30,12 +30,6 @@ extern "C" {
 
 #define USB_USB_HS // used in usbd_core.c
 
-#if (USBD_DEBUG_LEVEL > 0U)
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#endif
-
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
  * @{
  */
@@ -54,6 +48,12 @@ extern "C" {
 #define USBD_MAX_STR_DESC_SIZ 0x100U
 #define USBD_SELF_POWERED 1U
 #define USBD_DEBUG_LEVEL 2U
+
+#if (USBD_DEBUG_LEVEL > 0U)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#endif
 
 /* ECM, RNDIS, DFU Class Config */
 #define USBD_SUPPORT_USER_STRING_DESC 1U
