@@ -27,6 +27,7 @@ SOURCES = startup.s \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_ll_rcc.c \
+		  $(SHAREDDIR)/printf/printf.c \
 		  usbd_conf.c \
 		  usbd_desc.c \
 		  usbd_msc_storage.c \
@@ -37,6 +38,7 @@ SOURCES = startup.s \
 		  $(USBLIBDIR)/Core/Src/usbd_core.c \
 		  $(USBLIBDIR)/Core/Src/usbd_ctlreq.c \
 		  $(USBLIBDIR)/Core/Src/usbd_ioreq.c \
+		  #../hal_lib/syscalls.c \
 
 
 INCLUDES = -I. \
@@ -50,6 +52,8 @@ INCLUDES = -I. \
 
 EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER
 
+# LINK_STDLIB =
+# LINK_STDLIB = --specs=nano.specs #doesn't define sbrk, _write, _isatty etc
 LINK_STDLIB = --specs=nosys.specs
 
 include ../shared/makefile-common.mk

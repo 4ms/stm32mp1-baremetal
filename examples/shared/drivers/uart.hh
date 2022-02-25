@@ -12,6 +12,12 @@ public:
 		: uart{reinterpret_cast<USART_TypeDef *>(BASE_ADDR)}
 	{}
 
+	void write(const char c)
+	{
+		uart->TDR = c;
+		delay_for_write();
+	}
+
 	void write(const char *str)
 	{
 		while (*str) {

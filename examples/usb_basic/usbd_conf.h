@@ -26,7 +26,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32mp1xx.h" /* replace 'stm32xxx' with your HAL driver header filename, ex: stm32f4xx.h */
+#include <stdint.h>
+#include "stm32mp1xx.h"
+#include "drivers/debugpins.h"
 
 #define USB_USB_HS // used in usbd_core.c
 
@@ -47,12 +49,15 @@ extern "C" {
 #define USBD_MAX_NUM_CONFIGURATION 1U
 #define USBD_MAX_STR_DESC_SIZ 0x100U
 #define USBD_SELF_POWERED 1U
-#define USBD_DEBUG_LEVEL 2U
+
+// 0: off, 1: User Messages, 2: Errors, 3: Debug
+#define USBD_DEBUG_LEVEL 3U
 
 #if (USBD_DEBUG_LEVEL > 0U)
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "printf/printf.h"
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
 #endif
 
 /* ECM, RNDIS, DFU Class Config */

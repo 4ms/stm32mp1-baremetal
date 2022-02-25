@@ -1,25 +1,25 @@
 #include "drivers/interrupt.hh"
 #include "drivers/leds.hh"
-//#include "drivers/pinchange.hh"
 #include "drivers/uart.hh"
 #include "osd32brk_conf.hh"
+#include "printf/printf.h"
 #include "rcc_setup.hh"
 #include "stm32mp1xx.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_msc_storage.h"
-#include <cstdint>
 
 using namespace OSD32BRK;
 
-// For debugging, it's handy to know these values:
-// IRQn = 0x62 (98) | PRIORITY: Reg 24 bit 2 | CFGR: Reg 16, bit 2 | ENABLE Reg 3, bit2
-// IRQn = 0x63 (99) | PRIORITY: Reg 24 bit 3 | CFGR: Reg 16, bit 3 | ENABLE Reg 3, bit3
-
 extern PCD_HandleTypeDef hpcd;
+
+Uart<UART4_BASE> uart;
+
 void main() {
-	Uart<UART4_BASE> uart;
+	HAL_Init();
+
 	uart.write("\r\n\r\nBasic USB test\r\n");
+	printf("Hello World!\r\n");
 
 	RedLED red1;
 	RedLED2 red2;
@@ -27,8 +27,16 @@ void main() {
 	GreenLED2 green2;
 
 	red1.off();
+	red1.on();
+	red1.off();
 	red2.off();
+	red2.on();
+	red2.off();
+	green1.off();
 	green1.on();
+	green1.off();
+	green2.off();
+	green2.on();
 	green2.off();
 
 	SystemClocks::init();
@@ -36,6 +44,7 @@ void main() {
 	InterruptManager::registerISR(OTG_IRQn, [&green2] {
 		green2.on();
 		HAL_PCD_IRQHandler(&hpcd);
+		green2.off();
 	});
 
 	USBD_HandleTypeDef USBD_Device;
@@ -63,4 +72,14 @@ void main() {
 			led_state = !led_state;
 		}
 	}
+}
+
+extern "C" void _putchar(char c) {
+	uart.write(c);
+}
+
+extern "C" int __io_putchar(int ch) {
+	const char c = static_cast<char>(ch);
+	uart.write(c);
+	return ch;
 }
