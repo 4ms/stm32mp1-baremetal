@@ -952,6 +952,16 @@ HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd) {
 	return HAL_OK;
 }
 
+static char PCDLOG[256];
+static unsigned logidx=0;
+
+static uint32_t PCDLOG_INVALID_INT[64];
+static unsigned invlogidx=0;
+
+#include "usbd_def.h"
+static USBD_SetupReqTypedef REQ_LOG[64];
+static unsigned reqlogidx = 0;
+
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 /**
  * @brief  Handles PCD interrupt request.
@@ -969,20 +979,26 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 	uint32_t fifoemptymsk;
 	uint32_t temp;
 
+	REQ_LOG[reqlogidx++] = ((USBD_HandleTypeDef *)(hpcd->pData))->request;
+
 	/* ensure that we are in device mode */
 	if (USB_GetMode(hpcd->Instance) == USB_OTG_MODE_DEVICE) {
 		/* avoid spurious interrupt */
 		if (__HAL_PCD_IS_INVALID_INTERRUPT(hpcd)) {
+			PCDLOG[logidx++] = '_';
+			PCDLOG_INVALID_INT[invlogidx++] = hpcd->Instance->GINTSTS;
 			return;
 		}
 
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_MMIS)) {
 			/* incorrect mode, acknowledge the interrupt */
+			PCDLOG[logidx++] = 'X';
 			__HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_MMIS);
 		}
 
 		/* Handle RxQLevel Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_RXFLVL)) {
+			PCDLOG[logidx++] = 'q';
 			USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL);
 
 			temp = USBx->GRXSTSP;
@@ -1007,6 +1023,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 		}
 
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_OEPINT)) {
+			PCDLOG[logidx++] = 'o';
 			epnum = 0U;
 
 			/* Read in the device interrupt bits */
@@ -1017,27 +1034,32 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 					epint = USB_ReadDevOutEPInterrupt(hpcd->Instance, (uint8_t)epnum);
 
 					if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC) {
+						PCDLOG[logidx++] = 'C';
 						CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
 						(void)PCD_EP_OutXfrComplete_int(hpcd, epnum);
 					}
 
 					if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP) {
+						PCDLOG[logidx++] = 'B';
 						CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_STUP);
 						/* Class B setup phase done for previous decoded setup */
 						(void)PCD_EP_OutSetupPacket_int(hpcd, epnum);
 					}
 
 					if ((epint & USB_OTG_DOEPINT_OTEPDIS) == USB_OTG_DOEPINT_OTEPDIS) {
+						PCDLOG[logidx++] = 'D';
 						CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_OTEPDIS);
 					}
 
 					/* Clear Status Phase Received interrupt */
 					if ((epint & USB_OTG_DOEPINT_OTEPSPR) == USB_OTG_DOEPINT_OTEPSPR) {
+						PCDLOG[logidx++] = 'S';
 						CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_OTEPSPR);
 					}
 
 					/* Clear OUT NAK interrupt */
 					if ((epint & USB_OTG_DOEPINT_NAK) == USB_OTG_DOEPINT_NAK) {
+						PCDLOG[logidx++] = 'N';
 						CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_NAK);
 					}
 				}
@@ -1047,6 +1069,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 		}
 
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_IEPINT)) {
+			PCDLOG[logidx++] = 'i';
 			/* Read in the device interrupt bits */
 			ep_intr = USB_ReadDevAllInEpInterrupt(hpcd->Instance);
 
@@ -1057,6 +1080,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 					epint = USB_ReadDevInEPInterrupt(hpcd->Instance, (uint8_t)epnum);
 
 					if ((epint & USB_OTG_DIEPINT_XFRC) == USB_OTG_DIEPINT_XFRC) {
+						PCDLOG[logidx++] = 'I';
 						fifoemptymsk = (uint32_t)(0x1UL << (epnum & EP_ADDR_MSK));
 						USBx_DEVICE->DIEPEMPMSK &= ~fifoemptymsk;
 
@@ -1079,19 +1103,24 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 					}
 					if ((epint & USB_OTG_DIEPINT_TOC) == USB_OTG_DIEPINT_TOC) {
+						PCDLOG[logidx++] = 'T';
 						CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_TOC);
 					}
 					if ((epint & USB_OTG_DIEPINT_ITTXFE) == USB_OTG_DIEPINT_ITTXFE) {
+						PCDLOG[logidx++] = 'E';
 						CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_ITTXFE);
 					}
 					if ((epint & USB_OTG_DIEPINT_INEPNE) == USB_OTG_DIEPINT_INEPNE) {
+						PCDLOG[logidx++] = 'N';
 						CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_INEPNE);
 					}
 					if ((epint & USB_OTG_DIEPINT_EPDISD) == USB_OTG_DIEPINT_EPDISD) {
+						PCDLOG[logidx++] = 'D';
 						(void)USB_FlushTxFifo(USBx, epnum);
 						CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_EPDISD);
 					}
 					if ((epint & USB_OTG_DIEPINT_TXFE) == USB_OTG_DIEPINT_TXFE) {
+						PCDLOG[logidx++] = 'M';
 						(void)PCD_WriteEmptyTxFifo(hpcd, epnum);
 					}
 				}
@@ -1102,6 +1131,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle Resume Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_WKUINT)) {
+			PCDLOG[logidx++] = 'w';
 			/* Clear the Remote Wake-up Signaling */
 			USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_RWUSIG;
 
@@ -1126,6 +1156,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle Suspend Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_USBSUSP)) {
+			PCDLOG[logidx++] = 's';
 			if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) == USB_OTG_DSTS_SUSPSTS) {
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
 				hpcd->SuspendCallback(hpcd);
@@ -1138,6 +1169,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle LPM Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_LPMINT)) {
+			PCDLOG[logidx++] = 'l';
 			__HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_LPMINT);
 
 			if (hpcd->LPM_State == LPM_L0) {
@@ -1160,6 +1192,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle Reset Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_USBRST)) {
+			PCDLOG[logidx++] = 'r';
 			USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_RWUSIG;
 			(void)USB_FlushTxFifo(hpcd->Instance, 0x10U);
 
@@ -1195,6 +1228,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle Enumeration done Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE)) {
+			PCDLOG[logidx++] = 'e';
 			(void)USB_ActivateSetup(hpcd->Instance);
 			hpcd->Init.speed = USB_GetDevSpeed(hpcd->Instance);
 
@@ -1212,6 +1246,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle SOF Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_SOF)) {
+			PCDLOG[logidx++] = 'f';
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
 			hpcd->SOFCallback(hpcd);
 #else
@@ -1223,6 +1258,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle Incomplete ISO IN Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_IISOIXFR)) {
+			PCDLOG[logidx++] = 'y';
 			/* Keep application checking the corresponding Iso IN endpoint
 			causing the incomplete Interrupt */
 			epnum = 0U;
@@ -1238,6 +1274,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle Incomplete ISO OUT Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_PXFR_INCOMPISOOUT)) {
+			PCDLOG[logidx++] = 'z';
 			/* Keep application checking the corresponding Iso OUT endpoint
 			causing the incomplete Interrupt */
 			epnum = 0U;
@@ -1253,6 +1290,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle Connection event Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_SRQINT)) {
+			PCDLOG[logidx++] = 'c';
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
 			hpcd->ConnectCallback(hpcd);
 #else
@@ -1264,6 +1302,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 		/* Handle Disconnection event Interrupt */
 		if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_OTGINT)) {
+			PCDLOG[logidx++] = 'd';
 			temp = hpcd->Instance->GOTGINT;
 
 			if ((temp & USB_OTG_GOTGINT_SEDET) == USB_OTG_GOTGINT_SEDET) {
@@ -1276,6 +1315,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 			hpcd->Instance->GOTGINT |= temp;
 		}
 	}
+	PCDLOG[logidx++] = ' ';
 }
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 

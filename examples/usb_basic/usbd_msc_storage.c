@@ -138,7 +138,9 @@ int8_t STORAGE_IsWriteProtected(uint8_t lun) {
  *******************************************************************************/
 int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
 	__BKPT();
-	memcpy(buf, &dummybuffer[blk_addr * STORAGE_BLK_SIZ], blk_len);
+	//memcpy(buf, &dummybuffer[blk_addr * STORAGE_BLK_SIZ], blk_len);
+	for (uint16_t i = 0; i < blk_len; i++)
+		buf[i] = dummybuffer[blk_addr * STORAGE_BLK_SIZ + i];
 	return USBD_OK;
 }
 /*******************************************************************************
@@ -150,7 +152,9 @@ int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_l
  *******************************************************************************/
 int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
 	__BKPT();
-	memcpy(&dummybuffer[blk_addr * STORAGE_BLK_SIZ], buf, blk_len);
+	//memcpy(&dummybuffer[blk_addr * STORAGE_BLK_SIZ], buf, blk_len);
+	for (uint16_t i = 0; i < blk_len; i++)
+		dummybuffer[blk_addr * STORAGE_BLK_SIZ + i] = buf[i];
 	return USBD_OK;
 }
 /*******************************************************************************

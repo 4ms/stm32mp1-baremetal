@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 
-/* Includes ------------------------------------------------------------------*/
 #include "usbd_core.h"
 
 /** @addtogroup STM32_USBD_DEVICE_LIBRARY
@@ -104,6 +103,7 @@ USBD_StatusTypeDef USBD_Init(USBD_HandleTypeDef *pdev,
   pdev->pClass = NULL;
   pdev->pUserData = NULL;
   pdev->pConfDesc = NULL;
+  //pdev->pClassData = NULL; //FIX crash on initial reset from host
 
   /* Assign USBD Descriptors */
   if (pdesc != NULL)
@@ -285,6 +285,10 @@ USBD_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
   * @param  pdev: device instance
   * @retval status
   */
+static uint8_t USBD_SETUP_BMREQ_LOG[64];
+static uint8_t USBD_SETUP_BREQ_LOG[64];
+static unsigned setuplogidx=0;
+
 USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, uint8_t *psetup)
 {
   USBD_StatusTypeDef ret;
@@ -295,10 +299,16 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, uint8_t *psetup)
 
   pdev->ep0_data_len = pdev->request.wLength;
 
+  USBD_SETUP_BMREQ_LOG[setuplogidx] = pdev->request.bmRequest;
+  USBD_SETUP_BREQ_LOG[setuplogidx] = pdev->request.bRequest;
+  setuplogidx++;
+
   switch (pdev->request.bmRequest & 0x1FU)
   {
     case USB_REQ_RECIPIENT_DEVICE:
+  		red2_on();
       ret = USBD_StdDevReq(pdev, &pdev->request);
+  		red2_off();
       break;
 
     case USB_REQ_RECIPIENT_INTERFACE:

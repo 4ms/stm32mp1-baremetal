@@ -68,6 +68,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 		GIC_SetPriority(OTG_IRQn, 0b01111000);
 		GIC_SetConfiguration(OTG_IRQn, 0b10); // Edge triggered
 		GIC_EnableIRQ(OTG_IRQn);
+
+		USBD_DbgLog("Initialized MSP\r\n");
 	}
 }
 

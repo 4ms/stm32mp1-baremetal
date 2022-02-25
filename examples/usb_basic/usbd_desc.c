@@ -24,7 +24,7 @@
 /* Private typedef ----------------------------------------------------------- */
 /* Private define ------------------------------------------------------------ */
 #define USBD_VID 0x0483
-#define USBD_PID 0x5720
+#define USBD_PID 0x573e
 #define USBD_LANGID_STRING 0x409
 #define USBD_MANUFACTURER_STRING "STMicroelectronics"
 #define USBD_PRODUCT_HS_STRING "Mass Storage in HS Mode"
