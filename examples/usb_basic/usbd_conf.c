@@ -163,6 +163,7 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
  */
 void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd) {
 	USBD_LL_Suspend(hpcd->pData);
+	__HAL_PCD_GATE_PHYCLOCK(hpcd); // added by hfrtx
 }
 
 /**
@@ -211,6 +212,33 @@ void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd) {
 void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
 	USBD_LL_DevDisconnected(hpcd->pData);
 }
+
+// Added by hftrx 
+void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg) { 
+	switch (msg) { 
+		case PCD_LPM_L0_ACTIVE: 
+			if (hpcd->Init.low_power_enable) { 
+				////      SystemClock_Config(); 
+				/* Reset SLEEPDEEP bit of Cortex System Control Register. */ 
+				////      SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk)); 
+			} 
+			__HAL_PCD_UNGATE_PHYCLOCK(hpcd); 
+			USBD_LL_Resume(hpcd->pData); 
+			break; 
+ 
+		case PCD_LPM_L1_ACTIVE: 
+			__HAL_PCD_GATE_PHYCLOCK(hpcd); 
+			USBD_LL_Suspend(hpcd->pData); 
+ 
+			/* Enter in STOP mode. */ 
+			if (hpcd->Init.low_power_enable) { 
+				/* Set SLEEPDEEP bit and SleepOnExit of Cortex System Control Register. */ 
+				////     SCB->SCR |= (uint32_t)((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk)); 
+			} 
+			break; 
+	} 
+} 
+
 
 /*******************************************************************************
 					   LL Driver Interface (USB Device Library --> PCD)
