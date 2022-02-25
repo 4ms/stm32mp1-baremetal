@@ -379,6 +379,12 @@ USBD_StatusTypeDef USBD_LL_SetUSBAddress(USBD_HandleTypeDef *pdev, uint8_t dev_a
  * @retval USBD Status
  */
 USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, uint8_t *pbuf, uint32_t size) {
+	// added by hftrx: need to flush cache
+	if (pbuf != NULL && size != 0) {
+		// ASSERT(((uintptr_t) pbuf % DCACHEROWSIZE) == 0);
+		// arm_hardware_flush((uintptr_t) pbuf, size);
+	}
+
 	HAL_PCD_EP_Transmit(pdev->pData, ep_addr, pbuf, size);
 	return USBD_OK;
 }
@@ -392,6 +398,10 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, u
  * @retval USBD Status
  */
 USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev, uint8_t ep_addr, uint8_t *pbuf, uint32_t size) {
+	// added by hftrx: need to invalidate cache!
+	// if (pbuf != NULL && size != 0)
+	// arm_hardware_flush_invalidate((uintptr_t)pbuf, size);
+
 	HAL_PCD_EP_Receive(pdev->pData, ep_addr, pbuf, size);
 	return USBD_OK;
 }
