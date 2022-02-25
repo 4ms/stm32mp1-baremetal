@@ -60,7 +60,6 @@ extern int errno;
 extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
 
-register char * stack_ptr asm("sp");
 
 char *__env[1] = { 0 };
 char **environ = __env;
@@ -114,6 +113,7 @@ int _write(int file, char *ptr, int len)
 caddr_t _sbrk(int incr)
 {
 	extern char end asm("end");
+	extern char _eheap asm("_eheap");
 	static char *heap_end;
 	char *prev_heap_end;
 
@@ -121,9 +121,9 @@ caddr_t _sbrk(int incr)
 		heap_end = &end;
 
 	prev_heap_end = heap_end;
-	if (heap_end + incr > stack_ptr)
+	if (heap_end + incr > &_eheap)
 	{
-//		write(1, "Heap and stack collision\n", 25);
+//		write(1, "Heap and exceeds HEAP_SIZE\n", 27);
 //		abort();
 		errno = ENOMEM;
 		return (caddr_t) -1;
