@@ -952,11 +952,10 @@ HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd) {
 	return HAL_OK;
 }
 
-static char PCDLOG[256];
-static unsigned logidx=0;
+char PCDLOG[256];
+unsigned logidx = 0;
 
-static uint32_t PCDLOG_INVALID_INT[64];
-static unsigned invlogidx=0;
+static uint32_t PCDLOG_INVALID_INT[256];
 
 #include "usbd_def.h"
 static USBD_SetupReqTypedef REQ_LOG[64];
@@ -981,12 +980,13 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 
 	REQ_LOG[reqlogidx++] = ((USBD_HandleTypeDef *)(hpcd->pData))->request;
 
+	PCDLOG_INVALID_INT[logidx] = hpcd->Instance->GINTSTS;
+
 	/* ensure that we are in device mode */
 	if (USB_GetMode(hpcd->Instance) == USB_OTG_MODE_DEVICE) {
 		/* avoid spurious interrupt */
 		if (__HAL_PCD_IS_INVALID_INTERRUPT(hpcd)) {
 			PCDLOG[logidx++] = '_';
-			PCDLOG_INVALID_INT[invlogidx++] = hpcd->Instance->GINTSTS;
 			return;
 		}
 
@@ -1006,6 +1006,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 			ep = &hpcd->OUT_ep[temp & USB_OTG_GRXSTSP_EPNUM];
 
 			if (((temp & USB_OTG_GRXSTSP_PKTSTS) >> 17) == STS_DATA_UPDT) {
+				PCDLOG[logidx++] = 'D'; //STS_DATA_UPDT
+				PCDLOG[logidx++] = (uint8_t)((temp & USB_OTG_GRXSTSP_BCNT) >> 4);
 				if ((temp & USB_OTG_GRXSTSP_BCNT) != 0U) {
 					(void)USB_ReadPacket(USBx, ep->xfer_buff, (uint16_t)((temp & USB_OTG_GRXSTSP_BCNT) >> 4));
 
@@ -1013,9 +1015,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd) {
 					ep->xfer_count += (temp & USB_OTG_GRXSTSP_BCNT) >> 4;
 				}
 			} else if (((temp & USB_OTG_GRXSTSP_PKTSTS) >> 17) == STS_SETUP_UPDT) {
+				PCDLOG[logidx++] = 'E'; //STS_SETUP_UPDT
+				PCDLOG[logidx++] = (uint8_t)((temp & USB_OTG_GRXSTSP_BCNT) >> 4);
 				(void)USB_ReadPacket(USBx, (uint8_t *)hpcd->Setup, 8U);
 				ep->xfer_count += (temp & USB_OTG_GRXSTSP_BCNT) >> 4;
 			} else {
+				PCDLOG[logidx++] = '?'; //?3 = STS_XFER_COMP, ?4 = STS_SETUP_COMP
+				PCDLOG[logidx++] = (temp & USB_OTG_GRXSTSP_PKTSTS) >> 17;
+				PCDLOG[logidx++] = (uint8_t)((temp & USB_OTG_GRXSTSP_BCNT) >> 4);
 				/* ... */
 			}
 
