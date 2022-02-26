@@ -21,6 +21,7 @@
 #include "usbd_core.h"
 #include "usbd_msc.h"
 #include "drivers/cache-c.h"
+#include "stm32mp1xx_ll_pwr.h"
 
 /* Private typedef ----------------------------------------------------------- */
 /* Private define ------------------------------------------------------------ */
@@ -57,13 +58,24 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 		// GPIO_InitStruct.Alternate = GPIO_AF10_OTG2_FS;
 		// HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-		__HAL_RCC_USBO_FORCE_RESET();
-		__HAL_RCC_USBO_RELEASE_RESET();
-		__HAL_RCC_USBPHY_FORCE_RESET();
-		__HAL_RCC_USBPHY_RELEASE_RESET();
+		LL_PWR_EnableUSBVoltageDetector();
+		while (LL_PWR_IsEnabledUSBVoltageDetector() == 0)
+			;
+
+		// Wait 3.3 volt REGULATOR ready
+		while (LL_PWR_IsActiveFlag_USB() == 0)
+			;
 
 		__HAL_RCC_USBO_CLK_ENABLE();
-		__HAL_RCC_USBPHY_CLK_ENABLE();
+		__HAL_RCC_USBO_CLK_SLEEP_ENABLE();
+
+		__HAL_RCC_USBO_FORCE_RESET();
+		__HAL_RCC_USBO_RELEASE_RESET();
+
+		// __HAL_RCC_USBPHY_FORCE_RESET();
+		// __HAL_RCC_USBPHY_RELEASE_RESET();
+
+		// __HAL_RCC_USBPHY_CLK_ENABLE();
 
 		GIC_SetTarget(OTG_IRQn, 1);
 		GIC_SetPriority(OTG_IRQn, 0b01111000);
@@ -150,10 +162,12 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
 			break;
 	}
 
+		//order of these two swapped by hftrx
+	USBD_LL_SetSpeed(hpcd->pData, speed);
+
 	/* Reset Device */
 	USBD_LL_Reset(hpcd->pData);
 
-	USBD_LL_SetSpeed(hpcd->pData, speed);
 }
 
 /**
@@ -173,6 +187,7 @@ void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd) {
  */
 void HAL_PCD_ResumeCallback(PCD_HandleTypeDef *hpcd) {
 	USBD_LL_Resume(hpcd->pData);
+	__HAL_PCD_UNGATE_PHYCLOCK(hpcd); // added by DG
 }
 
 /**
@@ -271,7 +286,7 @@ usbd_fifo_initialize(PCD_HandleTypeDef *hpcd, uint_fast16_t fullsize, uint_fast8
 		const uint_fast16_t size4 = 2 * (size2buff4(USB_OTG_MAX_EP0_SIZE) + add3tx);
 		// ASSERT(last4 >= size4);
 		last4 -= size4;
-		hpcd->Instance->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
+		hpcd->Instance->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4); //0026 03DA
 	}
 
 	// RX
@@ -284,7 +299,7 @@ usbd_fifo_initialize(PCD_HandleTypeDef *hpcd, uint_fast16_t fullsize, uint_fast8
 		const uint_fast16_t size4 =
 			(4 * numcontrolendpoints + 6) + (maxoutpacketsize4 + 1) + (2 * numoutendpoints) + 1 + addplaces;
 
-		// ASSERT(last4 >= size4);
+		// ASSERT(last4 >= size4); //0000 03DA
 		hpcd->Instance->GRXFSIZ = (hpcd->Instance->GRXFSIZ & ~USB_OTG_GRXFSIZ_RXFD) |
 								  (last4 << USB_OTG_GRXFSIZ_RXFD_Pos) | // was: size4 - то что осталось
 								  0;
@@ -328,13 +343,30 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
 	if (HAL_PCD_Init(&hpcd) != HAL_OK)
 		return USBD_FAIL;
 
-	// HAL_PCDEx_SetRxFiFo(&hpcd, 0x200);
-	// HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x40);
-	// HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x100);
+	// Uboot gadget has these values:
+	//g-rx-fifo-size: 0x200 (512)
+	//g-np-tx-fifo-size: 0x20 (32)
+	//HNPTXFSIZ: 0020 (depth = 32), 0200 (offset)
+	//DIEPTXF1: 0100 (size=256), 0220 (offset)
+	//DIEPTXF2: 0010 (size=16), 0230 (offset)
+	//DIEPTXF3: 0010 (size=16), 0240 (offset)
+	//...
+	//DIEPTXF8: 0010 (size=16), 0290 (offset)
+
+	//The following does this(? check ?)
+	//Rx: 0200 depth = 512 words = 2048B
+	//---no: Tx: 0040 depth = 64 words = 256B
+	//Tx: 0020 depth = 32 words = 128B, 0200 start address in RAM
+	//TXF1: ?
+	HAL_PCDEx_SetRxFiFo(&hpcd, 0x200);
+	HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x20);
+	HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x100);
 
 	// hftrx:
-	usbd_fifo_initialize(&hpcd, 4096, 1, hpcd.Init.dma_enable);
-	// USB_OTG_MAX_EP0_SIZE
+	// usbd_fifo_initialize(&hpcd, 4096, 1, hpcd.Init.dma_enable);
+	// Rx: 03DA depth = 980 words = 3920B
+	// Tx: 0026 depth = 38 words = 152B
+	// Tx: 03DA start addr 
 
 	return USBD_OK;
 }
