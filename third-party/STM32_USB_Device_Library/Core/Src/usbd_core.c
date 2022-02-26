@@ -19,6 +19,9 @@
 
 #include "usbd_core.h"
 
+extern char PCDLOG[256];
+extern unsigned logidx;
+
 /** @addtogroup STM32_USBD_DEVICE_LIBRARY
   * @{
   */
@@ -399,6 +402,9 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev,
   return USBD_OK;
 }
 
+USBD_EndpointTypeDef PEPLOG[64];
+uint32_t peplogidx = 0;
+
 /**
   * @brief  USBD_LL_DataInStage
   *         Handle data in stage
@@ -412,6 +418,10 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
   USBD_EndpointTypeDef *pep;
   USBD_StatusTypeDef ret;
 
+  PCDLOG[logidx++] = epnum + '0';
+  PCDLOG[logidx++] = pdev->ep0_state + '0';
+  PEPLOG[peplogidx++] = pdev->ep_in[epnum];
+
   if (epnum == 0U)
   {
     pep = &pdev->ep_in[0];
@@ -420,6 +430,7 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
     {
       if (pep->rem_length > pep->maxpacket)
       {
+	    PCDLOG[logidx++] = 'C';
         pep->rem_length -= pep->maxpacket;
 
         (void)USBD_CtlContinueSendData(pdev, pdata, pep->rem_length);
@@ -434,6 +445,7 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
             (pep->total_length >= pep->maxpacket) &&
             (pep->total_length < pdev->ep0_data_len))
         {
+	      PCDLOG[logidx++] = 'Z'; //send ZLP
           (void)USBD_CtlContinueSendData(pdev, NULL, 0U);
           pdev->ep0_data_len = 0U;
 
@@ -442,10 +454,13 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
         }
         else
         {
+	      PCDLOG[logidx++] = 'S'; //stall
+	      PCDLOG[logidx++] = pdev->dev_state + '0'; //dev_state: '2'=addressed, '3'=configured
           if (pdev->dev_state == USBD_STATE_CONFIGURED)
           {
             if (pdev->pClass->EP0_TxSent != NULL)
             {
+	          PCDLOG[logidx++] = 't'; //Tx_Sent not null
               pdev->pClass->EP0_TxSent(pdev);
             }
           }
@@ -456,10 +471,11 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
     }
     else
     {
-#if 0
+#if 1
       if ((pdev->ep0_state == USBD_EP0_STATUS_IN) ||
           (pdev->ep0_state == USBD_EP0_IDLE))
       {
+		PCDLOG[logidx++] = 'D'; //status in or idle state
         (void)USBD_LL_StallEP(pdev, 0x80U);
       }
 #endif
@@ -467,6 +483,7 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
 
     if (pdev->dev_test_mode == 1U)
     {
+	  PCDLOG[logidx++] = pdev->ep0_state + 'T'; //test mode
       (void)USBD_RunTestMode(pdev);
       pdev->dev_test_mode = 0U;
     }
