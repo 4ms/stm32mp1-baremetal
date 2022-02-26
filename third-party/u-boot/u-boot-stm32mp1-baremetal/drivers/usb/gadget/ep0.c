@@ -40,7 +40,7 @@
 #include <serial.h>
 #include <usbdevice.h>
 
-#if 0
+#if 1
 #define dbg_ep0(lvl,fmt,args...) serial_printf("[%s] %s:%d: "fmt"\n",__FILE__,__FUNCTION__,__LINE__,##args)
 #else
 #define dbg_ep0(lvl,fmt,args...)

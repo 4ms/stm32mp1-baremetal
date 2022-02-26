@@ -239,6 +239,8 @@
 /* #define VERBOSE_DEBUG */
 /* #define DUMP_MSGS */
 
+#define DEBUG
+
 #include <config.h>
 #include <hexdump.h>
 #include <malloc.h>

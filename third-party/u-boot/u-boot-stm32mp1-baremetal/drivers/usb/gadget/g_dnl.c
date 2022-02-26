@@ -5,7 +5,7 @@
  * Copyright (C) 2012 Samsung Electronics
  * Lukasz Majewski  <l.majewski@samsung.com>
  */
-
+#define DEBUG
 #include <common.h>
 #include <malloc.h>
 
