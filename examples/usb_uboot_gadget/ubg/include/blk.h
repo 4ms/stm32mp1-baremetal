@@ -7,6 +7,10 @@
 #ifndef BLK_H
 #define BLK_H
 
+// #ifdef STM32MP1BAREMETAL
+#include "linux/kconfig.h" //required for CONFIG_IS_ENABLED()
+// #endif
+
 #include <efi.h>
 
 #ifdef CONFIG_SYS_64BIT_LBA
