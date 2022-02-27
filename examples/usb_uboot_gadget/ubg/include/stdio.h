@@ -1,5 +1,8 @@
 #ifndef __STDIO_H
 #define __STDIO_H
+#ifdef STM32MP1BAREMETAL
+#include_next <stdio.h>
+#else
 
 #include <stdarg.h>
 #include <linux/compiler.h>
@@ -56,4 +59,5 @@ void fputc(int file, const char c);
 int ftstc(int file);
 int fgetc(int file);
 
+#endif
 #endif /* __STDIO_H */

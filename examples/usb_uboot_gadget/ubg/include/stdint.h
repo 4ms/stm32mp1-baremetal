@@ -5,3 +5,7 @@
  *
  * U-Boot uses linux types (linux/types.h) so does not make use of stdint.h
  */
+
+#ifdef STM32MP1BAREMETAL
+#include_next <stdint.h>
+#endif
