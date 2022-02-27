@@ -17,7 +17,7 @@
 #define _EFI_H
 
 #include <linux/linkage.h>
-#include <linux/string.h>
+//#include <linux/string.h>
 #include <linux/types.h>
 
 /*
