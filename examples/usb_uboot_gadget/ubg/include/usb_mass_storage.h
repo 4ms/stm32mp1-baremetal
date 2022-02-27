@@ -9,11 +9,18 @@
 
 #define SECTOR_SIZE		0x200
 
+// #ifdef STM32MP1BAREMETAL
+// #include "blk.h"
+
 #include <part.h>
 // #include <linux/usb/composite.h>
 
 /* Wait at maximum 60 seconds for cable connection */
 #define UMS_CABLE_READY_TIMEOUT	60
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct ums {
 	int (*read_sector)(struct ums *ums_dev,
@@ -32,7 +39,10 @@ int fsg_main_thread(void *);
 //int fsg_add(struct usb_configuration *c);
 
 
-//int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]);
-int do_usb_mass_storage(int argc, char *const argv[]);
+int do_usb_mass_storage( unsigned int controller_index, const char* devtype, const char*devnum);
+
+#ifdef __cplusplus
+}
+#endif 
 
 #endif /* __USB_MASS_STORAGE_H__ */

@@ -10,6 +10,8 @@
 #include "rcc_setup.hh"
 #include "stm32mp1xx.h"
 
+#include "usb_mass_storage.h"
+
 using namespace OSD32BRK;
 
 Uart<UART4_BASE> uart;
@@ -41,6 +43,7 @@ void main()
 
 	SystemClocks::init();
 
+	do_usb_mass_storage(3, "ums", "0");
 	// InterruptManager::registerISR(OTG_IRQn, [&green2] {
 	// 	green2.on();
 	// 	HAL_PCD_IRQHandler(&hpcd);

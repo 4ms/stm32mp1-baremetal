@@ -149,32 +149,15 @@ cleanup:
 	return ret;
 }
 
-int do_usb_mass_storage(int argc, char *const argv[])
+int do_usb_mass_storage(unsigned int controller_index, const char *devtype, const char *devnum)
 {
-	const char *usb_controller;
-	const char *devtype;
-	const char *devnum;
-	unsigned int controller_index;
 	int rc;
 	int cable_ready_timeout __maybe_unused;
-
-	if (argc < 3)
-		return CMD_RET_USAGE;
-
-	usb_controller = argv[1];
-	if (argc >= 4) {
-		devtype = argv[2];
-		devnum = argv[3];
-	} else {
-		devtype = "mmc";
-		devnum = argv[2];
-	}
 
 	rc = ums_init(devtype, devnum);
 	if (rc < 0)
 		return CMD_RET_FAILURE;
 
-	controller_index = (unsigned int)(simple_strtoul(usb_controller, NULL, 0));
 	// if (usb_gadget_initialize(controller_index)) {
 	// 	pr_err("Couldn't init USB controller.\n");
 	// 	rc = CMD_RET_FAILURE;
