@@ -48,7 +48,9 @@ typedef volatile unsigned char	vu_char;
 #include <log.h>
 
 #include <asm/u-boot.h> /* boot information for Linux kernel */
+#ifdef USE_GLOBAL_DATA
 #include <asm/global_data.h>	/* global data used for startup functions */
+#endif
 
 /* startup functions, used in:
  * common/board_f.c
