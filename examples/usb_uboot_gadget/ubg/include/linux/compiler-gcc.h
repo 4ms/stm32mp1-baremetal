@@ -70,6 +70,9 @@
  * Force always-inline if the user requests it so via the .config,
  * or if gcc is too old:
  */
+#ifdef STM32MP1BAREMETAL
+#else
+
 #if !defined(CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING) ||		\
     !defined(CONFIG_OPTIMIZE_INLINING) || (__GNUC__ < 4)
 #define inline		inline		__attribute__((always_inline)) notrace
@@ -283,3 +286,6 @@
  * code
  */
 #define uninitialized_var(x) x = x
+
+#endif /* STM32MP1BAREMETAL */
+
