@@ -29,5 +29,10 @@ struct ums {
 int fsg_init(struct ums *ums_devs, int count);
 void fsg_cleanup(void);
 int fsg_main_thread(void *);
-// int fsg_add(struct usb_configuration *c);
+//int fsg_add(struct usb_configuration *c);
+
+
+//int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]);
+int do_usb_mass_storage(int argc, char *const argv[]);
+
 #endif /* __USB_MASS_STORAGE_H__ */

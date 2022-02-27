@@ -149,7 +149,7 @@ cleanup:
 	return ret;
 }
 
-static int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
+int do_usb_mass_storage(int argc, char *const argv[])
 {
 	const char *usb_controller;
 	const char *devtype;
@@ -245,11 +245,11 @@ static int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag, int argc, char *const
 	// 	WATCHDOG_RESET();
 	// }
 
-	// cleanup_register:
+cleanup_register:
 	// g_dnl_unregister();
-	// cleanup_board:
+cleanup_board:
 	// usb_gadget_release(controller_index);
-	// cleanup_ums_init:
+cleanup_ums_init:
 	// ums_fini();
 
 	return rc;
