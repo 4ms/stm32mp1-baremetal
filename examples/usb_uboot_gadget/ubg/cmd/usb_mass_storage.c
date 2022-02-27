@@ -21,6 +21,7 @@
 // #include <g_dnl.h>
 // #include <part.h>
 // #include <usb.h>
+#include <part.h>
 #include <usb_mass_storage.h>
 // #include <watchdog.h>
 

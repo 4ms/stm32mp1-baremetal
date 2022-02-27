@@ -9,11 +9,7 @@
 
 #define SECTOR_SIZE		0x200
 
-// #ifdef STM32MP1BAREMETAL
-// #include "blk.h"
-
-#include <part.h>
-// #include <linux/usb/composite.h>
+#include <blk.h>
 
 /* Wait at maximum 60 seconds for cable connection */
 #define UMS_CABLE_READY_TIMEOUT	60
