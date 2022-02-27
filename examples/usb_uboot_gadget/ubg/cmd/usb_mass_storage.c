@@ -254,10 +254,10 @@ static int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag, int argc, char *const
 	return rc;
 }
 
-U_BOOT_CMD(ums,
-		   4,
-		   1,
-		   do_usb_mass_storage,
-		   "Use the UMS [USB Mass Storage]",
-		   "<USB_controller> [<devtype>] <dev[:part]>  e.g. ums 0 mmc 0\n"
-		   "    devtype defaults to mmc");
+// U_BOOT_CMD(ums,
+// 		   4,
+// 		   1,
+// 		   do_usb_mass_storage,
+// 		   "Use the UMS [USB Mass Storage]",
+// 		   "<USB_controller> [<devtype>] <dev[:part]>  e.g. ums 0 mmc 0\n"
+// 		   "    devtype defaults to mmc");
