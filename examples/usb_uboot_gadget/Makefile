@@ -6,7 +6,8 @@ OPTFLAG = -O0
 EXTLIBDIR = ../../third-party
 SHAREDDIR = ../shared
 STM32HALDIR = $(EXTLIBDIR)/STM32MP1xx_HAL_Driver
-# PATCHEDSTM32HALDIR = $(SHAREDDIR)/stm32hal_patched
+PATCHEDSTM32HALDIR = $(SHAREDDIR)/stm32hal_patched
+
 # USBLIBDIR = $(EXTLIBDIR)/STM32_USB_Device_Library
 
 SOURCES = startup.s \
@@ -50,11 +51,12 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(SHAREDDIR) \
 		   -Iubg/include \
+		   -Iubg/arch/arm/include \
 
 		   # -I$(USBLIBDIR)/Class/MSC/Inc \
 		   # -I$(USBLIBDIR)/Core/Inc \
 
-EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER
+EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER -D__KERNEL__
 
 # LINK_STDLIB =
 # LINK_STDLIB = --specs=nano.specs #doesn't define sbrk, _write, _isatty etc

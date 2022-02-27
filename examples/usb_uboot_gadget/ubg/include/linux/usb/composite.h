@@ -5,8 +5,8 @@
  * Copyright (C) 2006-2008 David Brownell
  */
 
-#ifndef __LINUX_USB_COMPOSITE_H
-#define __LINUX_USB_COMPOSITE_H
+#ifndef	__LINUX_USB_COMPOSITE_H
+#define	__LINUX_USB_COMPOSITE_H
 
 /*
  * This framework is an optional layer on top of the USB Gadget interface,
@@ -22,9 +22,9 @@
  */
 
 #include <common.h>
-#include <linux/bitmap.h>
 #include <linux/usb/ch9.h>
 #include <linux/usb/gadget.h>
+#include <linux/bitmap.h>
 
 /*
  * USB function drivers should return USB_GADGET_DELAYED_STATUS if they
@@ -33,7 +33,7 @@
  * all the function drivers that requested for USB_GADGET_DELAYED_STAUS
  * invoke usb_composite_setup_continue().
  */
-#define USB_GADGET_DELAYED_STATUS 0x7fff /* Impossibly large value */
+#define	USB_GADGET_DELAYED_STATUS	0x7fff /* Impossibly large value */
 
 struct usb_configuration;
 
@@ -91,12 +91,12 @@ struct usb_configuration;
  * several independent logical data links to a USB host.
  */
 struct usb_function {
-	const char *name;
-	struct usb_gadget_strings **strings;
-	struct usb_descriptor_header **descriptors;
-	struct usb_descriptor_header **hs_descriptors;
+	const char			*name;
+	struct usb_gadget_strings	**strings;
+	struct usb_descriptor_header	**descriptors;
+	struct usb_descriptor_header	**hs_descriptors;
 
-	struct usb_configuration *config;
+	struct usb_configuration	*config;
 
 	/* REVISIT:  bind() functions can be marked __init, which
 	 * makes trouble for section mismatch analysis.  See if
@@ -105,20 +105,25 @@ struct usb_function {
 	 */
 
 	/* configuration management:  bind/unbind */
-	int (*bind)(struct usb_configuration *, struct usb_function *);
-	void (*unbind)(struct usb_configuration *, struct usb_function *);
+	int			(*bind)(struct usb_configuration *,
+					struct usb_function *);
+	void			(*unbind)(struct usb_configuration *,
+					struct usb_function *);
 
 	/* runtime state management */
-	int (*set_alt)(struct usb_function *, unsigned interface, unsigned alt);
-	int (*get_alt)(struct usb_function *, unsigned interface);
-	void (*disable)(struct usb_function *);
-	int (*setup)(struct usb_function *, const struct usb_ctrlrequest *);
-	void (*suspend)(struct usb_function *);
-	void (*resume)(struct usb_function *);
+	int			(*set_alt)(struct usb_function *,
+					unsigned interface, unsigned alt);
+	int			(*get_alt)(struct usb_function *,
+					unsigned interface);
+	void			(*disable)(struct usb_function *);
+	int			(*setup)(struct usb_function *,
+					const struct usb_ctrlrequest *);
+	void			(*suspend)(struct usb_function *);
+	void			(*resume)(struct usb_function *);
 
 	/* private: */
 	/* internals */
-	struct list_head list;
+	struct list_head		list;
 	DECLARE_BITMAP(endpoints, 32);
 };
 
@@ -136,14 +141,15 @@ int usb_interface_id(struct usb_configuration *, struct usb_function *);
  * @fs: descriptor to use for full or low speed operation
  */
 static inline struct usb_endpoint_descriptor *
-ep_choose(struct usb_gadget *g, struct usb_endpoint_descriptor *hs, struct usb_endpoint_descriptor *fs)
+ep_choose(struct usb_gadget *g, struct usb_endpoint_descriptor *hs,
+		struct usb_endpoint_descriptor *fs)
 {
 	if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
 		return hs;
 	return fs;
 }
 
-#define MAX_CONFIG_INTERFACES 16 /* arbitrary; max 255 */
+#define	MAX_CONFIG_INTERFACES		16	/* arbitrary; max 255 */
 
 /**
  * struct usb_configuration - represents one gadget configuration
@@ -189,8 +195,8 @@ ep_choose(struct usb_gadget *g, struct usb_endpoint_descriptor *hs, struct usb_e
  * its bind() routine.
  */
 struct usb_configuration {
-	const char *label;
-	struct usb_gadget_strings **strings;
+	const char			*label;
+	struct usb_gadget_strings	**strings;
 	const struct usb_descriptor_header **descriptors;
 
 	/* REVISIT:  bind() functions can be marked __init, which
@@ -199,29 +205,31 @@ struct usb_configuration {
 	 */
 
 	/* configuration management:  bind/unbind */
-	int (*bind)(struct usb_configuration *);
-	void (*unbind)(struct usb_configuration *);
-	int (*setup)(struct usb_configuration *, const struct usb_ctrlrequest *);
+	int			(*bind)(struct usb_configuration *);
+	void			(*unbind)(struct usb_configuration *);
+	int			(*setup)(struct usb_configuration *,
+					const struct usb_ctrlrequest *);
 
 	/* fields in the config descriptor */
-	u8 bConfigurationValue;
-	u8 iConfiguration;
-	u8 bmAttributes;
-	u8 bMaxPower;
+	u8			bConfigurationValue;
+	u8			iConfiguration;
+	u8			bmAttributes;
+	u8			bMaxPower;
 
-	struct usb_composite_dev *cdev;
+	struct usb_composite_dev	*cdev;
 
 	/* private: */
 	/* internals */
-	struct list_head list;
-	struct list_head functions;
-	u8 next_interface_id;
-	unsigned highspeed : 1;
-	unsigned fullspeed : 1;
-	struct usb_function *interface[MAX_CONFIG_INTERFACES];
+	struct list_head	list;
+	struct list_head	functions;
+	u8			next_interface_id;
+	unsigned		highspeed:1;
+	unsigned		fullspeed:1;
+	struct usb_function	*interface[MAX_CONFIG_INTERFACES];
 };
 
-int usb_add_config(struct usb_composite_dev *, struct usb_configuration *);
+int usb_add_config(struct usb_composite_dev *,
+		struct usb_configuration *);
 
 /**
  * struct usb_composite_driver - groups configurations into a gadget
@@ -254,27 +262,28 @@ int usb_add_config(struct usb_composite_dev *, struct usb_configuration *);
  * is also reported, as defined by the underlying controller driver.
  */
 struct usb_composite_driver {
-	const char *name;
-	const struct usb_device_descriptor *dev;
-	struct usb_gadget_strings **strings;
+	const char				*name;
+	const struct usb_device_descriptor	*dev;
+	struct usb_gadget_strings		**strings;
 
 	/* REVISIT:  bind() functions can be marked __init, which
 	 * makes trouble for section mismatch analysis.  See if
 	 * we can't restructure things to avoid mismatching...
 	 */
 
-	int (*bind)(struct usb_composite_dev *);
-	int (*unbind)(struct usb_composite_dev *);
+	int			(*bind)(struct usb_composite_dev *);
+	int			(*unbind)(struct usb_composite_dev *);
 
-	void (*disconnect)(struct usb_composite_dev *);
+	void			(*disconnect)(struct usb_composite_dev *);
 
 	/* global suspend hooks */
-	void (*suspend)(struct usb_composite_dev *);
-	void (*resume)(struct usb_composite_dev *);
+	void			(*suspend)(struct usb_composite_dev *);
+	void			(*resume)(struct usb_composite_dev *);
 };
 
 extern int usb_composite_register(struct usb_composite_driver *);
 extern void usb_composite_unregister(struct usb_composite_driver *);
+
 
 /**
  * struct usb_composite_device - represents one composite usb gadget
@@ -309,28 +318,29 @@ extern void usb_composite_unregister(struct usb_composite_driver *);
  * (h) more, TBD.
  */
 struct usb_composite_dev {
-	struct usb_gadget *gadget;
-	struct usb_request *req;
-	unsigned bufsiz;
+	struct usb_gadget		*gadget;
+	struct usb_request		*req;
+	unsigned			bufsiz;
 
-	struct usb_configuration *config;
+	struct usb_configuration	*config;
 
 	/* private: */
 	/* internals */
-	unsigned int suspended : 1;
+	unsigned int			suspended:1;
 	struct usb_device_descriptor __aligned(CONFIG_SYS_CACHELINE_SIZE) desc;
-	struct list_head configs;
-	struct usb_composite_driver *driver;
-	u8 next_string_id;
+	struct list_head		configs;
+	struct usb_composite_driver	*driver;
+	u8				next_string_id;
 
 	/* the gadget driver won't enable the data pullup
 	 * while the deactivation count is nonzero.
 	 */
-	unsigned deactivations;
+	unsigned			deactivations;
 };
 
 extern int usb_string_id(struct usb_composite_dev *c);
-extern int usb_string_ids_tab(struct usb_composite_dev *c, struct usb_string *str);
+extern int usb_string_ids_tab(struct usb_composite_dev *c,
+			      struct usb_string *str);
 extern int usb_string_ids_n(struct usb_composite_dev *c, unsigned n);
 
-#endif /* __LINUX_USB_COMPOSITE_H */
+#endif	/* __LINUX_USB_COMPOSITE_H */

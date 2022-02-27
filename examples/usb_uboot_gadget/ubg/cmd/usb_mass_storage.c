@@ -7,21 +7,34 @@
  */
 
 #include <command.h>
-#include <common.h>
-#include <console.h>
-#include <errno.h>
-#include <g_dnl.h>
-#include <part.h>
-#include <usb.h>
+// #include <common.h>
+
+// common.h:
+#include <linux/kconfig.h>
+#include <malloc.h>
+#include <stdio.h>
+#include <vsprintf.h>
+
+// #include <console.h>
+// #include <errno.h>
+// #include <g_dnl.h>
+// #include <part.h>
+// #include <usb.h>
 #include <usb_mass_storage.h>
-#include <watchdog.h>
+// #include <watchdog.h>
+
+static uint8_t DUMMY_BLK_DEVICE[0x1000];
 
 static int ums_read_sector(struct ums *ums_dev, ulong start, lbaint_t blkcnt, void *buf)
 {
 	struct blk_desc *block_dev = &ums_dev->block_dev;
 	lbaint_t blkstart = start + ums_dev->start_sector;
 
-	return blk_dread(block_dev, blkstart, blkcnt, buf);
+	// return blk_dread(block_dev, blkstart, blkcnt, buf);
+	uint8_t *buf8 = (uint8_t *)buf;
+	for (unsigned i = 0; i < blkcnt; i++)
+		buf8[start * SECTOR_SIZE + i] = DUMMY_BLK_DEVICE[start * SECTOR_SIZE + i];
+	return 0;
 }
 
 static int ums_write_sector(struct ums *ums_dev, ulong start, lbaint_t blkcnt, const void *buf)
@@ -29,7 +42,11 @@ static int ums_write_sector(struct ums *ums_dev, ulong start, lbaint_t blkcnt, c
 	struct blk_desc *block_dev = &ums_dev->block_dev;
 	lbaint_t blkstart = start + ums_dev->start_sector;
 
-	return blk_dwrite(block_dev, blkstart, blkcnt, buf);
+	// return blk_dwrite(block_dev, blkstart, blkcnt, buf);
+	uint8_t *buf8 = (uint8_t *)buf;
+	for (unsigned i = 0; i < blkcnt; i++)
+		DUMMY_BLK_DEVICE[start * SECTOR_SIZE + i] = buf8[start * SECTOR_SIZE + i];
+	return 0;
 }
 
 static struct ums *ums;
@@ -157,82 +174,82 @@ static int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag, int argc, char *const
 		return CMD_RET_FAILURE;
 
 	controller_index = (unsigned int)(simple_strtoul(usb_controller, NULL, 0));
-	if (usb_gadget_initialize(controller_index)) {
-		pr_err("Couldn't init USB controller.\n");
-		rc = CMD_RET_FAILURE;
-		goto cleanup_ums_init;
-	}
+	// if (usb_gadget_initialize(controller_index)) {
+	// 	pr_err("Couldn't init USB controller.\n");
+	// 	rc = CMD_RET_FAILURE;
+	// 	goto cleanup_ums_init;
+	// }
 
-	rc = fsg_init(ums, ums_count);
-	if (rc) {
-		pr_err("fsg_init failed\n");
-		rc = CMD_RET_FAILURE;
-		goto cleanup_board;
-	}
+	// rc = fsg_init(ums, ums_count);
+	// if (rc) {
+	// 	pr_err("fsg_init failed\n");
+	// 	rc = CMD_RET_FAILURE;
+	// 	goto cleanup_board;
+	// }
 
-	rc = g_dnl_register("usb_dnl_ums");
-	if (rc) {
-		pr_err("g_dnl_register failed\n");
-		rc = CMD_RET_FAILURE;
-		goto cleanup_board;
-	}
+	// rc = g_dnl_register("usb_dnl_ums");
+	// if (rc) {
+	// 	pr_err("g_dnl_register failed\n");
+	// 	rc = CMD_RET_FAILURE;
+	// 	goto cleanup_board;
+	// }
 
-	/* Timeout unit: seconds */
-	cable_ready_timeout = UMS_CABLE_READY_TIMEOUT;
+	// /* Timeout unit: seconds */
+	// cable_ready_timeout = UMS_CABLE_READY_TIMEOUT;
 
-	if (!g_dnl_board_usb_cable_connected()) {
-		/*
-		 * Won't execute if we don't know whether the cable is
-		 * connected.
-		 */
-		puts("Please connect USB cable.\n");
+	// if (!g_dnl_board_usb_cable_connected()) {
+	// 	/*
+	// 	 * Won't execute if we don't know whether the cable is
+	// 	 * connected.
+	// 	 */
+	// 	puts("Please connect USB cable.\n");
 
-		while (!g_dnl_board_usb_cable_connected()) {
-			if (ctrlc()) {
-				puts("\rCTRL+C - Operation aborted.\n");
-				rc = CMD_RET_SUCCESS;
-				goto cleanup_register;
-			}
-			if (!cable_ready_timeout) {
-				puts("\rUSB cable not detected.\n"
-					 "Command exit.\n");
-				rc = CMD_RET_SUCCESS;
-				goto cleanup_register;
-			}
+	// 	while (!g_dnl_board_usb_cable_connected()) {
+	// 		if (ctrlc()) {
+	// 			puts("\rCTRL+C - Operation aborted.\n");
+	// 			rc = CMD_RET_SUCCESS;
+	// 			goto cleanup_register;
+	// 		}
+	// 		if (!cable_ready_timeout) {
+	// 			puts("\rUSB cable not detected.\n"
+	// 				 "Command exit.\n");
+	// 			rc = CMD_RET_SUCCESS;
+	// 			goto cleanup_register;
+	// 		}
 
-			printf("\rAuto exit in: %.2d s.", cable_ready_timeout);
-			mdelay(1000);
-			cable_ready_timeout--;
-		}
-		puts("\r\n");
-	}
+	// 		printf("\rAuto exit in: %.2d s.", cable_ready_timeout);
+	// 		mdelay(1000);
+	// 		cable_ready_timeout--;
+	// 	}
+	// 	puts("\r\n");
+	// }
 
-	while (1) {
-		usb_gadget_handle_interrupts(controller_index);
+	// while (1) {
+	// 	usb_gadget_handle_interrupts(controller_index);
 
-		rc = fsg_main_thread(NULL);
-		if (rc) {
-			/* Check I/O error */
-			if (rc == -EIO)
-				printf("\rCheck USB cable connection\n");
+	// 	rc = fsg_main_thread(NULL);
+	// 	if (rc) {
+	// 		/* Check I/O error */
+	// 		if (rc == -EIO)
+	// 			printf("\rCheck USB cable connection\n");
 
-			/* Check CTRL+C */
-			if (rc == -EPIPE)
-				printf("\rCTRL+C - Operation aborted\n");
+	// 		/* Check CTRL+C */
+	// 		if (rc == -EPIPE)
+	// 			printf("\rCTRL+C - Operation aborted\n");
 
-			rc = CMD_RET_SUCCESS;
-			goto cleanup_register;
-		}
+	// 		rc = CMD_RET_SUCCESS;
+	// 		goto cleanup_register;
+	// 	}
 
-		WATCHDOG_RESET();
-	}
+	// 	WATCHDOG_RESET();
+	// }
 
-cleanup_register:
-	g_dnl_unregister();
-cleanup_board:
-	usb_gadget_release(controller_index);
-cleanup_ums_init:
-	ums_fini();
+	// cleanup_register:
+	// g_dnl_unregister();
+	// cleanup_board:
+	// usb_gadget_release(controller_index);
+	// cleanup_ums_init:
+	// ums_fini();
 
 	return rc;
 }

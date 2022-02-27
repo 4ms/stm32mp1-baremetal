@@ -8,11 +8,10 @@
 
 using namespace OSD32BRK;
 
-extern PCD_HandleTypeDef hpcd;
-
 Uart<UART4_BASE> uart;
 
-void main() {
+void main()
+{
 	HAL_Init();
 
 	uart.write("\r\n\r\nU-boot USB Gadget test\r\n");
@@ -72,12 +71,14 @@ void main() {
 }
 
 // mpaland/printf wants to see _putchar(char)
-extern "C" void _putchar(char c) {
+extern "C" void _putchar(char c)
+{
 	uart.write(c);
 }
 
 // CubeMX-generated syscalls.c with stdlibc wants to see __io_putchar(int)
-extern "C" int __io_putchar(int ch) {
+extern "C" int __io_putchar(int ch)
+{
 	const char c = static_cast<char>(ch);
 	uart.write(c);
 	return ch;
