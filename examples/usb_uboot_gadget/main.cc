@@ -1,3 +1,7 @@
+// #ifndef STM32MP1BAREMETAL
+// #define STM32MP1BAREMETAL
+// #endif
+
 #include "drivers/interrupt.hh"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
