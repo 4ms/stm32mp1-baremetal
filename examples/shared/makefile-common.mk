@@ -114,7 +114,7 @@ $(HEX): $(ELF)
 
 $(UIMAGENAME): $(BIN) $(UBOOTDIR)/tools/mkimage
 	$(info Creating uimg file)
-	@$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a $(LOADADDR) -e $(ENTRYPOINT) -d $< $@
+	#@$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a $(LOADADDR) -e $(ENTRYPOINT) -d $< $@
 
 $(UBOOTDIR)/tools/mkimage:
 	$(info Building U-boot bootloader)
