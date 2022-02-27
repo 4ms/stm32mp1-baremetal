@@ -1,6 +1,10 @@
 #ifndef _LINUX_TYPES_H
 #define _LINUX_TYPES_H
 
+#ifdef STM32MP1BAREMETAL
+#include "missing_types.h"
+#else
+
 #include <linux/posix_types.h>
 #include <asm/types.h>
 #include <stdbool.h>
@@ -163,4 +167,5 @@ struct ustat {
 #define DECLARE_BITMAP(name, bits) \
 	unsigned long name[BITS_TO_LONGS(bits)]
 
+#endif /*STM32MP1BAREMETAL*/
 #endif /* _LINUX_TYPES_H */
