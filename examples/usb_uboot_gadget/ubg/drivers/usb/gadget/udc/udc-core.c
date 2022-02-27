@@ -12,14 +12,16 @@
  * commit 02e8c96627 : usb: gadget: udc: core: prepend udc_attach_driver with
  *		       usb_
  */
+#undef STM32MP1BAREMETAL
+#include <linux/kconfig.h>
 
 #include <linux/compat.h>
 #include <malloc.h>
 #include <asm/cache.h>
 #include <asm/dma-mapping.h>
-#include <common.h>
-#include <dm.h>
-#include <dm/device-internal.h>
+//#include <common.h>
+//#include <dm.h>
+//#include <dm/device-internal.h>
 #include <linux/usb/ch9.h>
 #include <linux/usb/gadget.h>
 

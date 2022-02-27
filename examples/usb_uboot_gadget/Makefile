@@ -27,6 +27,7 @@ SOURCES = startup.s \
 		  $(STM32HALDIR)/Src/stm32mp1xx_ll_rcc.c \
 		  $(SHAREDDIR)/printf/printf.c \
 		  ubg/cmd/usb_mass_storage.c \
+		  ubg/drivers/usb/gadget/udc/udc-core.c \
 		  #ubg/drivers/usb/gadget/f_mass_storage.c \
 
 
