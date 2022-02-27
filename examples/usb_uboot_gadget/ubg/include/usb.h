@@ -11,7 +11,9 @@
 #ifndef _USB_H_
 #define _USB_H_
 
+#ifdef USE_FDT
 #include <fdtdec.h>
+#endif
 #include <usb_defs.h>
 #include <linux/usb/ch9.h>
 #include <asm/cache.h>
