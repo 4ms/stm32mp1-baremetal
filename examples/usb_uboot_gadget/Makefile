@@ -29,20 +29,6 @@ SOURCES = startup.s \
 		  ubg/cmd/usb_mass_storage.c \
 		  #ubg/drivers/usb/gadget/f_mass_storage.c \
 
-		  # $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd.c \
-		  # $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd_ex.c \
-		  # $(PATCHEDSTM32HALDIR)/stm32mp1xx_ll_usb.c \
-		  # usbd_conf.c \
-		  # usbd_desc.c \
-		  # usbd_msc_storage.c \
-		  # $(USBLIBDIR)/Class/MSC/Src/usbd_msc_bot.c \
-		  # $(USBLIBDIR)/Class/MSC/Src/usbd_msc_data.c \
-		  # $(USBLIBDIR)/Class/MSC/Src/usbd_msc_scsi.c \
-		  # $(USBLIBDIR)/Class/MSC/Src/usbd_msc.c \
-		  # $(USBLIBDIR)/Core/Src/usbd_core.c \
-		  # $(USBLIBDIR)/Core/Src/usbd_ctlreq.c \
-		  # $(USBLIBDIR)/Core/Src/usbd_ioreq.c \
-
 
 INCLUDES = -I. \
 		   -I$(PATCHEDSTM32HALDIR) \
@@ -53,10 +39,9 @@ INCLUDES = -I. \
 		   -Iubg/include \
 		   -Iubg/arch/arm/include \
 
-		   # -I$(USBLIBDIR)/Class/MSC/Inc \
-		   # -I$(USBLIBDIR)/Core/Inc \
-
-EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER -D__KERNEL__
+EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER
+EXTRA_ARCH_CFLAGS += -D__KERNEL__
+EXTRA_ARCH_CFLAGS += -DSTM32MP1BAREMETAL
 
 # LINK_STDLIB =
 # LINK_STDLIB = --specs=nano.specs #doesn't define sbrk, _write, _isatty etc
