@@ -27,8 +27,13 @@ SOURCES = startup.s \
 		  $(STM32HALDIR)/Src/stm32mp1xx_ll_rcc.c \
 		  $(SHAREDDIR)/printf/printf.c \
 		  ubg/cmd/usb_mass_storage.c \
-		  ubg/drivers/usb/gadget/udc/udc-core.c \
 		  ubg/fake_blk_dev.c \
+		  ubg/fake_uclass_dm.c \
+		  ubg/drivers/usb/gadget/udc/udc-core.c \
+		  ubg/drivers/usb/gadget/udc/udc-uclass.c \
+		  ubg/drivers/usb/gadget/dwc2_udc_otg.c \
+		  #ubg/board/st/stm32mp1/stm32mp1.c \
+		  #ubg/board/st/stm32mp1/board.c \
 		  #ubg/drivers/usb/gadget/f_mass_storage.c \
 
 
