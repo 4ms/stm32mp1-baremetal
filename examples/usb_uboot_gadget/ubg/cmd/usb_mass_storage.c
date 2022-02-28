@@ -25,18 +25,12 @@
 #include <usb_mass_storage.h>
 // #include <watchdog.h>
 
-static uint8_t DUMMY_BLK_DEVICE[0x1000];
-
 static int ums_read_sector(struct ums *ums_dev, ulong start, lbaint_t blkcnt, void *buf)
 {
 	struct blk_desc *block_dev = &ums_dev->block_dev;
 	lbaint_t blkstart = start + ums_dev->start_sector;
 
-	// return blk_dread(block_dev, blkstart, blkcnt, buf);
-	uint8_t *buf8 = (uint8_t *)buf;
-	for (unsigned i = 0; i < blkcnt; i++)
-		buf8[start * SECTOR_SIZE + i] = DUMMY_BLK_DEVICE[start * SECTOR_SIZE + i];
-	return 0;
+	return blk_dread(block_dev, blkstart, blkcnt, buf);
 }
 
 static int ums_write_sector(struct ums *ums_dev, ulong start, lbaint_t blkcnt, const void *buf)
@@ -44,11 +38,7 @@ static int ums_write_sector(struct ums *ums_dev, ulong start, lbaint_t blkcnt, c
 	struct blk_desc *block_dev = &ums_dev->block_dev;
 	lbaint_t blkstart = start + ums_dev->start_sector;
 
-	// return blk_dwrite(block_dev, blkstart, blkcnt, buf);
-	uint8_t *buf8 = (uint8_t *)buf;
-	for (unsigned i = 0; i < blkcnt; i++)
-		DUMMY_BLK_DEVICE[start * SECTOR_SIZE + i] = buf8[start * SECTOR_SIZE + i];
-	return 0;
+	return blk_dwrite(block_dev, blkstart, blkcnt, buf);
 }
 
 static struct ums *ums;

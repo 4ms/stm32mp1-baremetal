@@ -28,6 +28,7 @@ SOURCES = startup.s \
 		  $(SHAREDDIR)/printf/printf.c \
 		  ubg/cmd/usb_mass_storage.c \
 		  ubg/drivers/usb/gadget/udc/udc-core.c \
+		  ubg/fake_blk_dev.c \
 		  #ubg/drivers/usb/gadget/f_mass_storage.c \
 
 
