@@ -18,7 +18,7 @@
 
 // #include <console.h>
 // #include <errno.h>
-// #include <g_dnl.h>
+#include <g_dnl.h>
 // #include <part.h>
 // #include <usb.h>
 #include <part.h>
@@ -149,11 +149,11 @@ int do_usb_mass_storage(unsigned int controller_index, const char *devtype, cons
 	if (rc < 0)
 		return CMD_RET_FAILURE;
 
-	// if (usb_gadget_initialize(controller_index)) {
-	// 	pr_err("Couldn't init USB controller.\n");
-	// 	rc = CMD_RET_FAILURE;
-	// 	goto cleanup_ums_init;
-	// }
+	if (usb_gadget_initialize(controller_index)) {
+		pr_err("Couldn't init USB controller.\n");
+		rc = CMD_RET_FAILURE;
+		goto cleanup_ums_init;
+	}
 
 	// rc = fsg_init(ums, ums_count);
 	// if (rc) {
