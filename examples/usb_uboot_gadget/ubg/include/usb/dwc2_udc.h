@@ -8,7 +8,13 @@
 #ifndef __DWC2_USB_GADGET
 #define __DWC2_USB_GADGET
 
+#ifdef USE_OF_NODE
 #include <dm/ofnode.h>
+#else
+typedef void *ofnode;
+struct udevice;
+#include <linux/types.h>
+#endif
 
 #define PHY0_SLEEP              (1 << 5)
 #define DWC2_MAX_HW_ENDPOINTS	16
