@@ -3,10 +3,15 @@
  * Copyright (C) 2018 Texas Instruments Incorporated - http://www.ti.com
  * Written by Jean-Jacques Hiblot <jjhiblot@ti.com>
  */
+
+#undef STM32MP1BAREMETAL
+
+#include "../fake_uclass_dm.h"
+
 #include <command.h> //for cmd_tbl_t
 #include <common.h>
-#include <dm.h>
-#include <dm/device-internal.h>
+// #include <dm.h>
+// #include <dm/device-internal.h>
 #include <linux/usb/gadget.h>
 
 #if CONFIG_IS_ENABLED(DM_USB_GADGET)
@@ -21,15 +26,15 @@ int usb_gadget_initialize(int index)
 		return -EINVAL;
 	if (dev_array[index])
 		return 0;
-	// call probe on UCLASS_USB_GADGET_GENERIC, "usb"
+
 	ret = uclass_get_device_by_seq(UCLASS_USB_GADGET_GENERIC, index, &dev);
-	// if (!dev || ret) {
-	// 	ret = uclass_get_device(UCLASS_USB_GADGET_GENERIC, index, &dev);
-	// 	if (!dev || ret) {
-	// 		pr_err("No USB device found\n");
-	// 		return -ENODEV;
-	// 	}
-	// }
+	if (!dev || ret) {
+		ret = uclass_get_device(UCLASS_USB_GADGET_GENERIC, index, &dev);
+		if (!dev || ret) {
+			pr_err("No USB device found\n");
+			return -ENODEV;
+		}
+	}
 	dev_array[index] = dev;
 	return 0;
 }
@@ -58,8 +63,8 @@ int usb_gadget_handle_interrupts(int index)
 }
 #endif
 
-UCLASS_DRIVER(usb_gadget_generic) = {
-	.id = UCLASS_USB_GADGET_GENERIC,
-	.name = "usb",
-	.flags = DM_UC_FLAG_SEQ_ALIAS,
-};
+// UCLASS_DRIVER(usb_gadget_generic) = {
+// .id = UCLASS_USB_GADGET_GENERIC,
+// .name = "usb",
+// .flags = DM_UC_FLAG_SEQ_ALIAS,
+// };
