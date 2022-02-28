@@ -5,7 +5,9 @@
 #ifndef USE_HOSTCC
 #include <linux/libfdt_env.h>
 #endif
+#if USE_FDT
 #include "../../scripts/dtc/libfdt/libfdt.h"
+#endif
 
 /* U-Boot local hacks */
 
