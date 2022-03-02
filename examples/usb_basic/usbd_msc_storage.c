@@ -35,7 +35,7 @@ EndBSPDependencies */
 /* Private functions ---------------------------------------------------------*/
 
 #define STORAGE_LUN_NBR 1U
-#define STORAGE_BLK_NBR 0x80U
+#define STORAGE_BLK_NBR 0x800U // 1MB
 #define STORAGE_BLK_SIZ 0x200U
 
 static uint8_t dummybuffer[STORAGE_BLK_NBR * STORAGE_BLK_SIZ];
@@ -87,7 +87,7 @@ USBD_StorageTypeDef USBD_MSC_fops = {
  * Return         : None.
  *******************************************************************************/
 int8_t STORAGE_Init(uint8_t lun) {
-	__BKPT();
+	// __BKPT();
 	return (USBD_OK);
 }
 
@@ -99,7 +99,7 @@ int8_t STORAGE_Init(uint8_t lun) {
  * Return         : None.
  *******************************************************************************/
 int8_t STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size) {
-	__BKPT();
+	// __BKPT();
 	*block_num = STORAGE_BLK_NBR;
 	*block_size = STORAGE_BLK_SIZ;
 	return (USBD_OK);
@@ -113,7 +113,7 @@ int8_t STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_siz
  * Return         : None.
  *******************************************************************************/
 int8_t STORAGE_IsReady(uint8_t lun) {
-	__BKPT();
+	// __BKPT();
 	return USBD_OK;
 }
 
@@ -125,7 +125,7 @@ int8_t STORAGE_IsReady(uint8_t lun) {
  * Return         : None.
  *******************************************************************************/
 int8_t STORAGE_IsWriteProtected(uint8_t lun) {
-	__BKPT();
+	// __BKPT();
 	return USBD_OK;
 }
 
@@ -137,7 +137,7 @@ int8_t STORAGE_IsWriteProtected(uint8_t lun) {
  * Return         : None.
  *******************************************************************************/
 int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
-	__BKPT();
+	// __BKPT();
 	memcpy(buf, &dummybuffer[blk_addr * STORAGE_BLK_SIZ], blk_len);
 	return USBD_OK;
 }
@@ -149,7 +149,7 @@ int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_l
  * Return         : None.
  *******************************************************************************/
 int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
-	__BKPT();
+	// __BKPT();
 	memcpy(&dummybuffer[blk_addr * STORAGE_BLK_SIZ], buf, blk_len);
 	return USBD_OK;
 }
@@ -161,7 +161,7 @@ int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_
  * Return         : None.
  *******************************************************************************/
 int8_t STORAGE_GetMaxLun(void) {
-	__BKPT();
+	// __BKPT();
 	return (STORAGE_LUN_NBR - 1);
 }
 
