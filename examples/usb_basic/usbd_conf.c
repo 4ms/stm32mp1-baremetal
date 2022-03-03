@@ -160,7 +160,6 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
  */
 void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd) {
 	USBD_LL_Suspend(hpcd->pData);
-	__HAL_PCD_GATE_PHYCLOCK(hpcd); // added by hfrtx
 }
 
 /**
@@ -210,86 +209,9 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
 	USBD_LL_DevDisconnected(hpcd->pData);
 }
 
-// Added by hftrx
-void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg) {
-	switch (msg) {
-		case PCD_LPM_L0_ACTIVE:
-			if (hpcd->Init.low_power_enable) {
-				////      SystemClock_Config();
-				/* Reset SLEEPDEEP bit of Cortex System Control Register. */
-				////      SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
-			}
-			__HAL_PCD_UNGATE_PHYCLOCK(hpcd);
-			USBD_LL_Resume(hpcd->pData);
-			break;
-
-		case PCD_LPM_L1_ACTIVE:
-			__HAL_PCD_GATE_PHYCLOCK(hpcd);
-			USBD_LL_Suspend(hpcd->pData);
-
-			/* Enter in STOP mode. */
-			if (hpcd->Init.low_power_enable) {
-				/* Set SLEEPDEEP bit and SleepOnExit of Cortex System Control Register. */
-				////     SCB->SCR |= (uint32_t)((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
-			}
-			break;
-	}
-}
-
 /*******************************************************************************
 					   LL Driver Interface (USB Device Library --> PCD)
 *******************************************************************************/
-static uint32_t usbd_makeTXFSIZ(uint_fast16_t base, uint_fast16_t size) {
-	return ((uint32_t)size << USB_OTG_DIEPTXF_INEPTXFD_Pos) | ((uint32_t)base << USB_OTG_DIEPTXF_INEPTXSA_Pos) | 0;
-}
-
-// Преобразование размера в байтах размера данных в требования к fifo
-// Расчет аргумента функции HAL_PCDEx_SetRxFiFo, HAL_PCDEx_SetTxFiFo
-static uint_fast16_t size2buff4(uint_fast16_t size) {
-	const uint_fast16_t size4 = (size + 3) / 4; // размер в 32-бит значениях
-	return MAX(0x10, size4);
-}
-static void
-usbd_fifo_initialize(PCD_HandleTypeDef *hpcd, uint_fast16_t fullsize, uint_fast8_t bigbuff, uint_fast8_t dma) {
-	const int add3tx = bigbuff ? 3 : 1; // tx fifo add places
-	uint_fast16_t maxoutpacketsize4 = size2buff4(USB_OTG_MAX_EP0_SIZE);
-	maxoutpacketsize4 += 6;
-	uint_fast8_t numcontrolendpoints = 1;
-	uint_fast8_t numoutendpoints = 1;
-	uint_fast8_t addplaces = 3;
-
-	const uint_fast16_t full4 = fullsize / 4;
-	uint_fast16_t last4 = full4;
-	uint_fast16_t base4 = 0;
-
-	// TX
-	{
-		const uint_fast16_t size4 = 2 * (size2buff4(USB_OTG_MAX_EP0_SIZE) + add3tx);
-		// ASSERT(last4 >= size4);
-		last4 -= size4;
-		hpcd->Instance->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
-	}
-
-	// RX
-	/* Установить размер RX FIFO -  теперь все что осталоь - используем last4 вместо size4 */
-	// (4 * number of control endpoints + 6) +
-	// ((largest USB packet used / 4) + 1 for status information) +
-	// (2 * number of OUT endpoints) +
-	// 1 for Global NAK
-	{
-		const uint_fast16_t size4 =
-			(4 * numcontrolendpoints + 6) + (maxoutpacketsize4 + 1) + (2 * numoutendpoints) + 1 + addplaces;
-
-		// ASSERT(last4 >= size4);
-		hpcd->Instance->GRXFSIZ = (hpcd->Instance->GRXFSIZ & ~USB_OTG_GRXFSIZ_RXFD) |
-								  (last4 << USB_OTG_GRXFSIZ_RXFD_Pos) | // was: size4 - то что осталось
-								  0;
-		base4 += size4;
-	}
-
-	(void)USB_FlushRxFifo(hpcd->Instance);
-	(void)USB_FlushTxFifo(hpcd->Instance, 0x10U); /* all Tx FIFOs */
-}
 
 /**
  * @brief  Initializes the Low Level portion of the Device driver.
@@ -324,13 +246,9 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
 	if (HAL_PCD_Init(&hpcd) != HAL_OK)
 		return USBD_FAIL;
 
-	// HAL_PCDEx_SetRxFiFo(&hpcd, 0x200);
-	// HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x40);
-	// HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x100);
-
-	// hftrx:
-	usbd_fifo_initialize(&hpcd, 4096, 1, hpcd.Init.dma_enable);
-	// USB_OTG_MAX_EP0_SIZE
+	HAL_PCDEx_SetRxFiFo(&hpcd, 0x200);
+	HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x40);
+	HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x100);
 
 	return USBD_OK;
 }
