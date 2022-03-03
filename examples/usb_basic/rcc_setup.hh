@@ -39,7 +39,7 @@ struct SystemClocks {
 				.PLLQ = 8, // 112,
 				.PLLR = 8,
 				.PLLRGE = RCC_PLL4IFRANGE_0, // was 1
-				.PLLFRACV = 0,
+				.PLLFRACV = 0x1000,
 				.PLLMODE = RCC_PLL_INTEGER,
 			},
 
