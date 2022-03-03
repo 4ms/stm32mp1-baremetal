@@ -6,7 +6,8 @@ MEMORY
 {
     ROM (rx) : ORIGIN = 0xC2000040, LENGTH = 0x0DFFFFC0
     RAM (rw): ORIGIN = 0xC0200000, LENGTH = 0x01D00000 
-	HEAP (rw) : ORIGIN = 0xD0000000, LENGTH = 0x10000000
+	HEAP (rw) : ORIGIN = 0xD0000000, LENGTH = 128M
+	VIRTDRIVE (rw) : ORIGIN = 0xD8000000, LENGTH = 128M
 	SRAM1 (rwx) : ORIGIN = 0x10000000, LENGTH = 128K
 	SRAM2 (rwx) : ORIGIN = 0x10020000, LENGTH = 128K
 	SRAM3 (rwx) : ORIGIN = 0x10040000, LENGTH = 64K
@@ -116,6 +117,11 @@ SECTIONS
 		_eheap = .;
 	} > HEAP
 	end = _sheap;
+
+	.virtdrive (NOLOAD):
+	{
+		*(.virtdrive)
+	} > VIRTDRIVE
 
     _user_stack_start = _ram_aligned_end; 
     _user_stack_end = _user_stack_start + 0x10000;
