@@ -1,7 +1,7 @@
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "osd32brk_conf.hh"
-#include "rcc_setup.hh"
+#include "system_clk.hh"
 #include "stm32mp1xx.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
@@ -10,11 +10,12 @@
 
 using namespace OSD32BRK;
 
-
 extern PCD_HandleTypeDef hpcd;
 void main() {
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nBasic USB test\r\n");
+	uart.write("Connect a USB cable to a computer\r\n");
+	uart.write("You should see a 128MB unformatted drive appear.\r\n");
 
 	RedLED red1;
 	RedLED2 red2;
