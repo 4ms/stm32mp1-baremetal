@@ -43,12 +43,23 @@ extern "C" {
  */
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 
-typedef enum { USB_DEVICE_MODE = 0, USB_HOST_MODE = 1, USB_DRD_MODE = 2 } USB_OTG_ModeTypeDef;
+typedef enum {
+	USB_DEVICE_MODE = 0,
+	USB_HOST_MODE = 1,
+	USB_DRD_MODE = 2,
+} USB_OTG_ModeTypeDef;
 
 /**
  * @brief  URB States definition
  */
-typedef enum { URB_IDLE = 0, URB_DONE, URB_NOTREADY, URB_NYET, URB_ERROR, URB_STALL } USB_OTG_URBStateTypeDef;
+typedef enum {
+	URB_IDLE = 0,
+	URB_DONE,
+	URB_NOTREADY,
+	URB_NYET,
+	URB_ERROR,
+	URB_STALL,
+} USB_OTG_URBStateTypeDef;
 
 /**
  * @brief  Host channel States  definition
@@ -469,7 +480,6 @@ void USB_ClearInterrupts(USB_OTG_GlobalTypeDef *USBx, uint32_t interrupt);
 HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg);
 HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint8_t freq);
 HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx);
-HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t resetActiveState);
 HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint8_t state);
 uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx);
