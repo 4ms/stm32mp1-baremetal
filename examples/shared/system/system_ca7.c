@@ -66,6 +66,6 @@ void SystemInitAuxCore(void)
 }
 
 #ifndef HSE_VALUE
-	#define HSE_VALUE 24000000
+#define HSE_VALUE 24000000
 #endif
 uint32_t SystemCoreClock = HSE_VALUE;

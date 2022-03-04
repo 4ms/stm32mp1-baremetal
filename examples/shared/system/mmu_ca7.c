@@ -129,7 +129,7 @@ void MMU_CreateTranslationTable(void)
 	MMU_TTSection(TTB_BASE, A7_SYSRAM_1MB_SECTION_BASE, 1, Sect_Normal_RW);
 
 	// GIC, aka "Private peripherals". Starts at the address returned by __get_CBAR()
-	// For no particular reason, we use 4kb pages here instead of a 1MB section. 
+	// For no particular reason, we use 4kb pages here instead of a 1MB section.
 	// Mostly I just wanted to document-by-example the process of using 4kb pages.
 	//
 	// Create (256 * 4k)=1MB faulting entries
