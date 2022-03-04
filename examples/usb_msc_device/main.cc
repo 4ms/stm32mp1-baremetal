@@ -18,7 +18,7 @@ using namespace STM32MP1Disco;
 extern PCD_HandleTypeDef hpcd;
 void main() {
 	Uart<UART4_BASE> uart;
-	uart.write("\r\n\r\nBasic USB test\r\n");
+	uart.write("\r\n\r\nSimple USB MSC Device test\r\n");
 	uart.write("Connect a USB cable to a computer\r\n");
 	uart.write("You should see a 128MB unformatted drive appear.\r\n");
 
@@ -47,7 +47,7 @@ void main() {
 	uint32_t last_tm = 0;
 	bool led_state = false;
 	while (1) {
-		
+
 		// Check for new USB events
 		HAL_PCD_IRQHandler(&hpcd);
 
