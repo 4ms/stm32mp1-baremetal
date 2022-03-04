@@ -308,9 +308,31 @@ This README isn't a tutorial on using gdb or debuggers or SEGGER Ozone and
 J-link, so I won't go into detail here. I also experience some quirks and odd
 behavior, which is common when debugging remote targets with software from
 SEGGER, or OpenOCD. The process is no different than debugging on any other
-STM32 device: you have an elf file and you use gdb (or Ozone) to load it.  If
-you use Ozone, create a new Ozone project for the STM32MP157C Core A7, and load
-the elf file created back in step 4. That's it.
+STM32 device: you have an elf file and you use gdb (or Ozone) to load it.
+
+If you use Ozone with a J-link or J-trace connected to the SWD/JTAG port of the
+OSD32MP1-BRK board, create a new Ozone project for the STM32MP15xx Core A7, and
+load the elf file created back in step 4. That's it.
+
+If you use OpenOCD with a USB cable connected to the ST-LINK micro-USB jack of the Discovery board,
+run this command in one terminal window:
+
+```
+openocd -f board/stm32mp15x_dk2.cfg
+```
+
+Then in another terminal window, run this command (from the project directory):
+
+```
+arm-none-eabi-gdb -f build/main.elf
+```
+
+From the gdb prompt, type: 
+
+```
+target extended-remote localhost:3333
+load
+```
 
 Remember, any file you load using a debugger will only get loaded into RAM. As
 soon as you power down, it will be lost.
