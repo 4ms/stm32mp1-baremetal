@@ -1,14 +1,19 @@
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
-#include "osd32brk_conf.hh"
-#include "system_clk.hh"
 #include "stm32mp1xx.h"
+#include "system_clk.hh"
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_msc_storage.h"
 #include <cstdint>
 
-using namespace OSD32BRK;
+// Uncomment these to use the OSD32BRK board:
+//#include "osd32brk_conf.hh"
+// using namespace OSD32BRK;
+
+// Uncomment these to use the STM32MP1Disco board:
+#include "stm32disco_conf.hh"
+using namespace STM32MP1Disco;
 
 extern PCD_HandleTypeDef hpcd;
 void main() {
@@ -17,15 +22,9 @@ void main() {
 	uart.write("Connect a USB cable to a computer\r\n");
 	uart.write("You should see a 128MB unformatted drive appear.\r\n");
 
-	RedLED red1;
-	RedLED2 red2;
 	GreenLED green1;
-	GreenLED2 green2;
 
-	red1.off();
-	red2.off();
-	green1.on();
-	green2.off();
+	green1.off();
 
 	SystemClocks::init();
 
