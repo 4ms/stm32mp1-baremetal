@@ -33,6 +33,7 @@ Here's a list of the example projects:
   * **Audio Processor**: A fun practical project that lets you select one of
 	several audio synths to play. Requires STM32MP1 Discovery board. Uses
 	STM32-HAL, some DaisySP example projects, and some Faust algorithms. TODO: use multi-core A7.
+  * **USB MSC Device**: Simple example that creates a USB Mass Storage Class device (aka "USB thumb drive").
 
 ## Overview
 
@@ -347,9 +348,9 @@ Cortex-A bare-metal project.
 The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz or
 800MHz, L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite
 of peripherals. There's a large gap between this and the next chip down in ST's
-lineup: the STM32H755, which is has two cores (480MHz M7 + 240MHz M4) and can
+lineup: the STM32H755, which has two cores (480MHz M7 + 240MHz M4) but can
 only use SDRAM at 143MHz, which can be painfully slow for algorithms that
-perform a lot of reads and writes to memory (e.g.  reverb).
+perform a lot of reads and writes to memory (e.g. reverb).
 
 The peripherals on the STM32MP1 are often identical to the peripherals on ST's
 Cortex-M7 chips such as the STM32H750 or H743. That means once you have the
