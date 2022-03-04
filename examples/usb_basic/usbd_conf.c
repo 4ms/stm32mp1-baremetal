@@ -63,11 +63,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
 		__HAL_RCC_USBO_CLK_ENABLE();
 		__HAL_RCC_USBPHY_CLK_ENABLE();
-
-		GIC_SetTarget(OTG_IRQn, 1);
-		GIC_SetPriority(OTG_IRQn, 0b01111000);
-		GIC_SetConfiguration(OTG_IRQn, 0b10); // Edge triggered
-		GIC_EnableIRQ(OTG_IRQn);
 	}
 }
 
