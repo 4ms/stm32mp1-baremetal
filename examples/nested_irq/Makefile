@@ -8,7 +8,7 @@ SHAREDDIR = ../shared
 
 SOURCES = startup.s \
 		  main.cc \
-		  irq_handler.cc \
+		  $(SHAREDDIR)/drivers/irq_handler.cc \
 		  $(SHAREDDIR)/system/irq_init.c \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \

@@ -1,7 +1,7 @@
+#include "drivers/interrupt.hh"
 #include "drivers/leds.hh"
 #include "drivers/pinchange.hh"
 #include "drivers/uart.hh"
-#include "interrupt.hh"
 #include "osd32brk_conf.hh"
 #include "stm32mp157cxx_ca7.h"
 #include <cstdint>
