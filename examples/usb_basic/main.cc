@@ -30,7 +30,12 @@ void main() {
 
 	USBD_HandleTypeDef USBD_Device;
 
-	USBD_Init(&USBD_Device, &MSC_Desc, 0);
+	auto init_ok = USBD_Init(&USBD_Device, &MSC_Desc, 0);
+	if (init_ok != USBD_OK) {
+		uart.write("USB Device failed to initialize!\r\n");
+		uart.write("Error code: ");
+		uart.write(static_cast<int>(init_ok));
+	}
 
 	USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
 
