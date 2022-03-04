@@ -37,7 +37,7 @@ BreakInheritanceList : "AfterColon"
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth : 4
 IndentCaseLabels : "true"
-IndentPPDirectives : "BeforeHash"
+IndentPPDirectives : "None"
 SpaceAfterCStyleCast : "false"
 SpaceAfterTemplateKeyword : "false"
 SpaceBeforeAssignmentOperators : "true"

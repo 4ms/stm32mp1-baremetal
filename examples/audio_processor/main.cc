@@ -3,6 +3,7 @@
 #include "shared/drivers/leds.hh"
 #include "shared/drivers/uart.hh"
 #include "shared/stm32disco_conf.hh"
+#include "shared/stm32disco_buttons_conf.hh"
 
 #include "synth_list.hh"
 

@@ -14,7 +14,7 @@ SOURCES = startup.s \
 		  $(SHAREDDIR)/system/system_ca7.c \
 		  $(SHAREDDIR)/system/mmu_ca7.c \
 		  syscalls.c \
-		  stm32mp1xx_hal.c \
+		  $(SHAREDDIR)/stm32hal_patched/stm32mp1xx_hal.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_dma.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_dma_ex.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_gpio.c \

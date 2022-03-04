@@ -16,10 +16,13 @@ DEPS   	  = $(addprefix $(OBJDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
 
 MCU ?=  -mcpu=cortex-a7 -march=armv7ve -mfpu=neon-vfpv4 -mlittle-endian -mfloat-abi=hard
 
+EXTRA_ARCH_CFLAGS ?= 
+
 ARCH_CFLAGS ?= -DUSE_FULL_LL_DRIVER \
 			   -DSTM32MP157Cxx \
 			   -DSTM32MP1 \
 			   -DCORE_CA7 \
+			   $(EXTRA_ARCH_CFLAGS) \
 
 OPTFLAG ?= -O0
 

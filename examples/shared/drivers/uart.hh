@@ -1,5 +1,6 @@
 #pragma once
 #include "stm32mp1xx.h"
+#include <cstdint>
 
 // No init is needed because U-boot initializes it
 template<uint32_t BASE_ADDR>
