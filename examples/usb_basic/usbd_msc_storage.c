@@ -35,23 +35,17 @@ EndBSPDependencies */
 /* Private functions ---------------------------------------------------------*/
 
 #define STORAGE_LUN_NBR 1U
-#define STORAGE_BLK_NBR 0x8000U // 16MB
+#define STORAGE_BLK_NBR 0x40000U // 128MB
 #define STORAGE_BLK_SIZ 0x200U
 
 static __attribute__((section(".virtdrive"))) uint8_t virtdrive[STORAGE_BLK_NBR * STORAGE_BLK_SIZ];
 
 int8_t STORAGE_Init(uint8_t lun);
-
 int8_t STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size);
-
 int8_t STORAGE_IsReady(uint8_t lun);
-
 int8_t STORAGE_IsWriteProtected(uint8_t lun);
-
 int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len);
-
 int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len);
-
 int8_t STORAGE_GetMaxLun(void);
 
 /* USB Mass storage Standard Inquiry Data */

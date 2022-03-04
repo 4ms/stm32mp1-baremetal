@@ -235,7 +235,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev) {
 	hpcd.pData = pdev;
 	pdev->pData = &hpcd;
 
-	// Force to null, so ST USB library doesn't try to de-init it
+	// Note: Library was altered here:
+	// Force this to null, so ST USB library doesn't try to de-init it
 	((USBD_HandleTypeDef *)hpcd.pData)->pClassData = NULL;
 
 	if (HAL_PCD_Init(&hpcd) != HAL_OK)
@@ -288,7 +289,6 @@ USBD_StatusTypeDef USBD_LL_Stop(USBD_HandleTypeDef *pdev) {
  */
 USBD_StatusTypeDef USBD_LL_OpenEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr, uint8_t ep_type, uint16_t ep_mps) {
 	HAL_PCD_EP_Open(pdev->pData, ep_addr, ep_mps, ep_type);
-
 	return USBD_OK;
 }
 
@@ -372,12 +372,6 @@ USBD_StatusTypeDef USBD_LL_SetUSBAddress(USBD_HandleTypeDef *pdev, uint8_t dev_a
  * @retval USBD Status
  */
 USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, uint8_t *pbuf, uint32_t size) {
-	// added by hftrx: need to flush cache
-	if (pbuf != NULL && size != 0) {
-		// ASSERT(((uintptr_t) pbuf % DCACHEROWSIZE) == 0);
-		// arm_hardware_flush((uintptr_t) pbuf, size);
-	}
-
 	HAL_PCD_EP_Transmit(pdev->pData, ep_addr, pbuf, size);
 	return USBD_OK;
 }
@@ -391,10 +385,6 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, u
  * @retval USBD Status
  */
 USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev, uint8_t ep_addr, uint8_t *pbuf, uint32_t size) {
-	// added by hftrx: need to invalidate cache!
-	// if (pbuf != NULL && size != 0)
-	// arm_hardware_flush_invalidate((uintptr_t)pbuf, size);
-
 	HAL_PCD_EP_Receive(pdev->pData, ep_addr, pbuf, size);
 	return USBD_OK;
 }

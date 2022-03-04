@@ -24,10 +24,10 @@
 /* Private typedef ----------------------------------------------------------- */
 /* Private define ------------------------------------------------------------ */
 #define USBD_VID 0x0483
-#define USBD_PID 0x5720
+#define USBD_PID 0x571d
 #define USBD_LANGID_STRING 0x409
 #define USBD_MANUFACTURER_STRING "STMicroelectronics"
-#define USBD_PRODUCT_HS_STRING "Mass Storage in HS Mode"
+#define USBD_PRODUCT_HS_STRING "STM32MP1 Baremetal USB drive"
 #define USBD_PRODUCT_FS_STRING "Mass Storage in FS Mode"
 #define USBD_CONFIGURATION_HS_STRING "MSC Config"
 #define USBD_INTERFACE_HS_STRING "MSC Interface"
