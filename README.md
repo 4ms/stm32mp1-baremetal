@@ -400,7 +400,5 @@ anyone else finds this interesting too!
 
  [ ] Try latest U-Boot from STM32MP1 Ecosystem v3.0
 
- [x] Audio processing example on Discovery board
-
- [ ] STM32-HAL example
+ [ ] Faster Boot mode (either skip U-Boot proper and load app from SPL, or use U-boot's "Fast Boot" Falcon mode)
 
