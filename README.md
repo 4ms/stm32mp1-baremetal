@@ -3,37 +3,41 @@
 This is a set of example and template projects for bare-metal applications
 on the STM32MP15x Cortex-A7 microprocessor. I use "Bare-metal" to mean no OS,
 so unlike most STM32MP1 or Cortex-A tutorials, there is no Linux or RTOS. Basic
-systems such as handling interrupts, setting up a stack, memory management, are
-handled in these projects, as well as more advanced featues like parallel
-processing (multiple cores) and coprocessor control.
+systems such as handling interrupts, setting up a stack, memory management,
+etc. are handled in these projects, as well as more advanced featues like
+parallel processing (multiple cores) and coprocessor control.
 
 The target audience is the developer who is already familiar with the Cortex-M
 series.  Rather than give a ground-up introduction to
 microcontrollers/processors, these projects assume you are familiar with MCUs
-such as the Cortex-M0/M3/M4/M7 or perhaps AVR (ATMEGA) chips.  You should be
-comfortable with the concepts of interrupts, stacks, HAL, etc. If not, you'll
-need to brush up on microcontroller fundamentals before proceeding. 
+such as the Cortex-M0/M3/M4/M7 or perhaps AVR (ATMEGA) chips. Requirements:
+  * You should be comfortable with the concepts of interrupts, stacks, HAL,
+	etc. 
+  * You should be able to build a Makefile project from the command line, or be
+	fluent in some IDE such that you can convert a Makefile project to your
+	preferred format.
+  * You should be able to understand simple C++ code, at least at a basic
+	level.
 
-Most of the code is in modern C++, with some assembly thrown in there where
-needed. You don't need to know C++ or assembly, the projects are very simple
-and should be easy to follow.
+If not, you'll need to brush up on microcontroller and command-line
+fundamentals before proceeding. 
 
 I am actively refining and adding new example projects to this. If you want to
 see something, please ask! (open a github issue)
 
 Here's a list of the example projects:
 
-  * **Minimal Boot**: Hello World project to prove the bootloader and your hardware is working.
-  * **Ctest**: Demonstrates the startup code for a C/C++ project: setting up the stack, initializing globals, etc.
-  * **Basic IRQ**: Basic interrupt handling with the A7's Generic Interrupt Controller.
-  * **Nested IRQ**: More sophisticed interrupt handling: interrupts interrupting interrupts! (and using lambdas as handlers!)
-  * **Multicore_a7**: Demonstrates running both A7 cores in parallel.
-  * **Copro_rproc**: Using the rproc feature of U-Boot to load and run firmware on the M4 core in parallel with the A7 core.
-  * **Copro_embedded**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
-  * **Audio Processor**: A fun practical project that lets you select one of
+  * **[Minimal Boot](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/minimal_boot)**: Hello World project to prove the bootloader and your hardware is working.
+  * **[Ctest](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/ctest)**: Demonstrates the startup code for a C/C++ project: setting up the stack, initializing globals, etc.
+  * **[Basic IRQ](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/basic_irq)**: Basic interrupt handling with the A7's Generic Interrupt Controller.
+  * **[Nested IRQ](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/nested_irq)**: More sophisticed interrupt handling: interrupts interrupting interrupts! (and using lambdas as handlers!)
+  * **[Multicore_a7](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/multicore_a7)**: Demonstrates running both A7 cores in parallel.
+  * **[Copro_rproc](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/copro_rproc)**: Using the rproc feature of U-Boot to load and run firmware on the M4 core in parallel with the A7 core.
+  * **[Copro_embedded](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/copro_embedded)**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
+  * **[[Audio Processor]](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/audio_processor)**: A fun practical project that lets you select one of
 	several audio synths to play. Requires STM32MP1 Discovery board. Uses
 	STM32-HAL, some DaisySP example projects, and some Faust algorithms. TODO: use multi-core A7.
-  * **USB MSC Device**: Simple example that creates a USB Mass Storage Class device (aka "USB thumb drive").
+  * **[USB MSC Device](https://github.com/4ms/stm32mp1-baremetal/tree/master/examples/usb_msc_device)**: Simple example that creates a USB Mass Storage Class device (aka "USB thumb drive").
 
 ## Overview
 
@@ -49,19 +53,21 @@ STM32MP157 chip is used to access the hardware registers, and in some cases
 I've written a simple driver class that lives in `examples/shared/drivers/`.
 There also is some shared initialization code in `examples/shared/system/`,
 such as setting up the MMU and the caches. For the most part you can use these
-as-is for most projects (although you will need to modify the MMU setup if your
-project needs areas of RAM to be non-cacheable in order to use a DMA, for
-example). I plan to do a tutorial on the MMU eventually.
+as-is, although you will need to modify the MMU setup if your project needs
+areas of RAM to be non-cacheable in order to use a DMA, for example. 
 
-U-Boot is a third-party tool that we use for the bootloader (don't worry if
-you're not familiar with U-Boot!). The U-Boot bootloader must be built once,
-and loaded once onto an SD card, which is inserted into the board. You
-probably won't need to think about it ever again after that, unless your
-hardware changes substantially (or you run the `corpo_rproc` example project).
+U-Boot is a third-party tool that we use for the bootloader. Pre-built U-boot
+images are included in this repo, so all you have to do is load them onto an SD
+card and never think about it again unless you start using custom hardware or
+need to change the boot command (as is optionally done in the `corpo_rproc`
+example project).
+
+I've also provided a script to build U-boot, too. If you're familiar with Linux
+kernel and device driver code, you'll notice some similarities.
 
 The application ultimately needs to live on the SD card as well, but it can be
-flashed into RAM using an SWD flasher, making debugging much easier than having
-to copy files to an SD card each time the code is changed.
+flashed into RAM using an SWD/JTAG flasher, making debugging much easier than
+having to copy files to an SD card each time the code is changed.
 
 ## Requirements
 
@@ -402,3 +408,4 @@ anyone else finds this interesting too!
 
  [ ] Faster Boot mode (either skip U-Boot proper and load app from SPL, or use U-boot's "Fast Boot" Falcon mode)
 
+ [ ] MMU tutorial
