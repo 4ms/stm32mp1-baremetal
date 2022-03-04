@@ -2,14 +2,15 @@
 #include "drivers/pinchange.hh"
 #include "drivers/uart.hh"
 #include "interrupt.hh"
+#include "osd32brk_conf.hh"
 #include "stm32mp157cxx_ca7.h"
 #include <cstdint>
-
-constexpr uint8_t GPIO_I = 8; // GPIOA = 0, GPIOB = 1, etc..
 
 // For debugging, it's handy to know these values:
 // IRQn = 0x62 (98) | PRIORITY: Reg 24 bit 2 | CFGR: Reg 16, bit 2 | ENABLE Reg 3, bit2
 // IRQn = 0x63 (99) | PRIORITY: Reg 24 bit 3 | CFGR: Reg 16, bit 3 | ENABLE Reg 3, bit3
+
+using namespace OSD32BRK;
 
 void main()
 {
@@ -26,12 +27,12 @@ void main()
 	uart.write("You should see steps 1-6 occur in order:\r\n");
 
 	// LEDs
-	Led<GPIOI_BASE, 8, LedActive::Low> red_led1;
-	Led<GPIOI_BASE, 9, LedActive::Low> green_led1;
+	RedLED2 red_led;
+	GreenLED2 green_led;
 	Led<GPIOE_BASE, 15, LedActive::Low> debug_pin2;
 	Led<GPIOG_BASE, 15, LedActive::Low> debug_pin3;
-	red_led1.init();
-	green_led1.init();
+	red_led.init();
+	green_led.init();
 	debug_pin2.init();
 	debug_pin3.init();
 
@@ -43,8 +44,8 @@ void main()
 	const auto green_led1_irqnum = green_led_pinchange.get_IRQ_num();
 
 	// Initial conditions:
-	red_led1.on();
-	green_led1.on();
+	red_led.on();
+	green_led.on();
 
 	debug_pin2.off();
 	debug_pin2.on();
@@ -113,17 +114,16 @@ void main()
 		double d30 = d28 + d29;
 		double d31 = d29 + d30;
 
-		// Force compiler to calc d31 before triggering the inner ISR
-		if (d31 > d1 * x1) { // always true
+		if (d31 > d1 * x1) { // always true, but the compiler's optimizer doesn't know that (since d1 is volatile)
 			uart.write("  3) Triggering Inner ISR: Green LED 1 turning off (PI9 rising edge)\r\n");
-			green_led1.off(); // trigger the inner ISR
+			green_led.off(); // trigger the inner ISR
 			// Kill some time to ensure the GIC has time to propagate the request to the inner ISR
 			long i = 0x1000;
 			while (i--)
 				;
 		} else {
-			d31 -= 1.; // this won't be called, but the compiler doesn't know that, so it won't do the calculations out
-					   // of order
+			d31 -= 1.; // this won't be called, but the compiler doesn't know that, so it won't do the calculations at
+					   // compile time
 		}
 		// These use all available registers (FPU and normal)
 		// If the inner ISR clobbered the registers, then we'll get an incorrect sum
@@ -380,7 +380,7 @@ void main()
 	double d30 = d28 + d29;
 	double d31 = d29 + d30;
 
-	red_led1.off();
+	red_led.off();
 
 	int i = 0;
 	while (1) {
