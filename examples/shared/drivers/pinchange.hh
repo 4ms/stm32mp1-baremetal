@@ -5,22 +5,22 @@ template<uint32_t GPIO_BASE_ADDR, uint32_t PIN_NUM>
 class PinChangeISR {
 public:
 	PinChangeISR()
-		: _gpio_num {(GPIO_BASE_ADDR == GPIOA_BASE) ? 0 :
-					  (GPIO_BASE_ADDR == GPIOB_BASE) ? 1 :
-					  (GPIO_BASE_ADDR == GPIOC_BASE) ? 2 :
-					  (GPIO_BASE_ADDR == GPIOD_BASE) ? 3 :
-					  (GPIO_BASE_ADDR == GPIOE_BASE) ? 4 :
-					  (GPIO_BASE_ADDR == GPIOF_BASE) ? 5 :
-					  (GPIO_BASE_ADDR == GPIOG_BASE) ? 6 :
-					  (GPIO_BASE_ADDR == GPIOH_BASE) ? 7 :
-					  (GPIO_BASE_ADDR == GPIOI_BASE) ? 8 :
-					  (GPIO_BASE_ADDR == GPIOJ_BASE) ? 9 :
-					  (GPIO_BASE_ADDR == GPIOK_BASE) ? 10 : 
-					  (GPIO_BASE_ADDR == GPIOZ_BASE) ? 11 : 0}
+		: _gpio_num{(GPIO_BASE_ADDR == GPIOA_BASE) ? 0 :
+					(GPIO_BASE_ADDR == GPIOB_BASE) ? 1 :
+					(GPIO_BASE_ADDR == GPIOC_BASE) ? 2 :
+					(GPIO_BASE_ADDR == GPIOD_BASE) ? 3 :
+					(GPIO_BASE_ADDR == GPIOE_BASE) ? 4 :
+					(GPIO_BASE_ADDR == GPIOF_BASE) ? 5 :
+					(GPIO_BASE_ADDR == GPIOG_BASE) ? 6 :
+					(GPIO_BASE_ADDR == GPIOH_BASE) ? 7 :
+					(GPIO_BASE_ADDR == GPIOI_BASE) ? 8 :
+					(GPIO_BASE_ADDR == GPIOJ_BASE) ? 9 :
+					(GPIO_BASE_ADDR == GPIOK_BASE) ? 10 :
+					(GPIO_BASE_ADDR == GPIOZ_BASE) ? 11 :
+													   0}
 	{
 		static_assert(PIN_NUM < 16, "PIN_NUM must be between 0 and 15");
 	}
-
 
 	void enable_isr_on_rising_falling_edges(bool rising, bool falling)
 	{

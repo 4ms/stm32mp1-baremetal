@@ -5,7 +5,10 @@
 
 extern "C" {
 
-void ISRHandler(unsigned irqnum) { InterruptManager::callISR(irqnum); }
+void ISRHandler(unsigned irqnum)
+{
+	InterruptManager::callISR(irqnum);
+}
 
 void __attribute__((naked)) __attribute__((section(".irqhandler"))) IRQ_Handler()
 {

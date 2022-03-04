@@ -16,12 +16,21 @@ public:
 
 	Interrupt() = default;
 
-	Interrupt(IRQType irqnum, ISRType &&func) { ISRs[irqnum] = std::move(func); }
+	Interrupt(IRQType irqnum, ISRType &&func)
+	{
+		ISRs[irqnum] = std::move(func);
+	}
 
 	// Register a callable object (e.g. lambda) to respond to an IRQ
-	static void registerISR(IRQType irqnum, ISRType &&func) { ISRs[irqnum] = std::move(func); }
+	static void registerISR(IRQType irqnum, ISRType &&func)
+	{
+		ISRs[irqnum] = std::move(func);
+	}
 
-	static void callISR(uint32_t irqnum) { ISRs[irqnum](); }
+	static void callISR(uint32_t irqnum)
+	{
+		ISRs[irqnum]();
+	}
 
 	// Sets a default handler for all ISRs.
 	// This could be done for debug builds, to point to debug breakpoint
