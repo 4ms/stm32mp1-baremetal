@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32mp1xx.h" 
+#include "stm32mp1xx.h"
 
 #define USB_USB_HS // used in usbd_core.c
 

@@ -11,7 +11,8 @@ static inline void init_leds();
 
 const char *global_constant_string = "And hi to you too!\r\n";
 
-void main() {
+void main()
+{
 	// Test UART
 	UART4->TDR = 'X';
 	delay_for_uart();
@@ -71,13 +72,15 @@ void main() {
 	};
 }
 
-void delay_long() {
+void delay_long()
+{
 	uint32_t i = 0x1000000;
 	while (i--)
 		;
 }
 
-void write(const char *str) {
+void write(const char *str)
+{
 	while (*str) {
 		UART4->TDR = *str++;
 		delay_for_uart();
@@ -85,13 +88,15 @@ void write(const char *str) {
 }
 
 // Inline because we don't want to assume function calling and returning works yet!
-static inline void delay_for_uart(void) {
+static inline void delay_for_uart(void)
+{
 	while ((UART4->ISR & USART_ISR_TXFT) == 0)
 		;
 }
 
 // Inline because we don't want to assume function calling and returning works yet!
-static inline void init_leds() {
+static inline void init_leds()
+{
 	// OSD32MP1 board:
 	// GPIO I, pin 8 = red D2
 	// GPIO I, pin 9 = green D2
@@ -112,13 +117,15 @@ static inline void init_leds() {
 }
 
 // Handy utility when using a debugger
-void soft_breakpoint() {
+void soft_breakpoint()
+{
 	volatile int stop = 1;
 	while (stop) {
 		// Attach a debugger and manually change the value at the address of `stop` in RAM from 1 to 0
 	}
 }
 
-void IRQ_Initialize(void) {
+void IRQ_Initialize(void)
+{
 	// do nothing, just a stub
 }

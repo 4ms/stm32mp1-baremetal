@@ -16,7 +16,8 @@
 using namespace STM32MP1Disco;
 
 extern PCD_HandleTypeDef hpcd;
-void main() {
+void main()
+{
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nSimple USB MSC Device test\r\n");
 	uart.write("Connect a USB cable to a computer\r\n");
@@ -64,6 +65,7 @@ void main() {
 	}
 }
 
-extern "C" void IRQ_Initialize(void) {
+extern "C" void IRQ_Initialize(void)
+{
 	// do nothing, just a stub
 }

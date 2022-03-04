@@ -80,7 +80,8 @@ USBD_StorageTypeDef USBD_MSC_fops = {
  * Output         : None.
  * Return         : None.
  *******************************************************************************/
-int8_t STORAGE_Init(uint8_t lun) {
+int8_t STORAGE_Init(uint8_t lun)
+{
 	return (USBD_OK);
 }
 
@@ -91,7 +92,8 @@ int8_t STORAGE_Init(uint8_t lun) {
  * Output         : None.
  * Return         : None.
  *******************************************************************************/
-int8_t STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size) {
+int8_t STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
+{
 	*block_num = STORAGE_BLK_NBR;
 	*block_size = STORAGE_BLK_SIZ;
 	return (USBD_OK);
@@ -104,7 +106,8 @@ int8_t STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_siz
  * Output         : None.
  * Return         : None.
  *******************************************************************************/
-int8_t STORAGE_IsReady(uint8_t lun) {
+int8_t STORAGE_IsReady(uint8_t lun)
+{
 	return USBD_OK;
 }
 
@@ -115,7 +118,8 @@ int8_t STORAGE_IsReady(uint8_t lun) {
  * Output         : None.
  * Return         : None.
  *******************************************************************************/
-int8_t STORAGE_IsWriteProtected(uint8_t lun) {
+int8_t STORAGE_IsWriteProtected(uint8_t lun)
+{
 	return USBD_OK;
 }
 
@@ -126,7 +130,8 @@ int8_t STORAGE_IsWriteProtected(uint8_t lun) {
  * Output         : None.
  * Return         : None.
  *******************************************************************************/
-int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
+int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
+{
 	for (uint16_t i = 0; i < (blk_len * STORAGE_BLK_SIZ); i++)
 		buf[i] = virtdrive[blk_addr * STORAGE_BLK_SIZ + i];
 	return USBD_OK;
@@ -138,7 +143,8 @@ int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_l
  * Output         : None.
  * Return         : None.
  *******************************************************************************/
-int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
+int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
+{
 	for (uint16_t i = 0; i < (blk_len * STORAGE_BLK_SIZ); i++)
 		virtdrive[blk_addr * STORAGE_BLK_SIZ + i] = buf[i];
 	return USBD_OK;
@@ -150,7 +156,8 @@ int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_
  * Output         : None.
  * Return         : None.
  *******************************************************************************/
-int8_t STORAGE_GetMaxLun(void) {
+int8_t STORAGE_GetMaxLun(void)
+{
 	return (STORAGE_LUN_NBR - 1);
 }
 

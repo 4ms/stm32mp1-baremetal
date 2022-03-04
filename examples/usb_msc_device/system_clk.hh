@@ -48,7 +48,8 @@ struct SystemClocks {
 
 	};
 
-	static bool init() {
+	static bool init()
+	{
 		if (HAL_RCC_ClockConfig(&rcc_clk_conf) != HAL_OK)
 			return false;
 		if (HAL_RCCEx_PeriphCLKConfig(&rcc_periph_clk_conf) != HAL_OK)
