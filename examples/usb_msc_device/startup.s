@@ -124,6 +124,8 @@ bss_loop:
 	mov r5, #67
 	str r5, [r4]
 
+	cpsie   i 										// Enable Interrupts
+
 run_main:
     bl main
     b Abort_Exception
@@ -140,11 +142,3 @@ PAbt_Handler:
 DAbt_Handler:
 	b .
  
-IRQ_Handler:
-	b .
-
-FIQ_Handler:
-	b .
-
-SVC_Handler:
-	b .
