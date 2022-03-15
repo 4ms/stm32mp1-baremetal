@@ -15,6 +15,8 @@ SOURCES = startup.s \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/system/system_ca7.c \
 		  $(SHAREDDIR)/system/mmu_ca7.c \
+		  $(SHAREDDIR)/system/irq_init.c \
+		  $(SHAREDDIR)/drivers/irq_handler.cc \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal.c \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd.c \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd_ex.c \
