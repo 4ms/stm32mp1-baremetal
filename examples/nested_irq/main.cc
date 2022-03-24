@@ -17,12 +17,9 @@ void main()
 	// UART
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nTesting nested interrupts\r\n");
-	uart.write("Make sure this is compiled with -O1 to test register clobbering (Makefile, OPTFLAG on "
-			   "line 4)\r\n");
+	uart.write("Make sure this is compiled with -O1 to test register clobbering (Makefile line 4, OPTFLAG)\r\n");
 	uart.write("To see the floating-point register test fail, ");
-	uart.write("comment out the #define STASH_FPU_REGS in interrupt.cc\r\n");
-	uart.write("To see the integer register test fail, ");
-	uart.write("comment out the #define STASH_R5_R11_LR in interrupt.cc\r\n");
+	uart.write("comment out the #define STASH_FPU_REGS in irq_handler.cc\r\n");
 	uart.write("\r\n");
 	uart.write("You should see steps 1-6 occur in order:\r\n");
 
