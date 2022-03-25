@@ -1,5 +1,5 @@
 #pragma once
-#include "irq_ctrl.h"
+#include "irq_ctrl.h" //Found in CMSIS/Core_A/Include/irq_ctrl.h
 #include "stm32mp1xx.h"
 
 struct InterruptControl {
@@ -34,5 +34,15 @@ struct InterruptControl {
 		GIC_SetConfiguration(irqn, LevelTriggered);
 		GIC_ClearPendingIRQ(irqn);
 		GIC_EnableIRQ(irqn);
+	}
+
+	static void global_disable_irq()
+	{
+		__disable_irq();
+	}
+
+	static void global_enable_irq()
+	{
+		__enable_irq();
 	}
 };
