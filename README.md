@@ -311,7 +311,9 @@ Really, it's worthless except it shows you the before/after file sizes:
 
 The example projects have a `make install` target, so you can just type that.
 The path to the SD card is hard-coded into the Makefile, so you can either edit
-`examples/shared/makefile-common.mk` or do this: ```
+`examples/shared/makefile-common.mk` or do this:
+
+```
 SDCARD_MOUNT_PATH=/path/to/SDCARD make install
 ```
 
