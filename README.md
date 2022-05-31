@@ -1,7 +1,7 @@
 # STM32MP1 Cortex-A7 bare-metal example projects
 
 This is a set of example and template projects for bare-metal applications
-on the STM32MP15x Cortex-A7 microprocessor. I use "Bare-metal" to mean no OS,
+on the STM32MP15x Cortex-A7 microprocessor. I use "bare-metal" to mean no OS,
 so unlike most STM32MP1 or Cortex-A tutorials, there is no Linux or RTOS. Basic
 systems such as handling interrupts, setting up a stack, memory management,
 etc. are handled in these projects, as well as more advanced featues like
@@ -34,7 +34,7 @@ Here's a list of the example projects:
   * **[Multicore_a7](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/multicore_a7)**: Demonstrates running both A7 cores in parallel.
   * **[Copro_rproc](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/copro_rproc)**: Using the rproc feature of U-Boot to load and run firmware on the M4 core in parallel with the A7 core.
   * **[Copro_embedded](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/copro_embedded)**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
-  * **[[Audio Processor]](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/audio_processor)**: A fun practical project that lets you select one of
+  * **[Audio Processor](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/audio_processor)**: A fun practical project that lets you select one of
 	several audio synths to play. Requires STM32MP1 Discovery board. Uses
 	STM32-HAL, some DaisySP example projects, and some Faust algorithms. TODO: use multi-core A7.
   * **[USB MSC Device](https://github.com/4ms/stm32mp1-baremetal/tree/master/examples/usb_msc_device)**: Simple example that creates a USB Mass Storage Class device (aka "USB thumb drive").
@@ -56,13 +56,13 @@ such as setting up the MMU and the caches. For the most part you can use these
 as-is, although you will need to modify the MMU setup if your project needs
 areas of RAM to be non-cacheable in order to use a DMA, for example. 
 
-U-Boot is a third-party tool that we use for the bootloader. Pre-built U-boot
+U-Boot is a third-party tool that we use for the bootloader. Pre-built U-Boot
 images are included in this repo, so all you have to do is load them onto an SD
 card and never think about it again unless you start using custom hardware or
 need to change the boot command (as is optionally done in the `corpo_rproc`
 example project).
 
-I've also provided a script to build U-boot, too. If you're familiar with Linux
+I've also provided a script to build U-Boot, too. If you're familiar with Linux
 kernel and device driver code, you'll notice some similarities.
 
 The application ultimately needs to live on the SD card as well, but it can be
@@ -73,11 +73,11 @@ having to copy files to an SD card each time the code is changed.
 
 You need:
   - Any [STM32MP15x Discovery board](https://www.st.com/en/evaluation-tools/stm32mp157d-dk1.html), or an [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board
-  - A computer with the [arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads) toolchain installed (v8 or later)
+  - A computer with the [arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads) toolchain installed (v8 or later)
   - Various common USB cables, depending on which board you select
   - A micro SD card
   - A USB-to-serial cable (only if you use the OSD32 board) such as the [FTDI cable](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/TTL-232R-3V3/1836393)
-  - Optionally, a J-link or ST-LINK debugger (only if you use the OSD32 board)
+  - Optionally, a J-Link or ST-LINK debugger (only if you use the OSD32 board. The Discovery board has an ST-LINK on-board)
 
 ![Image of STM32MP157A-DK1 board](https://www.st.com/bin/ecommerce/api/image.PF268547.en.feature-description-include-personalized-no-cpn-large.jpg)
 *STM32MP157A-DK1 Discovery board*
@@ -92,28 +92,30 @@ These projects will build and run on any of the [STM32MP15x Discovery boards](ht
 or the [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board.
 The OSD32MP1-BRK is simply a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/),
 which is an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
-plus SDRAM and PMIC and other stuff in a BGA package. 
+plus DDR3 RAM and PMIC and other stuff in a BGA package. 
+These example projects work the same on either board (you only need to build
+the bootloader slightly differently).
 
-The OSD32MP1 board is cheaper and has SWD connection for debugging, but you'll
-need a USB-to-UART cable to use it. The Discovery boards have a built-in
-USB/UART and a lot more stuff on the PCB (codec, buttons, ethernet jack,
-HDMI, an option for a DSI screen,...). These example projects work the same on
-either board (you only need to build the bootloader slightly differently).
+The Discovery boards have a built-in USB/UART and a built-in ST-LINK, so you
+just need a USB cable to debug and view UART output on the console. However,
+AFAIK you can only use gdb to debug (not Ozone or TRACE32) since there is no
+direct access to the SWD or JTAG pins (not even a good place to solder some
+on). These boards also have a lot more external hardware on the PCB (codec,
+buttons, ethernet jack, HDMI, an option for a DSI screen,...), but have far
+fewer pins brought out to headers than the OSD32MP1 board.
 
-You'll need an SD card to insert into the board. And some USB cables (micro, USB-C).
-
-If you choose the OSD32MP1-BRK board, you can take advantage of the SWD header by using an SWD programmer, like the SEGGER J-Link, or an
-ST-LINK to debugging with gdb. The board has a 10 exposed pads designed to fit a 
+The OSD32MP1-BRK board has an SWD/JTAG header so you can use a programmer like
+the SEGGER J-Link or an ST-LINK to debug with a variety of tools (gdb/OpenOCD,
+Segger Ozone, TRACE32). The board has a 10 exposed pads designed to fit a 
 10-pin pogo adaptor, such as [this one](https://www.tag-connect.com/product/tc2050-idc-nl-10-pin-no-legs-cable-with-ribbon-connector)
 from Tag-Connect [or Digikey](https://www.digikey.com/en/products/detail/tag-connect-llc/TC2050-IDC-NL/2605367).
 While you're shopping, pick up these helpful accessories too: [retaining clip](https://www.tag-connect.com/product/tc2050-clip-3pack-retaining-clip)
 , and [20-to-10-pin-adaptor](https://www.tag-connect.com/product/tc2050-arm2010-arm-20-pin-to-tc2050-adapter).
-The Discovery boards lack any header for SWD, and there's not even an easy place to solder one on.
 
-Also if you use the OSD32MP1-BRK board, you'll need a USB-to-UART cable. This
-is built into the Discovery boards, so you don't need it for them. The OSD32
-board has UART pins exposed, and you can solder header pins and connect such a
-cable. FTDI makes the TTL-232R-3V3, available from
+If you use the OSD32MP1-BRK board, you'll need a USB-to-UART cable to view the
+UART output on the console. The OSD32 board has UART pins exposed, and you can
+solder 0.1" pitch header pins and connect such a cable. FTDI makes the
+TTL-232R-3V3, available from
 [Digikey](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/TTL-232R-3V3/1836393),
 or there are other options like a host adaptor such as the [Binho
 Nova](https://binho.io/#shopify-section-1550985341560).
@@ -134,14 +136,14 @@ gnu-sed` for details.
 ```
 brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`  ##or add it to your .zshrc/.bashrc
-```
+``
 
 ## 2) Build and load U-Boot:
 
-I've added some pre-built images for U-boot, so you can up and running more quickly.
+I've added some pre-built images for U-Boot, so you can up and running more quickly.
 If you want to use the pre-built images, skip the next step.
 
-### Building U-boot (optional)
+### Building U-Boot (optional)
 
 Build U-Boot using the script. The output will be in `third-party/u-boot/build/`:
 ```
@@ -159,7 +161,7 @@ ls -l third-party/u-boot/build/u-boot-spl.stm32
 ls -l third-party/u-boot/build/u-boot.img
 ```
 
-### Loading U-boot onto your SD card
+### Loading U-Boot onto your SD card
 
 Now you need to format and partition an SD card.  Insert a card and do:
 ```
@@ -175,7 +177,7 @@ _If you need to find out what the device is, you can type `ls -l /dev/sd` or `ls
 Or, on macOS you can type `mount` instead of `ls -l /dev/disk<TAB>`
 Take note of what it lists. Then remove (or insert) the SD card, and repeat the command. Whatever changed is the SD card's device name(s). Use the base name, e.g. /dev/sdc, not /dev/sdc3._
 
-You also could use the script `format-sdcard.sh`, though it's just a heavy wrapper around the above commands.
+You also could use the script `format-sdcard.sh`, though it's just a wrapper around the above commands.
 
 I recommend you eject and re-insert the card at this point (you might get some cryptic errors if you don't).
 
@@ -229,21 +231,26 @@ ls -l build/main.elf
 ls -l build/a7-main.uimg
 ```
 
-You should see the elf and the uimg files. Each of these is the compiled application, and either one must be loaded
-in SDRAM at 0xC2000040. You can load the elf file by using a
-debugger/programmer such as J-link connected to the SWD pins (OSD32 board
-only).  Or, you can copy the uimg file to the SD card's fourth partition the
-same way you would copy any file. 
+You should see the elf and the uimg files. Each of these is the compiled
+application, and either one must be loaded into DDR RAM at 0xC2000040. There
+are two ways to load the application to RAM. One way is to load the elf
+file by using a debugger/programmer (ST-LINK or J-Link). The other way is to
+copy the uimg file to the SD card's fourth partition the same way you would
+copy any file with your OS, and let U-Boot load the application to RAM.
 
-The SWD method is only temporary, requires a debugger to be attached, and will
-not persist after power down. However, it's much more convenient so it's
-preferred for Debug builds. That said, not everything gets reset/cleared when
-you do it this way, so sometimes you need to do a cold boot and run your
-firmware from the SD card.
+The direct loading with a debugger method requires a debugger to be attached,
+and the code will not persist after power down. However, it's much more
+convenient so it's preferred for Debug builds. That said, not everything gets
+reset/cleared when you do it this way, so sometimes you need to do a cold boot
+and run your firmware from the SD card.
 
 With the copy-to-SD-card method, the application firmware is stored on the SD
 card, so this is the method for production or long-term testing. With this
-method, the bootloader will load the application into 0xC2000040 on boot.
+method, the bootloader will automatically load the application into 0xC2000040
+on boot.
+
+I recommend using the copy-to-SD-card method for your first try, since it's
+more robust and has fewer moving parts (no debugger or host computer software).
 
 ## 5) Copy the application to the SD card
 
@@ -275,7 +282,9 @@ It works for me on macOS and an Ubuntu box, but YMMV.
 Do this:
 1) When the board is booting, up look for the message `Hit any key to stop autoboot`, and press a key.
 2) You will see a UBOOT> prompt. Type the command: `ums 0 mmc 0`
-3) In another terminal window, look to see that there's a new device, e.g. /dev/sdX or /dev/disk#. The 4th partition might automatically mount on your computer, if not you can mount it manually.
+3) In another terminal window, look to see that there's a new device, e.g.
+/dev/sdX or /dev/disk#. The 4th partition might automatically mount on your
+computer, if not you can mount it manually.
 
 Copy it like a normal file to a normal USB stick:
 
@@ -290,7 +299,9 @@ If your OS didn't automatically mount the drive, do: `sudo mount -o user
 /dev/sdX /tmp/sdcard_root` or use some other path where you mount things. Then
 copy the file as above.
 
-**Make sure the file is named `a7-main.uimg` on the SD card. U-Boot looks for a file with this exact name, in the root dir of a FAT32 filesystem on partition 4.**
+**Make sure the file is named `a7-main.uimg` on the SD card. U-Boot looks for a
+file with this exact name, in the root dir of a FAT32 filesystem on partition
+4.**
 
 There's also a script to copy the file.
 Really, it's worthless except it shows you the before/after file sizes:
@@ -298,8 +309,9 @@ Really, it's worthless except it shows you the before/after file sizes:
 ../../scripts/copy-app-to-sdcard.sh build/a7-main.uimg /Volumes/BAREAPP/
 ```
 
-The example projects have a `make install` target, so you can just type that. The path to the SD card is hard-coded into the Makefile, so you can either edit `examples/shared/makefile-common.mk` or do this:
-```
+The example projects have a `make install` target, so you can just type that.
+The path to the SD card is hard-coded into the Makefile, so you can either edit
+`examples/shared/makefile-common.mk` or do this: ```
 SDCARD_MOUNT_PATH=/path/to/SDCARD make install
 ```
 
@@ -307,18 +319,39 @@ SDCARD_MOUNT_PATH=/path/to/SDCARD make install
 
 This is completely optional, but is very convenient when developing. You must
 have a working bootloader and application uimg file, and the board must boot
-into the application.  Once that's established, you can use a J-link programer
-and Ozone to load a new application image and debug it. 
+into the application. Once that's established, you can use a J-Link or ST-LINK
+programmer as well as debugger software on your host computer to load a new
+application image and debug it. 
 
 This README isn't a tutorial on using gdb or debuggers or SEGGER Ozone and
-J-link, so I won't go into detail here. I also experience some quirks and odd
+J-Link, so I won't go into detail here. I also experience some quirks and odd
 behavior, which is common when debugging remote targets with software from
 SEGGER, or OpenOCD. The process is no different than debugging on any other
-STM32 device: you have an elf file and you use gdb (or Ozone) to load it.
+STM32 device: you have an elf file and you use gdb (or Ozone or TRACE32) to load it.
 
-If you use Ozone with a J-link or J-trace connected to the SWD/JTAG port of the
-OSD32MP1-BRK board, create a new Ozone project for the STM32MP15xx Core A7, and
-load the elf file created back in step 4. That's it.
+#### Debugging with Segger Ozone (OSD32 board only)
+
+This requires an SWD connection, which is only found on the OSD32MP1-BRK board.
+It also requires a J-Link debugger. Within Ozone, create a new project for the
+STM32MP15xx Core A7, and load the elf file created back in step 4.
+You can load a new elf file after re-compiling, and debug as normal.
+
+With TRACE32, the process is similar (Lauterbach supplies some helper scripts).
+
+I found that often the unit requires a hard reset before I can load new firmware.
+My recommendation is to have an SD Card with the U-Boot and the `minimal_boot`
+application loaded on it. Press the reset button on the board and wait until
+the UART console shows that it's done booting. At this point, you can use Ozone
+or TRACE32 to load new firmware.
+
+An even more streamlined technique is to omit U-Boot proper entirely and just
+load U-Boot SPL onto partitions 1 and 2 of the SD Card. Leave partitions 3 and
+4 empty. The unit will boot up and quickly display "Trying to boot from MMC1"
+and then hang. At this point, you can load the elf file with your debugging
+software. The reason this works is that SPL initializes the DDR3 RAM, which is 
+all we need to copy our firmware onto the board.
+
+#### Debugging with gdb and OpenOCD or JLimkGDBServer (all boards)
 
 If you use OpenOCD with a USB cable connected to the ST-LINK micro-USB jack of the Discovery board,
 run this command in one terminal window:
@@ -327,7 +360,10 @@ run this command in one terminal window:
 openocd -f board/stm32mp15x_dk2.cfg
 ```
 
-Then in another terminal window, run this command (from the project directory):
+Alternatively, you can run JLinkGDBServer and then select the STM32MP15x Core A7 as the target.
+
+
+In another terminal window, run this command (from the project directory):
 
 ```
 arm-none-eabi-gdb -f build/main.elf
@@ -339,6 +375,9 @@ From the gdb prompt, type:
 target extended-remote localhost:3333
 load
 ```
+
+The port number (3333) may be different for you, check the output of openocd or JLinkGDBServer
+to see what port it's listening on. There may be a different port for each core.
 
 Remember, any file you load using a debugger will only get loaded into RAM. As
 soon as you power down, it will be lost.
@@ -406,6 +445,6 @@ anyone else finds this interesting too!
 
  [ ] Try latest U-Boot from STM32MP1 Ecosystem v3.0
 
- [ ] Faster Boot mode (either skip U-Boot proper and load app from SPL, or use U-boot's "Fast Boot" Falcon mode)
+ [ ] Faster Boot mode (either skip U-Boot proper and load app from SPL, or use U-Boot's "Fast Boot" Falcon mode)
 
  [ ] MMU tutorial
