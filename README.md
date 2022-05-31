@@ -136,7 +136,7 @@ gnu-sed` for details.
 ```
 brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`  ##or add it to your .zshrc/.bashrc
-``
+```
 
 ## 2) Build and load U-Boot:
 
