@@ -320,16 +320,18 @@ SDCARD_MOUNT_PATH=/path/to/SDCARD make install
 ## 6) Debug application
 
 This is completely optional, but is very convenient when developing. You must
-have a working bootloader and application uimg file, and the board must boot
-into the application. Once that's established, you can use a J-Link or ST-LINK
+have a working bootloader (at least SPL) which is responsible for initializing
+the DDR3 RAM. Once that's established, you can use a J-Link or ST-LINK
 programmer as well as debugger software on your host computer to load a new
-application image and debug it. 
+application image into RAM and debug it. 
 
 This README isn't a tutorial on using gdb or debuggers or SEGGER Ozone and
-J-Link, so I won't go into detail here. I also experience some quirks and odd
+J-Link, so I won't go into detail here. I experience some quirks and odd
 behavior, which is common when debugging remote targets with software from
 SEGGER, or OpenOCD. The process is no different than debugging on any other
-STM32 device: you have an elf file and you use gdb (or Ozone or TRACE32) to load it.
+STM32 device: you have an elf file and you use gdb (or Ozone or TRACE32) to
+load it and then set breakpoints, step through code, inspect variables and
+memory, etc.
 
 #### Debugging with Segger Ozone (OSD32 board only)
 
@@ -353,7 +355,7 @@ and then hang. At this point, you can load the elf file with your debugging
 software. The reason this works is that SPL initializes the DDR3 RAM, which is 
 all we need to copy our firmware onto the board.
 
-#### Debugging with gdb and OpenOCD or JLimkGDBServer (all boards)
+#### Debugging with gdb and OpenOCD or JLinkGDBServer (all boards)
 
 If you use OpenOCD with a USB cable connected to the ST-LINK micro-USB jack of the Discovery board,
 run this command in one terminal window:
