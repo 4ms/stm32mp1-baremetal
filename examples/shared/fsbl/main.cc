@@ -4,18 +4,18 @@
 #include "stm32mp157cxx_ca7.h"
 #include <cstdint>
 
-using namespace OSD32BRK;
+namespace Board = OSD32BRK;
+
 void delay(unsigned cycles);
 
 void main()
 {
-	RedLED red_led;
-	GreenLED green_led;
-	OrangeLED blue_led;
+	Board::RedLED red_led;
+	Board::GreenLED green_led;
+	Board::OrangeLED blue_led;
+
 
 	red_led.init();
-	green_led.init();
-	blue_led.init();
 
 	constexpr uint32_t dlytime = 600000;
 	while (1) {

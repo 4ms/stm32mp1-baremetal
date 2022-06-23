@@ -11,4 +11,9 @@ using GreenLED2 = Led<GPIO::I, 9, LedActive::Low>;
 
 using OrangeLED = RedLED2; // For compatibility with STM32MP1 Discovery board
 using BlueLED = GreenLED2; // For compatibility with STM32MP1 Discovery board
+
+constexpr uint32_t ConsoleUART = UART4_BASE;
+constexpr PinConf UartRX{GPIO::B, 2, PinAF::AF_8};
+constexpr PinConf UartTX{GPIO::G, 11, PinAF::AF_6};
+
 } // namespace OSD32BRK

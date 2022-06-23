@@ -16,7 +16,11 @@ using LD5 = GreenLED;
 using RedLED = Led<GPIOA_BASE, 13, LedActive::High>;
 using LD6 = RedLED;
 
-using RedLED2 = OrangeLED; //For compatibility with OSD32BRK board
-using GreenLED2 = BlueLED; //For compatibility with OSD32BRK board
+using RedLED2 = OrangeLED; // For compatibility with OSD32BRK board
+using GreenLED2 = BlueLED; // For compatibility with OSD32BRK board
+
+constexpr uint32_t ConsoleUART = UART4_BASE;
+constexpr PinConf UartRX{GPIO::B, 2, PinAF::AF_8};
+constexpr PinConf UartTX{GPIO::G, 11, PinAF::AF_6};
 
 } // namespace STM32MP1Disco
