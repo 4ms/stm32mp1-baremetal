@@ -26,9 +26,11 @@ include ../makefile-common.mk
 image: 
 	python3 fix_header.py $(BUILDDIR)/$(BINARYNAME).bin $(BUILDDIR)/$(BINARYNAME).stm32
 
-load: all
-	python3 fix_header.py $(BUILDDIR)/$(BINARYNAME).bin $(BUILDDIR)/$(BINARYNAME).stm32
-	sudo dd if=$(BUILDDIR)/$(BINARYNAME).stm32 of=/dev/disk4s1
-	sudo dd if=$(BUILDDIR)/$(BINARYNAME).stm32 of=/dev/disk4s2
-	diskutil unmountDisk /dev/disk4
+load: all image
+	@read -p "What is the disk device (Enter for /dev/disk4): " DISK && \
+	DISK=$${DISK:-/dev/disk4} && \
+	echo "Writing to $${DISK}s1 and $${DISK}s2" && \
+	sudo dd if=$(BUILDDIR)/$(BINARYNAME).stm32 of=$${DISK}s1 && \
+	sudo dd if=$(BUILDDIR)/$(BINARYNAME).stm32 of=$${DISK}s2 && \
+	diskutil unmountDisk $${DISK}
 
