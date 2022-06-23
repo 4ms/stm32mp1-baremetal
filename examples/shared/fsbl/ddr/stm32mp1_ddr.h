@@ -6,6 +6,29 @@
 #ifndef _RAM_STM32MP1_DDR_H
 #define _RAM_STM32MP1_DDR_H
 
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
+typedef uint32_t u32;
+typedef uint16_t u16;
+
+struct ram_info {
+	uint32_t base;
+	uint32_t size;
+};
+
+struct clk {
+	// struct udevice *dev;
+	long long rate; /* in HZ */
+	u32 flags;
+	int enable_count;
+	/*
+	 * Written by of_xlate. In the future, we might add more fields here.
+	 */
+	unsigned long id;
+	unsigned long data;
+};
+
 enum stm32mp1_ddr_interact_step {
 	STEP_DDR_RESET,
 	STEP_CTL_INIT,
@@ -63,7 +86,6 @@ struct stm32mp1_ddrctrl_reg {
 	u32 dbgcmd;
 	u32 poisoncfg;
 	u32 pccfg;
-
 };
 
 struct stm32mp1_ddrctrl_timing {
@@ -176,31 +198,20 @@ struct stm32mp1_ddr_config {
 int stm32mp1_ddr_clk_enable(struct ddr_info *priv, u32 mem_speed);
 void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, u32 pir);
 void stm32mp1_refresh_disable(struct stm32mp1_ddrctl *ctl);
-void stm32mp1_refresh_restore(struct stm32mp1_ddrctl *ctl,
-			      u32 rfshctl3,
-			      u32 pwrctl);
+void stm32mp1_refresh_restore(struct stm32mp1_ddrctl *ctl, u32 rfshctl3, u32 pwrctl);
 
-void stm32mp1_ddr_init(
-	struct ddr_info *priv,
-	const struct stm32mp1_ddr_config *config);
+void stm32mp1_ddr_init(struct ddr_info *priv, const struct stm32mp1_ddr_config *config);
 
-int stm32mp1_dump_reg(const struct ddr_info *priv,
-		      const char *name);
+int stm32mp1_dump_reg(const struct ddr_info *priv, const char *name);
 
-void stm32mp1_edit_reg(const struct ddr_info *priv,
-		       char *name,
-		       char *string);
+void stm32mp1_edit_reg(const struct ddr_info *priv, char *name, char *string);
 
-int stm32mp1_dump_param(const struct stm32mp1_ddr_config *config,
-			const char *name);
+int stm32mp1_dump_param(const struct stm32mp1_ddr_config *config, const char *name);
 
-void stm32mp1_edit_param(const struct stm32mp1_ddr_config *config,
-			 char *name,
-			 char *string);
+void stm32mp1_edit_param(const struct stm32mp1_ddr_config *config, char *name, char *string);
 
-bool stm32mp1_ddr_interactive(
-	void *priv,
-	enum stm32mp1_ddr_interact_step step,
-	const struct stm32mp1_ddr_config *config);
+bool stm32mp1_ddr_interactive(void *priv,
+							  enum stm32mp1_ddr_interact_step step,
+							  const struct stm32mp1_ddr_config *config);
 
 #endif

@@ -6,6 +6,10 @@
 #ifndef _RAM_STM32MP1_DDR_REGS_H
 #define _RAM_STM32MP1_DDR_REGS_H
 
+#include <stdint.h>
+typedef uint32_t u32;
+typedef uint8_t u8;
+
 /* DDR3/LPDDR2/LPDDR3 Controller (DDRCTRL) registers */
 struct stm32mp1_ddrctl {
 	u32 mstr ;		/* 0x0 Master*/
