@@ -5,6 +5,9 @@ CompileFlags:
    "-DSTM32MP157Cxx",
    "-DSTM32MP1",
    "-DCORE_CA7",
+	"-I..",
 	"-I../../../third-party/CMSIS/Core_A/Include",
 	"-I../../../third-party/CMSIS/Device/ST/STM32MP1xx/Include",
+	"-I../../../third-party/STM32MP1xx_HAL_Driver/Inc",
+	"-std=c++20",
 	]
