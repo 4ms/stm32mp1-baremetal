@@ -30,7 +30,7 @@ public:
 	void init(uint32_t baudrate)
 	{
 		LL_USART_InitTypeDef conf{
-			.PrescalerValue = LL_USART_PRESCALER_DIV4,
+			.PrescalerValue = LL_USART_PRESCALER_DIV1,
 			.BaudRate = baudrate,
 			.DataWidth = LL_USART_DATAWIDTH_8B,
 			.StopBits = LL_USART_STOPBITS_1,
@@ -47,7 +47,8 @@ public:
 	{
 		_enable_rcc();
 		LL_USART_Disable(uart);
-		LL_USART_Init(uart, conf);
+		auto err = LL_USART_Init(uart, conf);
+		LL_USART_EnableFIFO(uart);
 		LL_USART_Enable(uart);
 	}
 
