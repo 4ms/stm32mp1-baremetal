@@ -1,8 +1,8 @@
 #pragma once
 #include "stm32mp1xx.h"
+#include "stm32mp1xx_ll_usart.h"
 #include <cstdint>
 
-// No init is needed because U-boot initializes it
 template<uint32_t BASE_ADDR>
 class Uart {
 	USART_TypeDef *const uart;
@@ -12,11 +12,29 @@ public:
 		: uart{reinterpret_cast<USART_TypeDef *>(BASE_ADDR)}
 	{}
 
-	// Defaults to 8N1, txrx
+	// Default to 8N1
 	void init(uint32_t baudrate)
 	{
-		uint32_t txrx = (USART_CR1_TE | USART_CR1_RE);
-		uart->CR1 = txrx;
+		LL_USART_InitTypeDef conf{
+			.PrescalerValue = LL_USART_PRESCALER_DIV4,
+			.BaudRate = baudrate,
+			.DataWidth = LL_USART_DATAWIDTH_8B,
+			.StopBits = LL_USART_STOPBITS_1,
+			.Parity = LL_USART_PARITY_NONE,
+			.TransferDirection = LL_USART_DIRECTION_TX_RX,
+			.HardwareFlowControl = LL_USART_HWCONTROL_NONE,
+			.OverSampling = LL_USART_OVERSAMPLING_16,
+		};
+
+		init(&conf);
+	}
+
+	void init(LL_USART_InitTypeDef *conf)
+	{
+		_enable_rcc();
+		LL_USART_Disable(uart);
+		LL_USART_Init(uart, conf);
+		LL_USART_Enable(uart);
 	}
 
 	void write(const char *str)
@@ -54,9 +72,18 @@ public:
 	}
 
 private:
-	void delay_for_write(void)
+	void delay_for_write()
 	{
 		while ((uart->ISR & USART_ISR_TXFT) == 0)
 			;
+	}
+
+	void _enable_rcc()
+	{
+		if constexpr (BASE_ADDR == UART4_BASE)
+			RCC->MP_APB1ENSETR = RCC->MP_APB1ENSETR | RCC_MP_APB1ENSETR_UART4EN;
+		if constexpr (BASE_ADDR == USART6_BASE)
+			RCC->MP_APB2ENSETR = RCC->MP_APB2ENSETR | RCC_MP_APB2ENSETR_USART6EN;
+		// TODO: add the rest
 	}
 };
