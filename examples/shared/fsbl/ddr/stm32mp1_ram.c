@@ -14,7 +14,6 @@
 #include "stm32mp1xx.h"
 #include <asm/io.h>
 
-#define printf(...)
 static void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg);
 
 unsigned long stm32mp1_get_hse_freq(void)
