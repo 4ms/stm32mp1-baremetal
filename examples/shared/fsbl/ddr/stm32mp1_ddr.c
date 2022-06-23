@@ -671,7 +671,6 @@ __weak int board_ddr_power_init(enum ddr_type ddr_type)
 	return 0;
 }
 
-__maybe_unused
 void stm32mp1_ddr_init(struct ddr_info *priv,
 		       const struct stm32mp1_ddr_config *config)
 {
