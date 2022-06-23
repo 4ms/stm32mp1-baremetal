@@ -13,6 +13,7 @@ SOURCES = startup.s \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_ll_usart.c \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_ll_rcc.c \
+		  ddr/stm32mp1_ddr.c \
 
 
 INCLUDES = -I. \
@@ -20,6 +21,9 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(SHAREDDIR) \
+		   -Iddr/ \
+		   -Iddr/uboot-port/include \
+		   -Iddr/uboot-port/arch/arm/include \
 
 include ../makefile-common.mk
 

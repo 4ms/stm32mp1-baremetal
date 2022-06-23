@@ -9,6 +9,11 @@
 #include <stdint.h>
 typedef uint32_t u32;
 typedef uint8_t u8;
+#define BIT(x) (1 << (x))
+#define BITS_PER_LONG 32
+#define GENMASK(h, l) \
+	(((~0UL) << (l)) & (~0UL >> (BITS_PER_LONG - 1 - (h))))
+
 
 /* DDR3/LPDDR2/LPDDR3 Controller (DDRCTRL) registers */
 struct stm32mp1_ddrctl {

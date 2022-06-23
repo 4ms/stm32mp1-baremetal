@@ -6,9 +6,17 @@
 #ifndef _RAM_STM32MP1_DDR_H
 #define _RAM_STM32MP1_DDR_H
 
-#include <stddef.h>
+// Added by DG:
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+
+#define debug(...)
+#define pr_err(...)
+#define panic(...) while(1);
+#define __weak __attribute__((weak))
+#define __maybe_unused 
+
 typedef uint32_t u32;
 typedef uint16_t u16;
 
@@ -28,6 +36,8 @@ struct clk {
 	unsigned long id;
 	unsigned long data;
 };
+
+/////////
 
 enum stm32mp1_ddr_interact_step {
 	STEP_DDR_RESET,

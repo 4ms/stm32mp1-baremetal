@@ -3,6 +3,11 @@
  * Copyright (C) 2018, STMicroelectronics - All Rights Reserved
  */
 
+// Changed by DG:
+#include "asm/io.h"
+#include "mach/ddr.h"
+#include "linux/iopoll.h"
+#include "delay.h"
 // #include <common.h>
 // #include <clk.h>
 // #include <ram.h>
@@ -11,6 +16,7 @@
 // #include <asm/io.h>
 // #include <asm/arch/ddr.h>
 // #include <linux/iopoll.h>
+
 #include "stm32mp1_ddr.h"
 #include "stm32mp1_ddr_regs.h"
 

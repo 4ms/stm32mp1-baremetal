@@ -20,17 +20,19 @@
 #ifndef __ASM_ARM_IO_H
 #define __ASM_ARM_IO_H
 
-#define __KERNEL__
-#ifdef __KERNEL__
-
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <asm/byteorder.h>
-#include <asm/memory.h>
-#include <asm/barriers.h>
-#if 0	/* XXX###XXX */
-#include <asm/arch/hardware.h>
-#endif	/* XXX###XXX */
+// Changed by DG:
+#include "compiler.h"
+#include "asm/barriers.h"
+typedef uint32_t dma_addr_t;
+// #include <linux/types.h>
+// #include <linux/kernel.h>
+// #include <asm/byteorder.h>
+// #include <asm/memory.h>
+// #include <asm/barriers.h>
+// #if 0	/* XXX###XXX */
+// #include <asm/arch/hardware.h>
+// #endif	/* XXX###XXX */
+////////////
 
 static inline void sync(void)
 {
@@ -471,9 +473,5 @@ out:
 #define isa_check_signature(io,sig,len)	(0)
 
 #endif	/* __mem_isa */
-#endif	/* __KERNEL__ */
-
-#include <asm-generic/io.h>
-#include <iotrace.h>
 
 #endif	/* __ASM_ARM_IO_H */
