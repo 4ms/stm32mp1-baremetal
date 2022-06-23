@@ -1,18 +1,32 @@
 #pragma once
+#include "drivers/pin.hh"
 #include "stm32mp1xx.h"
 #include "stm32mp1xx_ll_usart.h"
 #include <cstdint>
 
 template<uint32_t BASE_ADDR>
 class Uart {
-	USART_TypeDef *const uart;
+	USART_TypeDef *const uart{reinterpret_cast<USART_TypeDef *>(BASE_ADDR)};
 
 public:
-	Uart()
-		: uart{reinterpret_cast<USART_TypeDef *>(BASE_ADDR)}
-	{}
+	// Use only if UART has already been init by a previous stage (i.e. FSBL init the UART, so it's safe to use in app
+	Uart() = default;
 
-	// Default to 8N1
+	// If you just construct with a baudrate, it defaults to 8N1
+	Uart(PinConf txpin, PinConf rxpin, uint32_t baudrate)
+	{
+		txpin.init(PinMode::Alt);
+		rxpin.init(PinMode::Alt);
+		init(baudrate);
+	}
+
+	Uart(PinConf txpin, PinConf rxpin, const LL_USART_InitTypeDef &conf)
+	{
+		txpin.init(PinMode::Alt);
+		rxpin.init(PinMode::Alt);
+		init(conf);
+	}
+
 	void init(uint32_t baudrate)
 	{
 		LL_USART_InitTypeDef conf{
