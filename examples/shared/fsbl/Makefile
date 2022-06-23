@@ -13,14 +13,17 @@ SOURCES = startup.s \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_ll_usart.c \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_ll_rcc.c \
+		  $(EXTLIBDIR)/printf/src/printf/printf.c \
 		  ddr/stm32mp1_ddr.c \
 		  ddr/stm32mp1_ram.c \
+
 
 
 INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Inc \
 		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
+		   -I$(EXTLIBDIR)/printf/src \
 		   -I$(SHAREDDIR) \
 		   -Iddr/ \
 		   -Iddr/uboot-port/include \

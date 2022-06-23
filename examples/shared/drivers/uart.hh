@@ -60,6 +60,12 @@ public:
 		}
 	}
 
+	void write(const char c)
+	{
+		delay_for_write();
+		uart->TDR = c;
+	}
+
 	void write(uint32_t value)
 	{
 		if (!value) {

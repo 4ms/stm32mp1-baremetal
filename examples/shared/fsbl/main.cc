@@ -1,8 +1,10 @@
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "osd32brk_conf.hh"
+#include "printf/printf.h"
 #include "stm32mp157cxx_ca7.h"
 #include <cstdint>
+#include <cstdio>
 
 namespace Board = OSD32BRK;
 
@@ -16,6 +18,8 @@ void main()
 
 	Uart<Board::ConsoleUART> uart(Board::UartRX, Board::UartTX, 115200);
 	uart.write("Starting FSBL...\n");
+	printf_("Printf works\n");
+	printf_("1 + 1 = %d", (1 + 1));
 
 	constexpr uint32_t dlytime = 600000;
 	while (1) {
@@ -38,4 +42,10 @@ void delay(unsigned cycles)
 	while (cycles--) {
 		asm("nop");
 	}
+}
+
+extern "C" void putchar_(char c)
+{
+	Uart<Board::ConsoleUART> uart;
+	uart.write(c);
 }
