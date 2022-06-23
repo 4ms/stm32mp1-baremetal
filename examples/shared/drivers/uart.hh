@@ -12,6 +12,13 @@ public:
 		: uart{reinterpret_cast<USART_TypeDef *>(BASE_ADDR)}
 	{}
 
+	// Defaults to 8N1, txrx
+	void init(uint32_t baudrate)
+	{
+		uint32_t txrx = (USART_CR1_TE | USART_CR1_RE);
+		uart->CR1 = txrx;
+	}
+
 	void write(const char *str)
 	{
 		while (*str) {
@@ -49,7 +56,7 @@ public:
 private:
 	void delay_for_write(void)
 	{
-		while ((UART4->ISR & USART_ISR_TXFT) == 0)
+		while ((uart->ISR & USART_ISR_TXFT) == 0)
 			;
 	}
 };

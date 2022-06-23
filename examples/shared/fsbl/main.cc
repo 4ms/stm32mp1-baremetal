@@ -1,4 +1,5 @@
 #include "drivers/leds.hh"
+#include "drivers/uart.hh"
 #include "osd32brk_conf.hh"
 #include "stm32mp157cxx_ca7.h"
 #include <cstdint>
