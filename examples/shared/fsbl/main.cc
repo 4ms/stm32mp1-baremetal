@@ -15,7 +15,6 @@ void main()
 	Board::OrangeLED blue_led;
 
 	Uart<Board::ConsoleUART> uart(Board::UartRX, Board::UartTX, 115200);
-
 	uart.write("Starting FSBL...\n");
 
 	constexpr uint32_t dlytime = 600000;

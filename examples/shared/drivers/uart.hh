@@ -47,7 +47,7 @@ public:
 	{
 		_enable_rcc();
 		LL_USART_Disable(uart);
-		auto err = LL_USART_Init(uart, conf);
+		LL_USART_Init(uart, conf);
 		LL_USART_EnableFIFO(uart);
 		LL_USART_Enable(uart);
 	}
