@@ -34,7 +34,7 @@ INCLUDES = -I. \
 
 include ../makefile-common.mk
 
-image: 
+image: all
 	python3 fix_header.py $(BUILDDIR)/$(BINARYNAME).bin $(BUILDDIR)/$(BINARYNAME).stm32
 
 load: all image
