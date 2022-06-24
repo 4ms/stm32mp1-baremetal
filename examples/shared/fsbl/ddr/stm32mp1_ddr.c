@@ -16,9 +16,10 @@
 // #include <asm/io.h>
 // #include <asm/arch/ddr.h>
 // #include <linux/iopoll.h>
-
 #include "stm32mp1_ddr.h"
 #include "stm32mp1_ddr_regs.h"
+
+#include "debug_pin.h"
 
 #define RCC_DDRITFCR 0xD8
 
@@ -514,15 +515,37 @@ stm32mp1_ddr_interactive(void *priv, enum stm32mp1_ddr_interact_step step, const
 
 static void ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 {
-	u32 pgsr;
-	int ret;
+	uint32_t pgsr;
+	int error = 0;
+	do {
+		pgsr = readl((uintptr_t)&phy->pgsr);
 
-	ret = readl_poll_timeout(&phy->pgsr,
-							 pgsr,
-							 pgsr & (DDRPHYC_PGSR_IDONE | DDRPHYC_PGSR_DTERR | DDRPHYC_PGSR_DTIERR |
-									 DDRPHYC_PGSR_DFTERR | DDRPHYC_PGSR_RVERR | DDRPHYC_PGSR_RVEIRR),
-							 1000000);
-	debug("\n[0x%08x] pgsr = 0x%08x ret=%d\n", (u32)&phy->pgsr, pgsr, ret);
+		if ((pgsr & DDRPHYC_PGSR_DTERR) != 0U) {
+			debug("DQS Gate Training Error\n");
+			error++;
+		}
+
+		if ((pgsr & DDRPHYC_PGSR_DTIERR) != 0U) {
+			debug("DQS Gate Training Intermittent Error\n");
+			error++;
+		}
+
+		if ((pgsr & DDRPHYC_PGSR_DFTERR) != 0U) {
+			debug("DQS Drift Error\n");
+			error++;
+		}
+
+		if ((pgsr & DDRPHYC_PGSR_RVERR) != 0U) {
+			debug("Read Valid Training Error\n");
+			error++;
+		}
+
+		if ((pgsr & DDRPHYC_PGSR_RVEIRR) != 0U) {
+			debug("Read Valid Training Intermittent Error\n");
+			error++;
+		}
+	} while (((pgsr & DDRPHYC_PGSR_IDONE) == 0U) && (error == 0));
+	debug("\n[0x%08x] pgsr = 0x%08x\n", (u32)&phy->pgsr, pgsr);
 }
 
 void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, u32 pir)
@@ -612,6 +635,7 @@ void stm32mp1_refresh_restore(struct stm32mp1_ddrctl *ctl, u32 rfshctl3, u32 pwr
 /* board-specific DDR power initializations. */
 __weak int board_ddr_power_init(enum ddr_type ddr_type)
 {
+	// TODO: If board has PMIC, then turn on DDR power supplies here
 	return 0;
 }
 
@@ -633,7 +657,6 @@ void stm32mp1_ddr_init(struct ddr_info *priv, const struct stm32mp1_ddr_config *
 			break;
 	}
 
-	debug("ddr_inside ddr_init\n");
 	if (config->c_reg.mstr & DDRCTRL_MSTR_DDR3)
 		ret = board_ddr_power_init(STM32MP_DDR3);
 	else if (config->c_reg.mstr & DDRCTRL_MSTR_LPDDR2) {
@@ -647,15 +670,14 @@ void stm32mp1_ddr_init(struct ddr_info *priv, const struct stm32mp1_ddr_config *
 		else
 			ret = board_ddr_power_init(STM32MP_LPDDR3_16);
 	}
-	debug("returned: %d\n", ret);
 
 	if (ret)
 		panic("ddr power init failed\n");
 
 ddr_start:
-	debug("name = %s\n", config->info.name);
-	debug("speed = %d kHz\n", config->info.speed);
-	debug("size  = 0x%x\n", config->info.size);
+	printf_("name = %s\n", config->info.name);
+	printf_("speed = %d kHz\n", config->info.speed);
+	printf_("size = 0x%x\n", config->info.size);
 	/*
 	 * 1. Program the DWC_ddr_umctl2 registers
 	 * 1.1 RESETS: presetn, core_ddrc_rstn, aresetn
@@ -750,6 +772,8 @@ ddr_start:
 	/* wait uMCTL2 ready */
 
 	wait_operating_mode(priv, DDRCTRL_STAT_OPERATING_MODE_NORMAL);
+
+	/* TODO: Do we need to Switch to DLL OFF mode? */
 
 	if (config->p_cal_present) {
 		debug("DDR DQS training skipped.\n");

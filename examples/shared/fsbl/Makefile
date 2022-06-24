@@ -19,6 +19,7 @@ SOURCES = startup.s \
 		  $(EXTLIBDIR)/printf/src/printf/printf.c \
 		  ddr/stm32mp1_ddr.c \
 		  ddr/stm32mp1_ram.c \
+		  ddr/uboot-port/common/memsize.c \
 
 
 

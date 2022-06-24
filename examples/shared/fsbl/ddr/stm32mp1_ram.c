@@ -9,6 +9,7 @@
 // #include <ram.h>
 // #include <regmap.h>
 // #include <syscon.h>
+#include "memsize.h"
 #include "stm32mp15-osd32mp1-ddr3-1x4Gb.dtsi"
 #include "stm32mp1_ddr.h"
 #include "stm32mp1xx.h"
@@ -75,7 +76,7 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed)
 
 	ddrphy_clk = stm32mp1_get_pll2_r_freq();
 
-	debug("DDR: mem_speed (%d kHz), RCC %d kHz\n", mem_speed, (u32)(ddrphy_clk / 1000));
+	printf_("DDR: mem_speed (%d kHz), RCC %d kHz\n", mem_speed, (u32)(ddrphy_clk / 1000));
 
 	/* max 10% frequency delta */
 	ddr_clk = abs(ddrphy_clk - mem_speed * 1000);
@@ -139,101 +140,39 @@ int stm32mp1_ddr_setup(void)
 	unsigned int idx;
 	struct stm32mp1_ddr_config config;
 
-	debug("tz init...");
 	stm32mp1_ddr_tz_init();
-	debug("done\n");
 
-	// #define PARAM(x, y, z)                                                                                                 \
-// 	{                                                                                                                  \
-// 		.name = x, .offset = offsetof(struct stm32mp1_ddr_config, y), .size = sizeof(config.y) / sizeof(u32),          \
-// 		.present = z,                                                                                                  \
-// 	}
-
-	// #define CTL_PARAM(x) PARAM("st,ctl-" #x, c_##x, NULL)
-	// #define PHY_PARAM(x) PARAM("st,phy-" #x, p_##x, NULL)
-	// #define PHY_PARAM_OPT(x) PARAM("st,phy-" #x, p_##x, &config.p_##x##_present)
-
-	// 	const struct {
-	// 		const char *name;	 /* name in DT */
-	// 		const u32 offset;	 /* offset in config struct */
-	// 		const u32 size;		 /* size of parameters */
-	// 		bool *const present; /* presence indication for opt */
-	// 	} param[] = {CTL_PARAM(reg),
-	// 				 CTL_PARAM(timing),
-	// 				 CTL_PARAM(map),
-	// 				 CTL_PARAM(perf),
-	// 				 PHY_PARAM(reg),
-	// 				 PHY_PARAM(timing),
-	// 				 PHY_PARAM_OPT(cal)};
-
-	// 	config.info.speed = dev_read_u32_default(dev, "st,mem-speed", 0);
-	// 	config.info.size = dev_read_u32_default(dev, "st,mem-size", 0);
-	// 	config.info.name = dev_read_string(dev, "st,mem-name");
-	// 	if (!config.info.name) {
-	// 		debug("%s: no st,mem-name\n", __func__);
-	// 		return -EINVAL;
-	// 	}
-	// 	printf("RAM: %s\n", config.info.name);
-
-	// 	for (idx = 0; idx < ARRAY_SIZE(param); idx++) {
-	// 		ret = dev_read_u32_array(dev, param[idx].name, (void *)((u32)&config + param[idx].offset), param[idx].size);
-	// 		debug("%s: %s[0x%x] = %d\n", __func__, param[idx].name, param[idx].size, ret);
-	// 		if (ret && (ret != -FDT_ERR_NOTFOUND || !param[idx].present)) {
-	// 			pr_err("%s: Cannot read %s, error=%d\n", __func__, param[idx].name, ret);
-	// 			return -EINVAL;
-	// 		}
-	// 		if (param[idx].present) {
-	// 			/* save presence of optional parameters */
-	// 			*param[idx].present = true;
-	// 			if (ret == -FDT_ERR_NOTFOUND) {
-	// 				*param[idx].present = false;
-	// #ifdef CONFIG_STM32MP1_DDR_INTERACTIVE
-	// 				/* reset values if used later */
-	// 				memset((void *)((u32)&config + param[idx].offset), 0, param[idx].size * sizeof(u32));
-	// #endif
-	// 			}
-	// 		}
-	// 	}
-
-	debug("setting config...");
 	priv->ctl = (struct stm32mp1_ddrctl *)DDRCTRL_BASE;
 	priv->phy = (struct stm32mp1_ddrphy *)DDRPHYC_BASE;
-	// priv->pwr = PWR_BASE;
 	priv->rcc = RCC_BASE;
-	priv->info.base = 0xC0000000UL;
-	priv->info.size = 0x20000000UL;
+	priv->info.base = 0xC0000000;
+	priv->info.size = 0;
 
 	stm32mp1_ddr_get_config(&config);
-	debug("done\n");
+	config.p_cal_present = false;
 
-	debug("CKMOD\n");
-	// Set CKMOD bits = 0b000 during init
+	// Set CKMOD bits = 0b000 during init: "Normal mode: This mode must be selected during DDRC and DDRPHYC
+	// initialization phase"
 	RCC->DDRITFCR = (RCC->DDRITFCR & ~RCC_DDRITFCR_DDRCKMOD_Msk) | (0 << RCC_DDRITFCR_DDRCKMOD_Pos);
 
-	debug("Disable Gate\n");
 	// Disable AXIDCG clock gating during init
 	RCC->DDRITFCR = RCC->DDRITFCR & ~RCC_DDRITFCR_AXIDCGEN;
 
-	debug("ddr_init\n");
 	stm32mp1_ddr_init(priv, &config);
-	debug("ddr_init done\n");
 
 	// Enable clock gating
-	debug("Enable Gate\n");
 	RCC->DDRITFCR = RCC->DDRITFCR | RCC_DDRITFCR_AXIDCGEN;
 
 	/* check size */
-	// debug("%s : get_ram_size(%x, %x)\n", __func__, (u32)priv->info.base, (u32)STM32_DDR_SIZE);
+	debug("%s : get_ram_size(%x, %x)\n", __func__, (u32)priv->info.base, (u32)DDR_MEM_SIZE);
+	priv->info.size = get_ram_size((long *)priv->info.base, DDR_MEM_SIZE);
+	debug("%s : %x\n", __func__, (u32)priv->info.size);
 
-	// priv->info.size = get_ram_size((long *)priv->info.base, STM32_DDR_SIZE);
-
-	// debug("%s : %x\n", __func__, (u32)priv->info.size);
-
-	// /* check memory access for all memory */
-	// if (config.info.size != priv->info.size) {
-	// 	printf("DDR invalid size : 0x%x, expected 0x%x\n", priv->info.size, config.info.size);
-	// 	return -EINVAL;
-	// }
+	/* check memory access for all memory */
+	if (config.info.size != priv->info.size) {
+		printf_("DDR invalid size : 0x%x, expected 0x%x\n", priv->info.size, config.info.size);
+		return -EINVAL;
+	}
 	return 0;
 }
 
@@ -311,7 +250,7 @@ static void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config *cfg)
 	cfg->c_map.addrmap11 = DDR_ADDRMAP11;
 
 	cfg->p_reg.pgcr = DDR_PGCR;
-	cfg->p_reg.aciocr = (DDR_ACIOCR & ~(DDRPHYC_ACIOCR_ACSR_Msk)) | (0x02uL << DDRPHYC_ACIOCR_ACSR_Pos);
+	cfg->p_reg.aciocr = DDR_ACIOCR; //(DDR_ACIOCR & ~(DDRPHYC_ACIOCR_ACSR_Msk)) | (0x02uL << DDRPHYC_ACIOCR_ACSR_Pos);
 	cfg->p_reg.dxccr = DDR_DXCCR;
 	cfg->p_reg.dsgcr = DDR_DSGCR;
 	cfg->p_reg.dcr = DDR_DCR;
