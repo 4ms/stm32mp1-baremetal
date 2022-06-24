@@ -1,6 +1,10 @@
+
 extern "C" {
 #include "ddr/stm32mp1_ram.h"
 }
+
+#include "stm32mp1xx_hal_rcc.h"
+
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "osd32brk_conf.hh"
@@ -12,9 +16,12 @@ extern "C" {
 namespace Board = OSD32BRK;
 
 void delay(unsigned cycles);
+void init_clocks();
 
 void main()
 {
+	init_clocks();
+
 	Board::RedLED red_led;
 	Board::GreenLED green_led;
 	Board::OrangeLED blue_led;
@@ -61,6 +68,23 @@ void delay(unsigned cycles)
 
 extern "C" void putchar_(char c)
 {
+	// Uart<Board::ConsoleUART>::putchar(c);
 	Uart<Board::ConsoleUART> uart;
 	uart.write(c);
+}
+
+void init_clocks()
+{
+	RCC_OscInitTypeDef conf{
+		.OscillatorType = RCC_OSCILLATORTYPE_HSE,
+		.HSEState = RCC_HSE_ON,
+		.LSEState = RCC_LSE_OFF,
+		.PLL2 =
+			{
+				.PLLState = RCC_PLL_ON,
+
+			},
+
+	};
+	HAL_RCC_OscConfig(&conf);
 }
