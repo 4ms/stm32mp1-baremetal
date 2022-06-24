@@ -131,7 +131,7 @@ static void stm32mp1_ddr_tz_init(void)
 	}
 }
 
-int stm32mp1_ddr_setup(struct ddr_info *info)
+int stm32mp1_ddr_setup(void)
 {
 	struct ddr_info _priv;
 	struct ddr_info *priv = &_priv;
@@ -198,7 +198,7 @@ int stm32mp1_ddr_setup(struct ddr_info *info)
 	// priv->pwr = PWR_BASE;
 	priv->rcc = RCC_BASE;
 	priv->info.base = 0xC0000000UL;
-	priv->info.size = 0x10000000UL;
+	priv->info.size = 0x20000000UL;
 
 	stm32mp1_ddr_get_config(&config);
 
