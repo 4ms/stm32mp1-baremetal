@@ -1,5 +1,7 @@
 #include "stm32mp1xx.h"
 
+uint32_t SystemCoreClock = 24000000;
+
 void SystemInit(void)
 {
 	// do not use global variables because this function is called before

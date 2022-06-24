@@ -1,26 +1,23 @@
+#include <cstdint>
+#include <cstdio>
 
-extern "C" {
+#include "clocks.hh"
 #include "ddr/stm32mp1_ram.h"
-}
-
-#include "stm32mp1xx_hal_rcc.h"
-
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "osd32brk_conf.hh"
 #include "printf/printf.h"
 #include "stm32mp157cxx_ca7.h"
-#include <cstdint>
-#include <cstdio>
 
 namespace Board = OSD32BRK;
 
 void delay(unsigned cycles);
-void init_clocks();
 
 void main()
 {
-	init_clocks();
+	auto sysclockerr = SystemClocks::init_pll1_pll2();
+	int pll1 = ((__HAL_RCC_GET_MPU_SOURCE() == RCC_MPUSOURCE_PLL1) && __HAL_RCC_GET_FLAG(RCC_FLAG_MPUSRCRDY));
+	int mpudiv = ((__HAL_RCC_GET_MPU_SOURCE() == RCC_MPUSOURCE_MPUDIV) && __HAL_RCC_GET_FLAG(RCC_FLAG_MPUSRCRDY));
 
 	Board::RedLED red_led;
 	Board::GreenLED green_led;
@@ -28,6 +25,7 @@ void main()
 
 	Uart<Board::ConsoleUART> uart(Board::UartRX, Board::UartTX, 115200);
 	uart.write("Starting FSBL...\n");
+	printf_("Sysclock init returned %d, pll1mpu=%d, mpudiv=%d\n", sysclockerr, pll1, mpudiv);
 	printf_("Printf works\n");
 	printf_("1 + 2 = %d\n", (1 + 2));
 
@@ -66,25 +64,10 @@ void delay(unsigned cycles)
 	}
 }
 
+// Allows use of printf_(...)
 extern "C" void putchar_(char c)
 {
 	// Uart<Board::ConsoleUART>::putchar(c);
 	Uart<Board::ConsoleUART> uart;
 	uart.write(c);
-}
-
-void init_clocks()
-{
-	RCC_OscInitTypeDef conf{
-		.OscillatorType = RCC_OSCILLATORTYPE_HSE,
-		.HSEState = RCC_HSE_ON,
-		.LSEState = RCC_LSE_OFF,
-		.PLL2 =
-			{
-				.PLLState = RCC_PLL_ON,
-
-			},
-
-	};
-	HAL_RCC_OscConfig(&conf);
 }
