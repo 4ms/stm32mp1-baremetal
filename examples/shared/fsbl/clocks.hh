@@ -40,11 +40,12 @@ struct SystemClocks {
 		// for (int i = 0; i < 100000; i++)
 		// 	;
 
+		auto err_deinit = HAL_RCC_DeInit();
 		auto err = HAL_RCC_OscConfig(&rcc_osc_conf);
 
 		// __HAL_RCC_MPU_SOURCE(RCC_MPUSOURCE_PLL1);
 		// while (!RCC_FLAG_MPUSRCRDY)
 		// 	;
-		return static_cast<unsigned>(err);
+		return static_cast<unsigned>(err + 1000 * err_deinit);
 	}
 };
