@@ -7,15 +7,13 @@
 #define _RAM_STM32MP1_DDR_H
 
 // Added by DG:
+#include "print_messages.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#define debug(...)
-#define pr_err(...)
-#define panic(...) while(1);
 #define __weak __attribute__((weak))
-#define __maybe_unused 
+#define __maybe_unused
 
 typedef uint32_t u32;
 typedef uint16_t u16;
