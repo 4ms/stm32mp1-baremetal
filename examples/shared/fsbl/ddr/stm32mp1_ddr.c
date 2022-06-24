@@ -3,23 +3,13 @@
  * Copyright (C) 2018, STMicroelectronics - All Rights Reserved
  */
 
-// Changed by DG:
+#include "stm32mp1_ddr.h"
 #include "asm/io.h"
 #include "delay.h"
 #include "linux/iopoll.h"
 #include "mach/ddr.h"
-// #include <common.h>
-// #include <clk.h>
-// #include <ram.h>
-// #include <reset.h>
-// #include <timer.h>
-// #include <asm/io.h>
-// #include <asm/arch/ddr.h>
-// #include <linux/iopoll.h>
-#include "stm32mp1_ddr.h"
 #include "stm32mp1_ddr_regs.h"
-
-#include "debug_pin.h"
+// #include "debug_pin.h"
 
 #define RCC_DDRITFCR 0xD8
 

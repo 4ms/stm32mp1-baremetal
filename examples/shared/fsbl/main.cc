@@ -15,6 +15,7 @@ void delay(unsigned cycles);
 
 void main()
 {
+	// TODO: verify clock speed
 	auto sysclockerr = SystemClocks::init_pll1_pll2();
 
 	Board::RedLED red_led;
@@ -43,6 +44,7 @@ void main()
 	else
 		printf_("... FAILED!\n");
 
+	//
 	constexpr uint32_t dlytime = 600000;
 	while (1) {
 		blue_led.on();

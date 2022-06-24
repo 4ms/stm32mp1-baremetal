@@ -7,6 +7,7 @@
 #define _RAM_STM32MP1_DDR_H
 
 // Added by DG:
+#include "asm/types.h"
 #include "print_messages.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -15,8 +16,9 @@
 #define __weak __attribute__((weak))
 #define __maybe_unused
 
-typedef uint32_t u32;
-typedef uint16_t u16;
+// typedef uint32_t u32;
+// typedef uint16_t u16;
+//////////
 
 struct ram_info {
 	uint32_t base;

@@ -3,12 +3,6 @@
  * Copyright (C) 2018, STMicroelectronics - All Rights Reserved
  */
 
-// #include <common.h>
-// #include <clk.h>
-// #include <dm.h>
-// #include <ram.h>
-// #include <regmap.h>
-// #include <syscon.h>
 #include "memsize.h"
 #include "stm32mp15-osd32mp1-ddr3-1x4Gb.dtsi"
 #include "stm32mp1_ddr.h"
@@ -62,7 +56,7 @@ unsigned long stm32mp1_get_pll2_r_freq(void)
 	return stm32mp1_get_pll2_freq() / pll2divr;
 }
 
-int stm32mp1_ddr_clk_enable(struct ddr_info *priv, uint32_t mem_speed)
+int stm32mp1_ddr_clk_enable(struct ddr_info *priv, u32 mem_speed)
 {
 	RCC->DDRITFCR = RCC->DDRITFCR | RCC_DDRITFCR_DDRC1EN | RCC_DDRITFCR_DDRC1LPEN | RCC_DDRITFCR_DDRC2EN |
 					RCC_DDRITFCR_DDRC2LPEN | RCC_DDRITFCR_DDRPHYCEN | RCC_DDRITFCR_DDRPHYCLPEN |

@@ -10,6 +10,8 @@
  *
  * Much of the original barrier code was contributed by:
  *   Valentine Barshak <valentine.barshak@cogentembedded.com>
+ *
+ *  2022 Modified to work with baremetal by DG
  */
 #ifndef __BARRIERS_H__
 #define __BARRIERS_H__
@@ -30,9 +32,9 @@
 #endif /* !CONFIG_ARM64 */
 
 // #if __LINUX_ARM_ARCH__ >= 7
-#define ISB	asm volatile ("isb sy" : : : "memory")
-#define DSB	asm volatile ("dsb sy" : : : "memory")
-#define DMB	asm volatile ("dmb sy" : : : "memory")
+#define ISB asm volatile("isb sy" : : : "memory")
+#define DSB asm volatile("dsb sy" : : : "memory")
+#define DMB asm volatile("dmb sy" : : : "memory")
 // #elif __LINUX_ARM_ARCH__ == 6
 // #define ISB	CP15ISB
 // #define DSB	CP15DSB
@@ -43,8 +45,8 @@
 // #define DMB	asm volatile ("" : : : "memory")
 // #endif
 
-#define isb()	ISB
-#define dsb()	DSB
-#define dmb()	DMB
-#endif	/* __ASSEMBLY__ */
-#endif	/* __BARRIERS_H__ */
+#define isb() ISB
+#define dsb() DSB
+#define dmb() DMB
+#endif /* __ASSEMBLY__ */
+#endif /* __BARRIERS_H__ */

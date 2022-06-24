@@ -19,7 +19,7 @@ SOURCES = startup.s \
 		  $(EXTLIBDIR)/printf/src/printf/printf.c \
 		  ddr/stm32mp1_ddr.c \
 		  ddr/stm32mp1_ram.c \
-		  ddr/uboot-port/common/memsize.c \
+		  uboot-port/common/memsize.c \
 
 
 
@@ -30,8 +30,8 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/printf/src \
 		   -I$(SHAREDDIR) \
 		   -Iddr/ \
-		   -Iddr/uboot-port/include \
-		   -Iddr/uboot-port/arch/arm/include \
+		   -Iuboot-port/include \
+		   -Iuboot-port/arch/arm/include \
 
 include ../makefile-common.mk
 
