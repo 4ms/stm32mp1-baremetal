@@ -4,18 +4,19 @@
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  */
 
-#include <common.h>
+// #include <common.h>
+#define BITS_PER_LONG 32
 
-DECLARE_GLOBAL_DATA_PTR;
+// DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef __PPC__
 /*
  * At least on G2 PowerPC cores, sequential accesses to non-existent
  * memory must be synchronized.
  */
-# include <asm/io.h>	/* for sync() */
+#include <asm/io.h> /* for sync() */
 #else
-# define sync()		/* nothing */
+#define sync() /* nothing */
 #endif
 
 /*
@@ -26,15 +27,15 @@ DECLARE_GLOBAL_DATA_PTR;
 long get_ram_size(long *base, long maxsize)
 {
 	volatile long *addr;
-	long           save[BITS_PER_LONG - 1];
-	long           save_base;
-	long           cnt;
-	long           val;
-	long           size;
-	int            i = 0;
+	long save[BITS_PER_LONG - 1];
+	long save_base;
+	long cnt;
+	long val;
+	long size;
+	int i = 0;
 
 	for (cnt = (maxsize / sizeof(long)) >> 1; cnt > 0; cnt >>= 1) {
-		addr = base + cnt;	/* pointer arith! */
+		addr = base + cnt; /* pointer arith! */
 		sync();
 		save[i++] = *addr;
 		sync();
@@ -53,7 +54,7 @@ long get_ram_size(long *base, long maxsize)
 		sync();
 		*base = save_base;
 		for (cnt = 1; cnt < maxsize / sizeof(long); cnt <<= 1) {
-			addr  = base + cnt;
+			addr = base + cnt;
 			sync();
 			*addr = save[--i];
 		}
@@ -61,7 +62,7 @@ long get_ram_size(long *base, long maxsize)
 	}
 
 	for (cnt = 1; cnt < maxsize / sizeof(long); cnt <<= 1) {
-		addr = base + cnt;	/* pointer arith! */
+		addr = base + cnt; /* pointer arith! */
 		val = *addr;
 		*addr = save[--i];
 		if (val != ~cnt) {
@@ -70,10 +71,8 @@ long get_ram_size(long *base, long maxsize)
 			 * Restore the original data
 			 * before leaving the function.
 			 */
-			for (cnt <<= 1;
-			     cnt < maxsize / sizeof(long);
-			     cnt <<= 1) {
-				addr  = base + cnt;
+			for (cnt <<= 1; cnt < maxsize / sizeof(long); cnt <<= 1) {
+				addr = base + cnt;
 				*addr = save[--i];
 			}
 			/* warning: don't restore save_base in this case,
@@ -90,13 +89,12 @@ long get_ram_size(long *base, long maxsize)
 	return (maxsize);
 }
 
-phys_size_t __weak get_effective_memsize(void)
-{
-#ifndef CONFIG_VERY_BIG_RAM
-	return gd->ram_size;
-#else
-	/* limit stack to what we can reasonable map */
-	return ((gd->ram_size > CONFIG_MAX_MEM_MAPPED) ?
-		CONFIG_MAX_MEM_MAPPED : gd->ram_size);
-#endif
-}
+// phys_size_t __weak get_effective_memsize(void)
+// {
+// #ifndef CONFIG_VERY_BIG_RAM
+// 	return gd->ram_size;
+// #else
+// 	/* limit stack to what we can reasonable map */
+// 	return ((gd->ram_size > CONFIG_MAX_MEM_MAPPED) ? CONFIG_MAX_MEM_MAPPED : gd->ram_size);
+// #endif
+// }
