@@ -139,7 +139,9 @@ int stm32mp1_ddr_setup(void)
 	unsigned int idx;
 	struct stm32mp1_ddr_config config;
 
+	debug("tz init...");
 	stm32mp1_ddr_tz_init();
+	debug("done\n");
 
 	// #define PARAM(x, y, z)                                                                                                 \
 // 	{                                                                                                                  \
@@ -193,7 +195,7 @@ int stm32mp1_ddr_setup(void)
 	// 		}
 	// 	}
 
-	priv->ctl = (struct stm32mp1_ddrctl *) DDRCTRL_BASE;
+	debug("setting config...");
 	priv->ctl = (struct stm32mp1_ddrctl *)DDRCTRL_BASE;
 	priv->phy = (struct stm32mp1_ddrphy *)DDRPHYC_BASE;
 	// priv->pwr = PWR_BASE;
@@ -202,16 +204,22 @@ int stm32mp1_ddr_setup(void)
 	priv->info.size = 0x20000000UL;
 
 	stm32mp1_ddr_get_config(&config);
+	debug("done\n");
 
+	debug("CKMOD\n");
 	// Set CKMOD bits = 0b000 during init
 	RCC->DDRITFCR = (RCC->DDRITFCR & ~RCC_DDRITFCR_DDRCKMOD_Msk) | (0 << RCC_DDRITFCR_DDRCKMOD_Pos);
 
+	debug("Disable Gate\n");
 	// Disable AXIDCG clock gating during init
 	RCC->DDRITFCR = RCC->DDRITFCR & ~RCC_DDRITFCR_AXIDCGEN;
 
+	debug("ddr_init\n");
 	stm32mp1_ddr_init(priv, &config);
+	debug("ddr_init done\n");
 
 	// Enable clock gating
+	debug("Enable Gate\n");
 	RCC->DDRITFCR = RCC->DDRITFCR | RCC_DDRITFCR_AXIDCGEN;
 
 	/* check size */

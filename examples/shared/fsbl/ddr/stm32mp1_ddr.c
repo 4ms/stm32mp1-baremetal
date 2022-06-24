@@ -633,7 +633,7 @@ void stm32mp1_ddr_init(struct ddr_info *priv, const struct stm32mp1_ddr_config *
 			break;
 	}
 
-
+	debug("ddr_inside ddr_init\n");
 	if (config->c_reg.mstr & DDRCTRL_MSTR_DDR3)
 		ret = board_ddr_power_init(STM32MP_DDR3);
 	else if (config->c_reg.mstr & DDRCTRL_MSTR_LPDDR2) {
@@ -647,10 +647,12 @@ void stm32mp1_ddr_init(struct ddr_info *priv, const struct stm32mp1_ddr_config *
 		else
 			ret = board_ddr_power_init(STM32MP_LPDDR3_16);
 	}
+	debug("returned: %d\n", ret);
+
 	if (ret)
 		panic("ddr power init failed\n");
 
-start:
+ddr_start:
 	debug("name = %s\n", config->info.name);
 	debug("speed = %d kHz\n", config->info.speed);
 	debug("size  = 0x%x\n", config->info.size);
@@ -684,7 +686,7 @@ start:
 	/* for PCLK = 133MHz => 1 us is enough, 2 to allow lower frequency */
 
 	if (INTERACTIVE(STEP_DDR_RESET))
-		goto start;
+		goto ddr_start;
 
 	/* 1.5. initialize registers ddr_umctl2 */
 	/* Stop uMCTL2 before PHY is ready */
@@ -701,7 +703,7 @@ start:
 	set_reg(priv, REG_PERF, &config->c_perf);
 
 	if (INTERACTIVE(STEP_CTL_INIT))
-		goto start;
+		goto ddr_start;
 
 	/*  2. deassert reset signal core_ddrc_rstn, aresetn and presetn */
 	clrbits_le32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCORERST);
@@ -780,5 +782,5 @@ start:
 	setbits_le32(&priv->ctl->pctrl_1, DDRCTRL_PCTRL_N_PORT_EN);
 
 	if (INTERACTIVE(STEP_DDR_READY))
-		goto start;
+		goto ddr_start;
 }
