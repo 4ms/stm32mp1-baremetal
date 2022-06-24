@@ -45,15 +45,16 @@ void main()
 	while (1) {
 		// red_led.on();
 		// delay(dlytime);
-		// red_led.off();
+		red_led.off();
 
 		green_led.on();
 		delay(dlytime);
 		green_led.off();
+		delay(dlytime);
 
 		// blue_led.on();
 		// delay(dlytime);
-		// blue_led.off();
+		blue_led.off();
 	}
 }
 
