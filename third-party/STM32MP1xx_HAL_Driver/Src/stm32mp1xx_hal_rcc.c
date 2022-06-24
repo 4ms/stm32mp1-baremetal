@@ -763,41 +763,36 @@ __weak HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
 
   /*-------------------------------- PLL Configuration -----------------------*/
 
-  /* Configure PLL1 */
-  result = RCC_PLL1_Config(&(RCC_OscInitStruct->PLL));
-  if (result != HAL_OK)
-  {
-    return result;
-  }
+	/* Configure PLL1 */
+	result = RCC_PLL1_Config(&(RCC_OscInitStruct->PLL));
+	if (result != HAL_OK) {
+		return 100 + result;
+	}
 
-  /* Configure PLL2 */
-  result = RCCEx_PLL2_Config(&(RCC_OscInitStruct->PLL2));
-  if (result != HAL_OK)
-  {
-    return result;
-  }
+	/* Configure PLL2 */
+	result = RCCEx_PLL2_Config(&(RCC_OscInitStruct->PLL2));
+	if (result != HAL_OK) {
+		return 200 + result;
+	}
 
-  /* Configure PLL3 */
-  result = RCCEx_PLL3_Config(&(RCC_OscInitStruct->PLL3));
-  if (result != HAL_OK)
-  {
-    return result;
-  }
+	/* Configure PLL3 */
+	result = RCCEx_PLL3_Config(&(RCC_OscInitStruct->PLL3));
+	if (result != HAL_OK) {
+		return 300 + result;
+	}
 
-  /* Configure PLL4 */
-  result = RCCEx_PLL4_Config(&(RCC_OscInitStruct->PLL4));
-  if (result != HAL_OK)
-  {
-    return result;
-  }
+	/* Configure PLL4 */
+	result = RCCEx_PLL4_Config(&(RCC_OscInitStruct->PLL4));
+	if (result != HAL_OK) {
+		return 400 + result;
+	}
 
-  return HAL_OK;
+	return HAL_OK;
 }
 
-
 /**
-  * @brief  Initializes the RCC HSE Oscillator according to the specified
-  *         parameter State
+ * @brief  Initializes the RCC HSE Oscillator according to the specified
+ *         parameter State
   * @note   Beware HSE oscillator is not used as clock before using this function.
   *         If this is the case, you have to select another source clock for item
   *         using HSE then change the HSE state (Eg.: disable it).
@@ -1102,32 +1097,25 @@ HAL_StatusTypeDef RCC_PLL1_Config(RCC_PLLInitTypeDef *pll1)
         __HAL_RCC_PLL1_DISABLE();
 
         /* Get Start Tick*/
-        tickstart = HAL_GetTick();
+				tickstart = HAL_GetTick();
 
-        /* Wait till PLL is ready */
-        while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLL1RDY) != RESET)
-        {
-          if ((HAL_GetTick() - tickstart) > PLL_TIMEOUT_VALUE)
-          {
-            return HAL_TIMEOUT;
-          }
-        }
-      }
-    }
-    else
-    {
-      return HAL_ERROR;
-    }
-  }
-  return HAL_OK;
-
+				/* Wait till PLL is ready */
+				while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLL1RDY) != RESET) {
+					if ((HAL_GetTick() - tickstart) > PLL_TIMEOUT_VALUE) {
+						return HAL_TIMEOUT;
+					}
+				}
+			}
+		} else {
+			return 10 + HAL_ERROR;
+		}
+	}
+	return HAL_OK;
 }
 
-
-
 /**
-  * @brief  Initializes the MPU,AXI, AHB and APB busses clocks according to the specified
-  *         parameters in the RCC_ClkInitStruct.
+ * @brief  Initializes the MPU,AXI, AHB and APB busses clocks according to the specified
+ *         parameters in the RCC_ClkInitStruct.
   * @param  RCC_ClkInitStruct: pointer to an RCC_OscInitTypeDef structure that
   *         contains the configuration information for the RCC peripheral.
   *
