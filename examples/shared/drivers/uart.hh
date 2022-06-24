@@ -60,6 +60,13 @@ public:
 		}
 	}
 
+	static void putchar(const char c)
+	{
+		while ((reinterpret_cast<USART_TypeDef *>(BASE_ADDR)->ISR & USART_ISR_TXFT) == 0)
+			;
+		reinterpret_cast<USART_TypeDef *>(BASE_ADDR)->TDR = c;
+	}
+
 	void write(const char c)
 	{
 		delay_for_write();
