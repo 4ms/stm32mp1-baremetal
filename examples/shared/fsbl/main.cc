@@ -34,12 +34,17 @@ void main()
 	red_led.off();
 
 	int err = stm32mp1_ddr_setup();
-	printf_("Result = %d\n", err);
+	printf_("DDR Setup Result = %d\n", err);
 
 	red_led.on();
 	if (err) {
 		blue_led.on();
 	}
+
+	volatile uint32_t *addr = reinterpret_cast<uint32_t *>(0xC0000000);
+	*addr = 0x12345678;
+
+	printf_("Wrote 2, read %u", *addr);
 
 	constexpr uint32_t dlytime = 600000;
 	while (1) {
