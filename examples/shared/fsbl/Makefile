@@ -37,12 +37,14 @@ INCLUDES = -I. \
 
 include ../makefile-common.mk
 
+SD_DISK_DEV ?= /dev/disk4
+
 image: all
 	python3 fix_header.py $(BUILDDIR)/$(BINARYNAME).bin $(BUILDDIR)/$(BINARYNAME).stm32
 
 load: all image
-	@read -p "What is the disk device (Enter for /dev/disk4): " DISK && \
-	DISK=$${DISK:-/dev/disk4} && \
+	@read -p "What is the disk device (Enter for $(SD_DISK_DEV)): " DISK && \
+	DISK=$${DISK:-$(SD_DISK_DEV)} && \
 	echo "Writing to $${DISK}s1 and $${DISK}s2" && \
 	sudo dd if=$(BUILDDIR)/$(BINARYNAME).stm32 of=$${DISK}s1 && \
 	sudo dd if=$(BUILDDIR)/$(BINARYNAME).stm32 of=$${DISK}s2 && \
