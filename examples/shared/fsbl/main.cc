@@ -1,6 +1,5 @@
-#include <cstdint>
-#include <cstdio>
-
+#include "boot_nor.hh"
+#include "bootdetect.hh"
 #include "clocks.hh"
 #include "ddr/stm32mp1_ram.h"
 #include "delay.h"
@@ -20,13 +19,13 @@ void main()
 	// TODO: verify clock speed
 	auto sysclockerr = SystemClocks::init_pll1_pll2();
 
-	Board::RedLED red_led;
-	Board::GreenLED green_led;
-	Board::BlueLED blue_led;
-
 	Uart<Board::ConsoleUART> uart(Board::UartRX, Board::UartTX, 115200);
 	uart.write("Starting FSBL\n");
 
+	// Debugging LEDs
+	Board::RedLED red_led;
+	Board::GreenLED green_led;
+	Board::BlueLED blue_led;
 	red_led.off();
 	red_led.on();
 	red_led.off();
@@ -49,6 +48,26 @@ void main()
 	// Boot Detect
 	uint32_t bootmode = BootDetect::read_bootmode();
 	printf_("Booted from %s (%x)\n", BootDetect::bootmode_string(bootmode).data(), bootmode);
+
+	if (bootmode == BootDetect::BOOT_FLASH_NOR_QSPI) {
+		// uint8_t hdr[256];
+		// BootNorLoader::read_header(hdr);
+		// printf_("Header:\n");
+		// for (unsigned i = 0; i < 256; i++)
+		// 	printf_("%02x ", hdr[i]);
+
+		BootImageDef::spl_image_info img;
+		BootNorLoader::parse_header(img);
+		printf_("name=%s\n", img.name);
+		printf_("loadaddr=%x\n", img.load_addr);
+		printf_("entry_point=%x\n", img.entry_point);
+		printf_("size=%x\n", img.size);
+		printf_("bootdevice=%x\n", img.boot_device);
+		printf_("arg=%p\n", img.arg);
+		printf_("flags=%x\n", img.flags);
+		printf_("os=%x\n", img.os);
+	}
+
 	// Inf loop for now
 	constexpr uint32_t dlytime = 600000;
 	while (1) {
@@ -57,12 +76,6 @@ void main()
 		blue_led.off();
 		udelay(dlytime);
 	}
-}
-
-void delay(unsigned cycles)
-{
-	while (cycles--)
-		asm("nop");
 }
 
 // Allows use of printf_(...)
