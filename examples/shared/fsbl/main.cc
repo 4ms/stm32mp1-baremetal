@@ -34,8 +34,8 @@ void main()
 	red_led.on();
 	red_led.off();
 
-	uart.write("Initializing RAM\n");
-	int err = stm32mp1_ddr_setup();
+	printf_("Testing RAM\n");
+	RamTests::run_all();
 
 	volatile uint32_t *addr = reinterpret_cast<uint32_t *>(0xC0000000);
 	*addr = 0x12345678;
