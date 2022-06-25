@@ -1,3 +1,5 @@
+#pragma once
+
 #include "printf/printf.h"
 
 // #define debug(...) printf_(__VA_ARGS__)

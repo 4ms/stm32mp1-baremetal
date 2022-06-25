@@ -3,11 +3,13 @@
 
 #include "clocks.hh"
 #include "ddr/stm32mp1_ram.h"
+#include "delay.h"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "mmp9_conf.hh"
 #include "printf/printf.h"
 #include "stm32mp157cxx_ca7.h"
+#include <cstdint>
 
 namespace Board = MMp9;
 
@@ -44,13 +46,16 @@ void main()
 	else
 		printf_("... FAILED!\n");
 
-	//
+	// Boot Detect
+	uint32_t bootmode = BootDetect::read_bootmode();
+	printf_("Booted from %s (%x)\n", BootDetect::bootmode_string(bootmode).data(), bootmode);
+	// Inf loop for now
 	constexpr uint32_t dlytime = 600000;
 	while (1) {
 		blue_led.on();
-		delay(dlytime);
+		udelay(dlytime);
 		blue_led.off();
-		delay(dlytime);
+		udelay(dlytime);
 	}
 }
 
