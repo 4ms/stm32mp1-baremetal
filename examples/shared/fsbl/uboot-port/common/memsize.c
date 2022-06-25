@@ -5,7 +5,7 @@
  */
 
 // #include <common.h>
-#define BITS_PER_LONG 32
+#include "asm-generic/bitsperlong.h"
 
 // DECLARE_GLOBAL_DATA_PTR;
 
