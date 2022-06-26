@@ -11,7 +11,6 @@
 
 #include "boot_media_loader.hh"
 #include "boot_nor.hh"
-#include "bootdetect.hh"
 
 #include "printf/printf.h"
 

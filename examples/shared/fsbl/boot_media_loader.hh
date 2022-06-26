@@ -1,8 +1,9 @@
 #pragma once
+#include "boot_detect.hh"
+#include "boot_image_def.hh"
 #include "boot_nor.hh"
-#include "bootdetect.hh"
+#include "boot_sd.hh"
 #include "compiler.h"
-#include "image_def.hh"
 #include "print_messages.h"
 #include <cstdint>
 #include <optional>
@@ -30,6 +31,11 @@ public:
 			case BootDetect::BOOT_NOR:
 				header = BootNorLoader::read_image_header();
 				break;
+
+			case BootDetect::BOOT_SDCARD:
+				header = BootSDLoader::read_image_header();
+				break;
+
 			default:
 				panic("Unknown boot method");
 				break;
@@ -50,6 +56,15 @@ public:
 				return ok;
 				break;
 			}
+
+			case BootDetect::BOOT_SDCARD: {
+				auto ok = BootSDLoader::load_image(_spl_image.load_addr, _spl_image.size);
+				if (!ok)
+					panic("Failed reading SD Card\n");
+				return ok;
+				break;
+			}
+
 			default:
 				panic("Unknown boot method");
 				return false;

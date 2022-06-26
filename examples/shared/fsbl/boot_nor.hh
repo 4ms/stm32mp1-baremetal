@@ -1,5 +1,5 @@
 #pragma once
-#include "image_def.hh"
+#include "boot_image_def.hh"
 #include "norflash/qspi_norflash_read.h"
 #include "print_messages.h"
 #include <cstdint>
