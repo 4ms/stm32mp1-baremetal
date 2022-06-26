@@ -172,8 +172,7 @@ int stm32mp1_ddr_setup(void)
 
 uint32_t stm32mp1_ddr_get_size()
 {
-	// TODO: cache the value
-	return get_ram_size((long *)DRAM_MEM_BASE, DDR_MEM_SIZE);
+	return DDR_MEM_SIZE;
 }
 
 static void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config *cfg)
