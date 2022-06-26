@@ -7,7 +7,7 @@
 #define pr_err(...) printf_(__VA_ARGS__)
 #define panic(...)                                                                                                     \
 	do {                                                                                                               \
-		printf_(__VA_ARGS__);                                                                                          \
+		printf_("PANIC: " __VA_ARGS__);                                                                                \
 		while (1)                                                                                                      \
 			;                                                                                                          \
 	} while (0);
