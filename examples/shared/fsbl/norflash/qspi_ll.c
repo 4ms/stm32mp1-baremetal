@@ -1,4 +1,4 @@
-#include "qspi_nor_ll.h"
+#include "qspi_ll.h"
 #include "stm32mp1xx.h"
 
 void LL_QPSI_SetAltBytes(uint32_t AlternateBytes)

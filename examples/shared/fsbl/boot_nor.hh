@@ -1,7 +1,7 @@
 #pragma once
 #include "compiler.h"
 #include "image_def.hh"
-#include "norflash/qspi_nor.h"
+#include "norflash/qspi_norflash_read.h"
 #include "print_messages.h"
 #include <cstdint>
 #include <optional>
