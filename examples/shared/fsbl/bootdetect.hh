@@ -3,10 +3,10 @@
 #include <string_view>
 
 struct BootDetect {
-	/* boot interface from Bootrom
-	 * - boot instance = bit 31:16
-	 * - boot device = bit 15:0
-	 */
+	// boot interface from Bootrom
+	// - boot instance = bit 31:16
+	// - boot device = bit 15:0
+	//
 	static constexpr uint32_t BOOTROM_PARAM_ADDR = 0x2FFC0078;
 	static constexpr uint32_t BOOTROM_MODE_MASK = 0x0000FFFF;
 	static constexpr uint32_t BOOTROM_MODE_SHIFT = 0;
@@ -17,7 +17,22 @@ struct BootDetect {
 	static constexpr uint32_t BOOT_INSTANCE_MASK = 0x0F;
 	static constexpr uint32_t BOOT_INSTANCE_SHIFT = 0;
 
-	enum boot_device {
+	enum BootMethod {
+		BOOT_UNKNOWN = 0,
+		BOOT_SDCARD = 1,
+		BOOT_EMMC = 2,
+		BOOT_NAND = 3,
+		BOOT_NOR = 4,
+		BOOT_UART = 5,
+		BOOT_USB = 6,
+		BOOT_SPINAND = 7,
+
+		NUM_BOOT_METHODS,
+	};
+
+	enum BootDeviceInstance {
+		BOOT_DEVICE_UNKNOWN = 0x0F,
+
 		BOOT_FLASH_SD = 0x10,
 		BOOT_FLASH_SD_1 = 0x11,
 		BOOT_FLASH_SD_2 = 0x12,
@@ -49,23 +64,40 @@ struct BootDetect {
 
 		BOOT_FLASH_SPINAND = 0x70,
 		BOOT_FLASH_SPINAND_1 = 0x71,
+
+		NUM_BOOT_DEVICE_INSTANCES,
 	};
 
-	//
-	static uint32_t read_bootmode()
+	static BootMethod read_boot_method()
 	{
-		uint32_t bootrom_itf = *reinterpret_cast<volatile uint32_t *>(BOOTROM_PARAM_ADDR);
+		uint32_t bootrom_itf = read_raw_bootrom_itf();
 		uint32_t bootrom_device = (bootrom_itf & BOOTROM_MODE_MASK) >> BOOTROM_MODE_SHIFT;
-		uint32_t bootrom_instance = (bootrom_itf & BOOTROM_INSTANCE_MASK) >> BOOTROM_INSTANCE_SHIFT;
-		uint32_t boot_mode = ((bootrom_device << BOOT_TYPE_SHIFT) & BOOT_TYPE_MASK) |
-							 ((bootrom_instance << BOOT_INSTANCE_SHIFT) & BOOT_INSTANCE_MASK);
 
-		return boot_mode;
+		auto boot_method = static_cast<BootMethod>(bootrom_device & 0x0F);
+		return (boot_method < NUM_BOOT_METHODS) ? boot_method : BOOT_UNKNOWN;
 	}
 
-	static constexpr std::string_view bootmode_string(uint32_t mode)
+	static BootDeviceInstance read_boot_device()
 	{
-		switch (mode & BOOT_TYPE_MASK) {
+		uint32_t bootrom_itf = read_raw_bootrom_itf();
+		uint32_t bootrom_device = (bootrom_itf & BOOTROM_MODE_MASK) >> BOOTROM_MODE_SHIFT;
+		uint32_t bootrom_instance = (bootrom_itf & BOOTROM_INSTANCE_MASK) >> BOOTROM_INSTANCE_SHIFT;
+		uint32_t boot_device = ((bootrom_device << BOOT_TYPE_SHIFT) & BOOT_TYPE_MASK) |
+							   ((bootrom_instance << BOOT_INSTANCE_SHIFT) & BOOT_INSTANCE_MASK);
+
+		auto boot_device_instance = static_cast<BootDeviceInstance>(boot_device);
+		return (boot_device < NUM_BOOT_DEVICE_INSTANCES && boot_device > BOOT_DEVICE_UNKNOWN) ? boot_device_instance :
+																								  BOOT_DEVICE_UNKNOWN;
+	}
+
+	static uint32_t read_raw_bootrom_itf()
+	{
+		return *reinterpret_cast<volatile uint32_t *>(BOOTROM_PARAM_ADDR);
+	}
+
+	static constexpr std::string_view bootmethod_string(BootMethod method)
+	{
+		switch (method & BOOT_TYPE_MASK) {
 			case BOOT_FLASH_SD:
 				return "SD Card";
 				break;
