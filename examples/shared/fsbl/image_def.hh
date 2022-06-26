@@ -44,6 +44,7 @@ struct spl_image_info {
 	uint32_t flags;
 	void *arg;
 };
+
 enum spl_image_flags {
 	SPL_COPY_PAYLOAD_ONLY = 1,
 };
