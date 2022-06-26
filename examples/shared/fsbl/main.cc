@@ -38,9 +38,10 @@ void main()
 
 	if (bootmode == BootDetect::BOOT_FLASH_NOR_QSPI) {
 		BootNorLoader nor_loader;
-		bool header_ok = nor_loader.read_image_info();
+		nor_loader.read_image_info();
 		// Debug info
-		if (header_ok) {
+		if (auto result = nor_loader.get_image_info()) {
+			auto img = *result;
 			printf_("loadaddr=%x\n", img.load_addr);
 			printf_("entry_point=%x\n", img.entry_point);
 			printf_("size=%x\n", img.size);
@@ -49,7 +50,11 @@ void main()
 			printf_("flags=%x\n", img.flags);
 			printf_("os=%x\n", img.os);
 			printf_("name=%s\n", img.name);
+		} else {
+			panic("No valid boot image found");
 		}
+
+		nor_loader.boot_image();
 	}
 
 	// Inf loop for now
