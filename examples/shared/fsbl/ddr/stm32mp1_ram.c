@@ -139,7 +139,7 @@ int stm32mp1_ddr_setup(void)
 	priv->ctl = (struct stm32mp1_ddrctl *)DDRCTRL_BASE;
 	priv->phy = (struct stm32mp1_ddrphy *)DDRPHYC_BASE;
 	priv->rcc = RCC_BASE;
-	priv->info.base = 0xC0000000;
+	priv->info.base = DRAM_MEM_BASE;
 	priv->info.size = 0;
 
 	stm32mp1_ddr_get_config(&config);
@@ -168,6 +168,12 @@ int stm32mp1_ddr_setup(void)
 		return -EINVAL;
 	}
 	return 0;
+}
+
+uint32_t stm32mp1_ddr_get_size()
+{
+	// TODO: cache the value
+	return get_ram_size((long *)DRAM_MEM_BASE, DDR_MEM_SIZE);
 }
 
 static void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config *cfg)

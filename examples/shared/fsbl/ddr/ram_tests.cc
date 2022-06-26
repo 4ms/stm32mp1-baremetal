@@ -15,7 +15,7 @@ bool test_first_word()
 	return false;
 }
 
-bool run_all()
+bool run_all(uint32_t ram_start, uint32_t ram_size)
 {
 	bool ok = test_first_word();
 

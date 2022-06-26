@@ -28,9 +28,11 @@ void main()
 
 	printf_("Initializing RAM\n");
 	stm32mp1_ddr_setup();
+	const uint32_t ram_start = DRAM_MEM_BASE;
+	auto ram_size = stm32mp1_ddr_get_size();
 
 	printf_("Testing RAM\n");
-	RamTests::run_all();
+	RamTests::run_all(ram_start, ram_size);
 
 	// Boot Detect
 	uint32_t bootmode = BootDetect::read_bootmode();
