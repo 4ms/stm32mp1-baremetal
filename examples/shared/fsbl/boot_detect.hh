@@ -97,26 +97,26 @@ struct BootDetect {
 
 	static constexpr std::string_view bootmethod_string(BootMethod method)
 	{
-		switch (method & BOOT_TYPE_MASK) {
-			case BOOT_FLASH_SD:
+		switch (method) {
+			case BOOT_SDCARD:
 				return "SD Card";
 				break;
-			case BOOT_FLASH_EMMC:
+			case BOOT_EMMC:
 				return "EMMC";
 				break;
-			case BOOT_FLASH_NAND:
+			case BOOT_NAND:
 				return "NAND";
 				break;
-			case BOOT_FLASH_NOR:
+			case BOOT_NOR:
 				return "NOR";
 				break;
-			case BOOT_SERIAL_UART:
+			case BOOT_UART:
 				return "UART";
 				break;
-			case BOOT_SERIAL_USB:
+			case BOOT_USB:
 				return "USB";
 				break;
-			case BOOT_FLASH_SPINAND:
+			case BOOT_SPINAND:
 				return "SPI NAND";
 				break;
 			default:
