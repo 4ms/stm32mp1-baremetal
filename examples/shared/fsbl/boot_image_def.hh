@@ -3,7 +3,6 @@
 
 namespace BootImageDef
 {
-constexpr uint32_t HeaderSize = 256;
 constexpr uint32_t NorFlashSSBLAddr = 0x80000;
 constexpr uint32_t LZ4F_MAGIC = 0x184D2204; /* LZ4 Magic Number		*/
 constexpr uint32_t IH_MAGIC = 0x27051956;	/* Image Magic Number		*/
@@ -26,13 +25,7 @@ struct image_header {
 	uint8_t ih_name[IH_NMLEN]; /* Image Name		*/
 };
 
-struct image_info {
-	unsigned long start, end;			  /* start/end of blob */
-	unsigned long image_start, image_len; /* start of image within blob, len of image */
-	unsigned long load;					  /* load addr for the image */
-	uint8_t comp, type, os;				  /* compression, type of image, os type */
-	uint8_t arch;						  /* CPU architecture */
-};
+constexpr uint32_t HeaderSize = sizeof(image_header);
 
 struct spl_image_info {
 	const char *name;
