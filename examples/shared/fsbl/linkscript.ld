@@ -7,7 +7,8 @@ MEMORY {
 
 ENTRY(_Reset);
 
-__HEAP_SIZE = 0x400;
+__STACK_START = 0x30000000;
+__HEAP_SIZE = 0x0;
 
 SECTIONS {
     /* 0x100 bytes at the start reserved for header */
@@ -90,17 +91,17 @@ SECTIONS {
 	} > SYSRAM
 
 
-    _user_stack_start = _ram_aligned_end; 
-    _user_stack_end = _user_stack_start + 0x1000;
+	_user_stack_end = __STACK_START;
+	_user_stack_start = _user_stack_end - 0x1000;
 
-    _svc_stack_start = _user_stack_end;
-    _svc_stack_end = _svc_stack_start + 0x100;
+	_svc_stack_end = _user_stack_start;
+	_svc_stack_start = _svc_stack_end - 0x100;
 
-    _irq_stack_start = _svc_stack_end;
-    _irq_stack_end = _irq_stack_start + 0x100; 
+	_irq_stack_end = _svc_stack_start;
+	_irq_stack_start = _irq_stack_end - 0x100;
 
-    _fiq_stack_start = _irq_stack_end;
-    _fiq_stack_end = _fiq_stack_start + 0x100;
+	_fiq_stack_end = _irq_stack_start;
+	_fiq_stack_start = _fiq_stack_end - 0x100;
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :
