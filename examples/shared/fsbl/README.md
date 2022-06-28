@@ -12,29 +12,24 @@ This project replaces U-Boot's SPL loader (the FSBL) and U-Boot proper (the SSBL
 It does a minimal number of tasks required to load an application into RAM and then boot into it:
 
   - Initialize the PLL clocks for the MPU and DDR RAM
- 
+  - Initialize and optionally test the DDR RAM
+  - Detect the boot method (NOR Flash, SD Card, EMMC, etc.)
+  - Load the application image from the boot medium into DDR RAM
+  - Jump into the application 
+
+Also there are two steps that are not strictly necessary but are useful:
+
   - Initialize the UART to allow for printf()
-
-  - Initialize the DDR RAM
-
   - Test the RAM
 
-  - Detect the boot method (NOR Flash, SD Card, EMMC, etc.)
+With the optional steps enabled, first-stage boot time is 30ms from power-on 
+signal (valid Vdd) to the start of reading the app image.
+Disabling the UART saves about 2ms. RAM Tests will likely change before I'm
+done with this project. For now it just writes one word and verifies it.
 
-  - Read the application image header and determine the image size, load address, and entry address
-
-  - Load the application image from the boot medium into DDR RAM
-
-  - Run the application by jumping to its entry address
-
-Of these, the UART initialization and the RAM tests are optional and could be
-omitted if boot time was critical. With these enabled, first-stage boot time is
-30ms from power-on signal (valid Vdd) to the start of reading the app image.
-Disabling the UART saves about 2ms.
-
-The remaining boot time is spent reading the app image from the boot media
+The majority of boot time is spent reading the app image from the boot media
 (SD card, flash chip, etc). The duration of that of course depends on the
-size of the image.
+size of the image and the speed of the transfer.
 
 
 #### Project status
@@ -47,11 +42,15 @@ Here is the TODO list:
 
   * Add step to initialize I2C, detect if PMIC is present, and configure voltage supplies if so.
 
-  * Add driver for SD Card reading, including converting partition# to sector/block #.
+  * Add driver for SD Card reading, including converting partition# to sector/block # (see `disk/part_efi.c`)
 
   * Add other driver for EMMC 
 
   * Make NOR Flash driver faster by using faster clock speed
+
+  * Re-visit other example projects, ensuring they work with this FSBL
+
+  * Rename this project: lwFSBL (lightweight FSBL)? M-Boot (minimal boot)? MP1-Boot?
 
 
 #### Using this
