@@ -70,7 +70,7 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, u32 mem_speed)
 
 	ddrphy_clk = stm32mp1_get_pll2_r_freq();
 
-	printf_("DDR: mem_speed (%d kHz), RCC %d kHz\n", mem_speed, (u32)(ddrphy_clk / 1000));
+	log("DDR: mem_speed (%d kHz), RCC %d kHz\n", mem_speed, (u32)(ddrphy_clk / 1000));
 
 	/* max 10% frequency delta */
 	ddr_clk = abs(ddrphy_clk - mem_speed * 1000);
@@ -164,7 +164,7 @@ int stm32mp1_ddr_setup(void)
 
 	/* check memory access for all memory */
 	if (config.info.size != priv->info.size) {
-		printf_("DDR invalid size : 0x%x, expected 0x%x\n", priv->info.size, config.info.size);
+		pr_err("DDR invalid size : 0x%x, expected 0x%x\n", priv->info.size, config.info.size);
 		return -EINVAL;
 	}
 	return 0;

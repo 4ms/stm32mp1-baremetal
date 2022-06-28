@@ -665,9 +665,9 @@ void stm32mp1_ddr_init(struct ddr_info *priv, const struct stm32mp1_ddr_config *
 		panic("ddr power init failed\n");
 
 ddr_start:
-	printf_("name = %s\n", config->info.name);
-	printf_("speed = %d kHz\n", config->info.speed);
-	printf_("size = 0x%x\n", config->info.size);
+	log("name = %s\n", config->info.name);
+	log("speed = %d kHz\n", config->info.speed);
+	log("size = 0x%x\n", config->info.size);
 	/*
 	 * 1. Program the DWC_ddr_umctl2 registers
 	 * 1.1 RESETS: presetn, core_ddrc_rstn, aresetn
