@@ -12,7 +12,7 @@ This project replaces U-Boot's SPL loader (the FSBL) and U-Boot proper (the SSBL
 It does a minimal number of tasks required to load an application into RAM and then boot into it:
 
   - Initialize the PLL clocks for the MPU and DDR RAM
-  - Initialize and optionally test the DDR RAM
+  - Initialize the DDR RAM
   - Detect the boot method (NOR Flash, SD Card, EMMC, etc.)
   - Load the application image from the boot medium into DDR RAM
   - Jump into the application 
