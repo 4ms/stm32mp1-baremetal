@@ -12,29 +12,24 @@ This project replaces U-Boot's SPL loader (the FSBL) and U-Boot proper (the SSBL
 It does a minimal number of tasks required to load an application into RAM and then boot into it:
 
   - Initialize the PLL clocks for the MPU and DDR RAM
- 
-  - Initialize the UART to allow for printf()
-
   - Initialize the DDR RAM
+  - Detect the boot method (NOR Flash, SD Card, EMMC, etc.)
+  - Load the application image from the boot medium into DDR RAM
+  - Jump into the application 
 
+Also there are two steps that are not strictly necessary but are useful:
+
+  - Initialize the UART to allow for printf()
   - Test the RAM
 
-  - Detect the boot method (NOR Flash, SD Card, EMMC, etc.)
+With the optional steps enabled, first-stage boot time is 30ms from power-on 
+signal (valid Vdd) to the start of reading the app image.
+Disabling the UART saves about 2ms. RAM Tests will likely change before I'm
+done with this project. For now it just writes one word and verifies it.
 
-  - Read the application image header and determine the image size, load address, and entry address
-
-  - Load the application image from the boot medium into DDR RAM
-
-  - Run the application by jumping to its entry address
-
-Of these, the UART initialization and the RAM tests are optional and could be
-omitted if boot time was critical. With these enabled, first-stage boot time is
-30ms from power-on signal (valid Vdd) to the start of reading the app image.
-Disabling the UART saves about 2ms.
-
-The remaining boot time is spent reading the app image from the boot media
+After the initial 30ms, the remaining boot time is spent reading the app image from the boot media
 (SD card, flash chip, etc). The duration of that of course depends on the
-size of the image.
+size of the image and the speed of the transfer.
 
 
 #### Project status
@@ -45,42 +40,39 @@ and OSD32 boards.
 
 Here is the TODO list:
 
-  * Add step to initialize I2C, detect if PMIC is present, and configure voltage supplies if so.
+  * Add a step to initialize I2C, detect if PMIC is present, and configure voltage supplies if so.
 
-  * Add driver for SD Card reading, including converting partition# to sector/block #.
+  * Add a driver for SD Card reading, including converting partition# to sector/block # (see `disk/part_efi.c`)
 
-  * Add other driver for EMMC 
+  * Add a driver for EMMC 
 
   * Make NOR Flash driver faster by using faster clock speed
+
+  * Re-visit other example projects, ensuring they work with this FSBL
+
+  * Rename this project: lwFSBL (lightweight FSBL)? M-Boot (minimal boot)? MP1-Boot?
 
 
 #### Using this
 
 Unlike the other projects in this repository, you do not need to have U-boot installed on the SD Card or NOR flash.
 
-To use, first make sure u-boot is installed on an SD-card, as usual (see README in the project root directory). 
-
-Then, in this directory run:
+In this directory run:
 
 ```
-make
+make image
 ```
 
-In the build/ dir, you should see the a7-main.uimg file. Copy it to the 4th partition of the SD-card, as usual (again, see README in the project root dir).
+In the build/ dir, you should see the fsbl.stm32 file. Copy it to the 1st and 2nd partitions of the SD card using `dd`
 
-Reboot your board with a UART-to-USB cable connected, and watch u-boot's startup messages scroll by in a terminal.
+Reboot your board with a UART-to-USB cable connected, and watch FSBL's startup messages scroll by in a terminal.
 
-Then you should see:
+You should see:
 
 ```
-A7: Hello from Cortex-A7!
-A7: Resetting M4 core
-A7: Starting M4 core after LED1 goes off in 3 2 1 now
-M4: * yawn *
-M4: Hello from Cortex-M4!
-M4: I will be flashing LED2 slowly about 0.8Hz (if compiled at -O0)
+Initializing RAM
+...[TODO]
 ```
 
-And the LEDs should be flashing: LED2 slowly (M4 core), and LED1 rapidly (A7 core).
 
 
