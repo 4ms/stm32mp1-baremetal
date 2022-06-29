@@ -30,30 +30,30 @@ struct SystemClocks {
 					.PLLFRACV = 5120,
 					.PLLMODE = RCC_PLL_FRACTIONAL,
 				},
-			.PLL3 =
-				{
-					.PLLState = RCC_PLL_ON,
-					.PLLSource = RCC_PLL3SOURCE_HSE,
-					.PLLM = 2,
-					.PLLN = 34,
-					.PLLP = 2,
-					.PLLQ = 17,
-					.PLLR = 37,
-					.PLLFRACV = 0x1a04,
-					.PLLMODE = RCC_PLL_FRACTIONAL,
-				},
-			.PLL4 =
-				{
-					.PLLState = RCC_PLL_ON,
-					.PLLSource = RCC_PLL4SOURCE_HSE,
-					.PLLM = 4,
-					.PLLN = 99,
-					.PLLP = 6,
-					.PLLQ = 8,
-					.PLLR = 8,
-					.PLLFRACV = 0,
-					.PLLMODE = RCC_PLL_INTEGER,
-				},
+			// .PLL3 =
+			// 	{
+			// 		.PLLState = RCC_PLL_ON,
+			// 		.PLLSource = RCC_PLL3SOURCE_HSE,
+			// 		.PLLM = 2,
+			// 		.PLLN = 34,
+			// 		.PLLP = 2,
+			// 		.PLLQ = 17,
+			// 		.PLLR = 37,
+			// 		.PLLFRACV = 0x1a04,
+			// 		.PLLMODE = RCC_PLL_FRACTIONAL,
+			// 	},
+			// .PLL4 =
+			// 	{
+			// 		.PLLState = RCC_PLL_ON,
+			// 		.PLLSource = RCC_PLL4SOURCE_HSE,
+			// 		.PLLM = 4,
+			// 		.PLLN = 99,
+			// 		.PLLP = 6,
+			// 		.PLLQ = 8,
+			// 		.PLLR = 8,
+			// 		.PLLFRACV = 0,
+			// 		.PLLMODE = RCC_PLL_INTEGER,
+			// 	},
 		};
 
 		// __HAL_RCC_MPU_SOURCE(RCC_MPUSOURCE_HSI);
