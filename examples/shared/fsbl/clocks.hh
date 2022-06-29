@@ -1,7 +1,7 @@
 #include "stm32mp1xx_hal_rcc.h"
 
 struct SystemClocks {
-	static unsigned init_pll1_pll2(uint32_t MPU_MHz = 800)
+	static unsigned init_core_clocks(uint32_t MPU_MHz = 800)
 	{
 		RCC_OscInitTypeDef rcc_osc_conf = {
 			.OscillatorType = RCC_OSCILLATORTYPE_HSE,
@@ -30,38 +30,8 @@ struct SystemClocks {
 					.PLLFRACV = 5120,
 					.PLLMODE = RCC_PLL_FRACTIONAL,
 				},
-			// .PLL3 =
-			// 	{
-			// 		.PLLState = RCC_PLL_ON,
-			// 		.PLLSource = RCC_PLL3SOURCE_HSE,
-			// 		.PLLM = 2,
-			// 		.PLLN = 34,
-			// 		.PLLP = 2,
-			// 		.PLLQ = 17,
-			// 		.PLLR = 37,
-			// 		.PLLFRACV = 0x1a04,
-			// 		.PLLMODE = RCC_PLL_FRACTIONAL,
-			// 	},
-			// .PLL4 =
-			// 	{
-			// 		.PLLState = RCC_PLL_ON,
-			// 		.PLLSource = RCC_PLL4SOURCE_HSE,
-			// 		.PLLM = 4,
-			// 		.PLLN = 99,
-			// 		.PLLP = 6,
-			// 		.PLLQ = 8,
-			// 		.PLLR = 8,
-			// 		.PLLFRACV = 0,
-			// 		.PLLMODE = RCC_PLL_INTEGER,
-			// 	},
 		};
 
-		// __HAL_RCC_MPU_SOURCE(RCC_MPUSOURCE_HSI);
-		// while (!RCC_FLAG_MPUSRCRDY)
-		// 	;
-		// __HAL_RCC_MPU_DIV(RCC_MPU_DIV_OFF);
-		// for (int i = 0; i < 100000; i++)
-		// 	;
 		auto err_deinit = HAL_RCC_DeInit();
 
 		auto err = HAL_RCC_OscConfig(&rcc_osc_conf);
@@ -70,33 +40,10 @@ struct SystemClocks {
 		while (!RCC_FLAG_MPUSRCRDY)
 			;
 
-		// RCC_ClkInitTypeDef rcc_clk_conf = {
-		// 	.ClockType = RCC_CLOCKTYPE_MPU | RCC_CLOCKTYPE_ACLK | RCC_CLOCKTYPE_HCLK /* <-- MCU Clock */ |
-		// 				 RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_PCLK3 | RCC_CLOCKTYPE_PCLK4 |
-		// 				 RCC_CLOCKTYPE_PCLK5,
-		// 	.MPUInit =
-		// 		{
-		// 			.MPU_Clock = RCC_MPUSOURCE_PLL1,
-		// 			.MPU_Div = RCC_MPU_DIV_OFF,
-		// 		},
-		// 	.AXISSInit =
-		// 		{
-		// 			.AXI_Clock = RCC_AXISSOURCE_PLL2,
-		// 			.AXI_Div = RCC_MPU_DIV_OFF,
-		// 		},
-		// 	.MCUInit =
-		// 		{
-		// 			.MCU_Clock = RCC_MCUSSOURCE_PLL3,
-		// 			.MCU_Div = RCC_MCU_DIV1,
-		// 		},
-		// 	.APB4_Div = RCC_APB4_DIV2,
-		// 	.APB5_Div = RCC_APB5_DIV4,
-		// 	.APB1_Div = RCC_APB1_DIV2,
-		// 	.APB2_Div = RCC_APB2_DIV2,
-		// 	.APB3_Div = RCC_APB3_DIV2,
-		// };
+		// Dont init MCU now, because it requires PLL3 to be up, and we want the app to
+		// config PLL3 for things like SAI
 		RCC_ClkInitTypeDef rcc_mpuclk_conf = {
-			.ClockType = RCC_CLOCKTYPE_MPU | RCC_CLOCKTYPE_ACLK,
+			.ClockType = RCC_CLOCKTYPE_MPU | RCC_CLOCKTYPE_ACLK /*| RCC_CLOCKTYPE_HCLK*/,
 			.MPUInit =
 				{
 					.MPU_Clock = RCC_MPUSOURCE_PLL1,

@@ -18,7 +18,7 @@ void main()
 	blue_led.off();
 	blue_led.on();
 
-	SystemClocks::init_pll1_pll2();
+	SystemClocks::init_core_clocks();
 	security_init();
 
 	Uart<Board::ConsoleUART> uart(Board::UartRX, Board::UartTX, 115200);
