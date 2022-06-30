@@ -11,13 +11,20 @@ struct BootSDLoader {
 	static BootImageDef::image_header read_image_header()
 	{
 		BootImageDef::image_header header;
+		hsd.Instance = SDMMC1;
+		hsd.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
+		hsd.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
+		hsd.Init.BusWide = SDMMC_BUS_WIDE_1B;
+		hsd.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
+		hsd.Init.ClockDiv = SDMMC_INIT_CLK_DIV;
+
 		auto ok = HAL_SD_Init(&hsd);
-		if (!ok)
+		if (ok != HAL_OK)
 			panic("SDInit not ok");
 
 		uint8_t data[512];
 		ok = HAL_SD_ReadBlocks(&hsd, data, BootImageDef::SDCardSSBLBlock, 1, 0xFFFF);
-		if (!ok)
+		if (ok != HAL_OK)
 			panic("HAL Read SD not ok");
 
 		// auto ok = QSPI_read_SIO((uint8_t *)(&header), BootImageDef::NorFlashSSBLAddr, BootImageDef::HeaderSize);
