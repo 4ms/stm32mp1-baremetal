@@ -46,8 +46,6 @@ Here is the TODO list:
 
   * Add a driver for EMMC 
 
-  * Make NOR Flash driver faster by using faster clock speed
-
   * Re-visit other example projects, ensuring they work with this FSBL
 
   * Rename this project: lwFSBL (lightweight FSBL)? M-Boot (minimal boot)? MP1-Boot?
@@ -65,13 +63,25 @@ make image
 
 In the build/ dir, you should see the fsbl.stm32 file. Copy it to the 1st and 2nd partitions of the SD card using `dd`
 
+Create an img file from your app's elf file. Install the img file on the 3rd partition.
+
+**TODO: Instructions how to create an img file and install it**
+
 Reboot your board with a UART-to-USB cable connected, and watch FSBL's startup messages scroll by in a terminal.
 
 You should see:
 
 ```
 Initializing RAM
-...[TODO]
+name = DDR3-DDR3L 16bits 533000Khz
+speed = 533000 kHz
+size = 0x20000000
+DDR: mem_speed (533000 kHz), RCC 528000 kHz
+Testing RAM.
+Booted from SD Card (1)
+Reading app image header
+Loading app image
+Jumping to app
 ```
 
 

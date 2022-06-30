@@ -4,9 +4,10 @@
 namespace BootImageDef
 {
 constexpr uint32_t NorFlashSSBLAddr = 0x80000;
-constexpr uint32_t LZ4F_MAGIC = 0x184D2204; /* LZ4 Magic Number		*/
-constexpr uint32_t IH_MAGIC = 0x27051956;	/* Image Magic Number		*/
-constexpr uint32_t IH_NMLEN = 32;			/* Image Name Length		*/
+constexpr uint32_t SDCardSSBLBlock = 1058;
+
+constexpr uint32_t IH_MAGIC = 0x27051956; /* Image Magic Number		*/
+constexpr uint32_t IH_NMLEN = 32;		  /* Image Name Length		*/
 
 //  Legacy format image header,
 //  all data in network byte order (aka natural aka bigendian).

@@ -9,6 +9,7 @@ namespace BootNorLoader
 inline BootImageDef::image_header read_image_header()
 {
 	BootImageDef::image_header header;
+	QSPI_init();
 	auto ok = QSPI_read_SIO((uint8_t *)(&header), BootImageDef::NorFlashSSBLAddr, BootImageDef::HeaderSize);
 	if (!ok)
 		panic("Failed reading NOR Flash\n"); // TODO: don't panic, just try another medium

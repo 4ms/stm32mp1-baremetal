@@ -16,6 +16,8 @@ SOURCES = startup.s \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal_rcc.c \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal_rcc_ex.c \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal.c \
+		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_ll_sdmmc.c \
+		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal_sd.c \
 		  $(EXTLIBDIR)/printf/src/printf/printf.c \
 		  ddr/stm32mp1_ddr.c \
 		  ddr/stm32mp1_ram.c \

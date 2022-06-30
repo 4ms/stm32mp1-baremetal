@@ -6,9 +6,10 @@
 
 void QSPI_init()
 {
-	// ACLK is the default, 266MHz
-	QUADSPI->CR = QUADSPI->CR | QUADSPI_CR_PRESCALER_1; // 0b01 = prescale /3
-														// resulting clk = 88MHZ
+	// Select ACLK 266MHz
+	RCC->QSPICKSELR = 0;
+	// 0b10 = prescale /3 = 88MHz
+	QUADSPI->CR = (QUADSPI->CR & ~QUADSPI_CR_PRESCALER_Msk) | QUADSPI_CR_PRESCALER_1;
 }
 
 uint32_t QSPI_read_SIO(uint8_t *pData, uint32_t read_addr, uint32_t num_bytes)
