@@ -4,14 +4,14 @@
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  */
 
-// #include <common.h>
-// #include <command.h>
-// #include <env.h>
-// #include <errno.h>
-// #include <ide.h>
-// #include <malloc.h>
+#include <command.h>
+#include <common.h>
+#include <env.h>
+#include <errno.h>
+#include <ide.h>
+#include <malloc.h>
 #include <part.h>
-// #include <ubifs_uboot.h>
+#include <ubifs_uboot.h>
 
 #undef PART_DEBUG
 
