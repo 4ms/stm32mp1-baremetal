@@ -34,9 +34,11 @@ public:
 				header = BootNorLoader::read_image_header();
 				break;
 
-			case BootDetect::BOOT_SDCARD:
-				header = BootSDLoader::read_image_header();
+			case BootDetect::BOOT_SDCARD: {
+				BootSDLoader sdloader;
+				header = sdloader.read_image_header();
 				break;
+			}
 
 			default:
 				panic("Unknown boot method");
@@ -85,7 +87,7 @@ public:
 			load_image();
 
 		auto image_entry = reinterpret_cast<image_entry_noargs_t>(_image_info.entry_point);
-		log("image entry point: 0x%lx\n", _image_info.entry_point);
+		log("image entry point: 0x%08x\n", _image_info.entry_point);
 		image_entry();
 	}
 

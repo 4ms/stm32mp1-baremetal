@@ -26,6 +26,7 @@ SOURCES = startup.s \
 		  norflash/qspi_norflash_read.c \
 		  uboot-port/common/memsize.c \
 		  uboot-port/lib/crc32.c \
+		  gpt/gpt.cc \
 
 
 
