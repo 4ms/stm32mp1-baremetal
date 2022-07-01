@@ -21,6 +21,7 @@
 
 // #include <efi.h>
 ////
+#include <sys/cdefs.h> //for __packed
 typedef struct {
 	u8 b[16];
 } efi_guid_t __attribute__((aligned(8)));
@@ -34,7 +35,6 @@ typedef struct {
 typedef uint16_t __le16;
 typedef uint32_t __le32;
 typedef uint64_t __le64;
-#define __packed __attribute__((packed))
 ////
 
 #define MSDOS_MBR_SIGNATURE 0xAA55

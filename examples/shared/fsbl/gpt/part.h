@@ -6,10 +6,11 @@
 #ifndef _PART_H
 #define _PART_H
 
-#include <blk.h>
-#include <ide.h>
-#include <linux/list.h>
-#include <uuid.h>
+#include "asm/types.h"
+#include "blk.h"
+// #include <ide.h>
+// #include <linux/list.h>
+// #include <uuid.h>
 
 struct block_drvr {
 	char *name;
