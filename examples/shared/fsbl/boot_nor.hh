@@ -6,13 +6,21 @@
 #include <cstdint>
 
 struct BootNorLoader : BootLoader {
+	BootNorLoader()
+	{
+		QSPI_init();
+	}
+
 	BootImageDef::image_header read_image_header() override
 	{
 		BootImageDef::image_header header;
-		QSPI_init();
+
 		auto ok = QSPI_read_SIO((uint8_t *)(&header), BootImageDef::NorFlashSSBLAddr, BootImageDef::HeaderSize);
-		if (!ok)
-			panic("Failed reading NOR Flash\n"); // TODO: don't panic, just try another medium
+		if (!ok) {
+			pr_err("Failed reading NOR Flash\n");
+			return {};
+		}
+
 		return header;
 	}
 
