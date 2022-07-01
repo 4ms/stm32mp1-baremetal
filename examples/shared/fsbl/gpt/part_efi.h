@@ -12,19 +12,20 @@
  * http://developer.intel.com/technology/efi/efi.htm
  */
 
-// #include <linux/compiler.h>
 #include "asm/types.h"
 #include <stdint.h>
 
 #ifndef _DISK_PART_EFI_H
 #define _DISK_PART_EFI_H
 
-// #include <efi.h>
+/////This added by DG:
 ////
-#include <sys/cdefs.h> //for __packed
+#include <sys/cdefs.h> //needed for __packed
+
 typedef struct {
 	u8 b[16];
 } efi_guid_t __attribute__((aligned(8)));
+
 #define EFI_GUID(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7)                                                              \
 	{                                                                                                                  \
 		{                                                                                                              \
@@ -32,9 +33,11 @@ typedef struct {
 				(c)&0xff, ((c) >> 8) & 0xff, (d0), (d1), (d2), (d3), (d4), (d5), (d6), (d7)                            \
 		}                                                                                                              \
 	}
+
 typedef uint16_t __le16;
 typedef uint32_t __le32;
 typedef uint64_t __le64;
+typedef unsigned long lbaint_t;
 ////
 
 #define MSDOS_MBR_SIGNATURE 0xAA55
