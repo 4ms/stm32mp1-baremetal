@@ -22,27 +22,29 @@ void main()
 	security_init();
 
 	Uart<Board::ConsoleUART> uart(Board::UartRX, Board::UartTX, 115200);
-	printf_("\n\nInitializing RAM\n");
+	printf_("\n\n");
+
+	printf_("Initializing RAM\n");
 	stm32mp1_ddr_setup();
 
 	printf_("Testing RAM.\n");
-	const uint32_t ram_start = DRAM_MEM_BASE;
 	const auto ram_size = stm32mp1_ddr_get_size();
-	const uint32_t ram_end = ram_start + ram_size;
-	RamTests::run_all(ram_start, ram_size);
+	RamTests::run_all(DRAM_MEM_BASE, ram_size);
 
 	auto boot_method = BootDetect::read_boot_method();
 	printf_("Booted from %s\n", BootDetect::bootmethod_string(boot_method).data());
 
 	printf_("Loading app image\n");
 	BootMediaLoader loader{boot_method};
-	loader.load_image();
+	bool image_ok = loader.load_image();
 
-	printf_("Jumping to app\n");
-	loader.boot_image();
+	if (image_ok) {
+		printf_("Jumping to app\n");
+		loader.boot_image();
+	}
 
 	// Should not reach here, but in case we do, blink LED rapidly
-	printf_("FAILED!\n");
+	printf_("FAILED! Did not find and load an app image\n");
 	constexpr uint32_t dlytime = 50000;
 	while (1) {
 		blue_led.on();
