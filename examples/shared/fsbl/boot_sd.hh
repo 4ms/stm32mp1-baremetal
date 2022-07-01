@@ -5,7 +5,6 @@
 #include "print_messages.h"
 #include "stm32mp1xx_hal_sd.h"
 #include <array>
-#include <optional>
 
 struct BootSDLoader : BootLoader {
 	static constexpr uint32_t part_num = BootImageDef::SDCardSSBLPartition - 1;
@@ -84,6 +83,7 @@ private:
 		return InvalidPartitionNum;
 	}
 
+	// General read from SD card into a generic data structure. Max one block (512B)
 	void read(auto &data, uint32_t block)
 	{
 		constexpr uint32_t numblocks = 1;
@@ -92,13 +92,13 @@ private:
 		log(">>Reading block %d\n", block);
 		if constexpr (sizeof data == 512) {
 			// Size mathes block size: read directly into data
-			auto ok = HAL_SD_ReadBlocks(&hsd, (uint8_t *)&data, block, numblocks, timeout);
-			if (ok != HAL_OK)
+			auto err = HAL_SD_ReadBlocks(&hsd, (uint8_t *)&data, block, numblocks, timeout);
+			if (err != HAL_OK)
 				read_error();
 		} else if (sizeof data < 512) {
 			uint8_t _data[512];
-			auto ok = HAL_SD_ReadBlocks(&hsd, _data, block, numblocks, timeout);
-			if (ok != HAL_OK)
+			auto err = HAL_SD_ReadBlocks(&hsd, _data, block, numblocks, timeout);
+			if (err != HAL_OK)
 				read_error();
 
 			auto *dst = (uint8_t *)(&data);

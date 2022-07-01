@@ -40,8 +40,6 @@ struct SystemClocks {
 		while (!RCC_FLAG_MPUSRCRDY)
 			;
 
-		// Dont init MCU now, because it requires PLL3 to be up, and we want the app to
-		// config PLL3 for things like SAI
 		RCC_ClkInitTypeDef rcc_mpuclk_conf = {
 			.ClockType = RCC_CLOCKTYPE_MPU | RCC_CLOCKTYPE_ACLK /*| RCC_CLOCKTYPE_HCLK*/,
 			.MPUInit =
