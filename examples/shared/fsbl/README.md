@@ -42,13 +42,17 @@ Here is the TODO list:
 
   * Add a step to initialize I2C, detect if PMIC is present, and configure voltage supplies if so.
 
-  * Add a driver for SD Card reading, including converting partition# to sector/block # (see `disk/part_efi.c`)
+  * Add a driver for EMMC (SDMMC2)
 
-  * Add a driver for EMMC 
+  * Add extensive RAM tests (run optionally)
 
   * Re-visit other example projects, ensuring they work with this FSBL
 
   * Rename this project: lwFSBL (lightweight FSBL)? M-Boot (minimal boot)? MP1-Boot?
+
+  * Faster NOR loading (use Quad mode)
+
+  * Faster SDMMC loading (debug why faster clock causes RXOVERR)
 
 
 #### Using this
