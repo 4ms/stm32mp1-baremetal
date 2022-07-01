@@ -1,6 +1,7 @@
 #pragma once
 #include "boot_image_def.hh"
 #include "boot_loader.hh"
+#include "drivers/pin.hh"
 #include "gpt/gpt.hh"
 #include "print_messages.h"
 #include "stm32mp1xx_hal_sd.h"
@@ -12,13 +13,27 @@ struct BootSDLoader : BootLoader {
 
 	BootSDLoader()
 	{
+		RCC->SDMMC12CKSELR = 3; // HSI = 64MHz. Default value (just showing it here for educational purposes)
+
 		HAL_SD_DeInit(&hsd);
 		hsd.Instance = SDMMC1;
 		hsd.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
 		hsd.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
-		hsd.Init.BusWide = SDMMC_BUS_WIDE_1B;
+		hsd.Init.BusWide = SDMMC_BUS_WIDE_4B;
 		hsd.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-		hsd.Init.ClockDiv = SDMMC_INIT_CLK_DIV;
+		hsd.Init.ClockDiv = 10; // 64MHz/2 / 10 = 3.2MHz seems to be the max. FIXME:why?
+
+		// These pins are not board-specific, they are required by BOOTROM
+		// for booting with SDMMC1
+		// D1 - D3 are not used by BOOTROM, so need to be init by FSBL
+		PinConf{GPIO::C, 9, PinAF::AF_12}.init(PinMode::Alt);
+		PinConf{GPIO::C, 10, PinAF::AF_12}.init(PinMode::Alt);
+		PinConf{GPIO::C, 11, PinAF::AF_12}.init(PinMode::Alt);
+
+		// D0, CK, CMD are used by BOOTROM and should already be init. We re-init them just in case...
+		PinConf{GPIO::C, 8, PinAF::AF_12}.init(PinMode::Alt);
+		PinConf{GPIO::C, 12, PinAF::AF_12}.init(PinMode::Alt);
+		PinConf{GPIO::D, 2, PinAF::AF_12}.init(PinMode::Alt);
 
 		auto ok = HAL_SD_Init(&hsd);
 		if (ok != HAL_OK)
@@ -90,6 +105,10 @@ private:
 		constexpr uint32_t timeout = 0xFFFFFF;
 
 		log(">>Reading block %d\n", block);
+
+		// volatile int i = 1;
+		// while (i)
+		// 	;
 		if constexpr (sizeof data == 512) {
 			// Size mathes block size: read directly into data
 			auto err = HAL_SD_ReadBlocks(&hsd, (uint8_t *)&data, block, numblocks, timeout);
