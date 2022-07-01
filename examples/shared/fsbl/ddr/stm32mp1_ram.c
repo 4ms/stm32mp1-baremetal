@@ -87,34 +87,25 @@ static void stm32mp1_ddr_tz_init(void)
 	// TrustZone address space controller for DDR (TZC)
 	// TZC AXI port 1 clocks enable
 	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZC1EN;
-	(void)RCC->MP_APB5ENSETR;
-	// RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_TZC1LPEN;
-	// (void)RCC->MP_APB5LPENSETR;
 
 	// TZC AXI port 2 clocks enable
 	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZC2EN;
-	(void)RCC->MP_APB5ENSETR;
-	// RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_TZC2LPEN;
-	// (void)RCC->MP_APB5LPENSETR;
 
 	TZC->ACTION = 0x00;
-	const uint_fast8_t lastfilter = (TZC->BUILD_CONFIG >> 24) & 0x03;
-	const uint_fast32_t mask = (1uL << (lastfilter + 1)) - 1;
+	const uint8_t lastfilter = (TZC->BUILD_CONFIG >> 24) & 0x03;
+	const uint32_t mask = (1uL << (lastfilter + 1)) - 1;
 	TZC->GATE_KEEPER = mask; // Gate open request
 
 	// Check open status
 	while (((TZC->GATE_KEEPER >> 16) & mask) != mask)
 		;
 	TZC->REG_ATTRIBUTESO |= 0xC0000000; // All (read and write) permitted
-	(void)TZC->REG_ATTRIBUTESO;
 
 	TZC->REG_ID_ACCESSO = 0xFFFFFFFF; // NSAID_WR_EN[15:0], NSAID_RD_EN[15:0] - permits read and write non-secure to the
 									  // region for all NSAIDs
-	(void)TZC->REG_ID_ACCESSO;
 
 	const uint8_t lastregion = TZC->BUILD_CONFIG & 0x1f;
-	uint8_t i;
-	for (i = 1; i <= lastregion; ++i) {
+	for (uint8_t i = 1; i <= lastregion; ++i) {
 		volatile uint32_t *const REG_ATTRIBUTESx = &TZC->REG_ATTRIBUTESO + (i * 8);
 		volatile uint32_t *const REG_ID_ACCESSx = &TZC->REG_ID_ACCESSO + (i * 8);
 		volatile uint32_t *const REG_BASE_LOWx = &TZC->REG_BASE_LOWO + (i * 8);

@@ -8,7 +8,7 @@
 #include <array>
 
 struct BootSDLoader : BootLoader {
-	static constexpr uint32_t part_num = BootImageDef::SDCardSSBLPartition - 1;
+	static constexpr uint32_t ssbl_part_num = BootImageDef::SDCardSSBLPartition - 1;
 	static constexpr uint32_t InvalidPartitionNum = 0xFFFFFFFF;
 
 	BootSDLoader()
@@ -64,7 +64,7 @@ struct BootSDLoader : BootLoader {
 			return {};
 		}
 
-		log("GPT partition header says partition %d is at %llu. Reading\n", part_num, ssbl_blockaddr);
+		log("GPT partition header says partition %d is at %llu. Reading\n", ssbl_part_num, ssbl_blockaddr);
 		read(header, ssbl_blockaddr);
 		return header;
 	}
@@ -80,6 +80,8 @@ private:
 	SD_HandleTypeDef hsd;
 	uint64_t ssbl_blockaddr = 0;
 
+	// Given a gpt_header, find the starting address (LBA) of the SSBL partition
+	// Validate the gpt partition entry, too.
 	uint64_t get_gpt_partition_startaddr(gpt_header &gpt_hdr)
 	{
 		std::array<gpt_entry, 4> ptes;
@@ -89,16 +91,16 @@ private:
 		if (hsd.SdCard.BlockSize != 512)
 			panic("SD Card block size is not 512!");
 
-		uint32_t part_lba = gpt_hdr.partition_entry_lba + (part_num / 4);
+		uint32_t part_lba = gpt_hdr.partition_entry_lba + (ssbl_part_num / 4);
 		read(ptes, part_lba);
-		if (validate_partition_entry(ptes[part_num % 4])) {
-			return ptes[part_num % 4].starting_lba;
+		if (validate_partition_entry(ptes[ssbl_part_num % 4])) {
+			return ptes[ssbl_part_num % 4].starting_lba;
 		}
 
 		return InvalidPartitionNum;
 	}
 
-	// General read from SD card into a generic data structure. Max one block (512B)
+	// Read from SD card into a generic data structure. Max one block (512B)
 	void read(auto &data, uint32_t block)
 	{
 		constexpr uint32_t numblocks = 1;
@@ -106,9 +108,6 @@ private:
 
 		log(">>Reading block %d\n", block);
 
-		// volatile int i = 1;
-		// while (i)
-		// 	;
 		if constexpr (sizeof data == 512) {
 			// Size mathes block size: read directly into data
 			auto err = HAL_SD_ReadBlocks(&hsd, (uint8_t *)&data, block, numblocks, timeout);
