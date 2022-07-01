@@ -44,7 +44,7 @@ struct BootSDLoader : BootLoader {
 					break;
 			}
 		}
-		if (ssbl_blockaddr != InvalidPartitionNum) {
+		if (ssbl_blockaddr == InvalidPartitionNum) {
 			pr_err("No valid GPT header found\n");
 			return {};
 		}
