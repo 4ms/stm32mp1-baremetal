@@ -44,10 +44,11 @@ include ../makefile-common.mk
 
 SD_DISK_DEV ?= /dev/disk4
 
-image: all
+image: all $(BIN)
 	python3 fix_header.py $(BUILDDIR)/$(BINARYNAME).bin $(BUILDDIR)/$(BINARYNAME).stm32
+	@ls -l $(BUILDDIR)/$(BINARYNAME).stm32
 
-load: all image
+load: image
 	@read -p "What is the disk device (Enter for $(SD_DISK_DEV)): " DISK && \
 	DISK=$${DISK:-$(SD_DISK_DEV)} && \
 	echo "Writing to $${DISK}s1 and $${DISK}s2" && \
