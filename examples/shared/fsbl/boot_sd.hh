@@ -1,15 +1,13 @@
 #pragma once
 #include "boot_image_def.hh"
+#include "boot_loader.hh"
 #include "gpt/gpt.hh"
 #include "print_messages.h"
 #include "stm32mp1xx_hal_sd.h"
 #include <array>
-#include <cstdint>
 #include <optional>
-// #include <cstring>
 
-struct BootSDLoader {
-	SD_HandleTypeDef hsd;
+struct BootSDLoader : BootLoader {
 
 	BootSDLoader()
 	{
@@ -26,14 +24,11 @@ struct BootSDLoader {
 			panic("SDInit not ok");
 	}
 
-	BootImageDef::image_header read_image_header()
+	BootImageDef::image_header read_image_header() override
 	{
 		BootImageDef::image_header header;
 
-		__le64 ssbl_blockaddr = 0;
-
 		// TODO: get_next_gpt_header(&gpt_hdr)
-
 		// get_valid_gpt_header()
 		{
 			gpt_header gpt_hdr;
@@ -41,7 +36,7 @@ struct BootSDLoader {
 			const uint32_t gpt_addrs[2] = {1, last_block - 1};
 
 			for (auto blockaddr : gpt_addrs) {
-				read(gpt_hdr, blockaddr, 1);
+				read(gpt_hdr, blockaddr);
 				if (validate_gpt_header(&gpt_hdr, blockaddr, last_block)) {
 					const uint32_t part_num = BootImageDef::SDCardSSBLPartition - 1;
 
@@ -53,7 +48,7 @@ struct BootSDLoader {
 						panic("SD Card block size is not 512!");
 
 					uint32_t part_lba = gpt_hdr.partition_entry_lba + (part_num / 4);
-					read(ptes, gpt_hdr.partition_entry_lba, 1);
+					read(ptes, gpt_hdr.partition_entry_lba);
 					if (validate_partition_entry(ptes[part_num])) {
 						ssbl_blockaddr = ptes[part_num].starting_lba;
 						break;
@@ -63,43 +58,36 @@ struct BootSDLoader {
 			if (!ssbl_blockaddr)
 				panic("No valid GPT header found\n");
 		}
-
-		log("Found 3rd partition at %llu\n", ssbl_blockaddr);
-
-		read(header, ssbl_blockaddr, 1);
-		// uint8_t data[512];
-		// auto ok = HAL_SD_ReadBlocks(&hsd, data, ssbl_blockaddr, 1, 0xFFFFFF);
-		// if (ok != HAL_OK)
-		// 	panic("HAL Read SD not ok");
-
-		// // memcpy((void *)&header, data, sizeof(header));
-		// uint32_t *dst = (uint32_t *)(&header);
-		// uint32_t *src = (uint32_t *)(&data);
-		// uint32_t sz = sizeof(header) / 4;
-		// while (sz--)
-		// 	*dst++ = *src++;
-
+		log("GPT partition header says 3rd partition is at %llu. Reading\n", ssbl_blockaddr);
+		read(header, ssbl_blockaddr);
 		return header;
 	}
 
-	static bool load_image(uint32_t load_addr, uint32_t size)
+	bool load_image(uint32_t load_addr, uint32_t size) override
 	{
 		auto load_dst = reinterpret_cast<uint8_t *>(load_addr);
-		// return QSPI_read_SIO(load_dst, BootImageDef::NorFlashSSBLAddr, size);
-		return false;
+		auto err = HAL_SD_ReadBlocks(&hsd, load_dst, ssbl_blockaddr, size / hsd.SdCard.BlockSize, 0xFFFFFF);
+		return (err == HAL_OK);
 	}
 
-	void read(auto &data, uint32_t block, uint32_t numblocks)
+private:
+	SD_HandleTypeDef hsd;
+	uint64_t ssbl_blockaddr = 0;
+
+	void read(auto &data, uint32_t block)
 	{
+		constexpr uint32_t numblocks = 1;
+		constexpr uint32_t timeout = 0xFFFFFF;
+
 		log(">>Reading block %d\n", block);
 		if constexpr (sizeof data == 512) {
 			// Size mathes block size: read directly into data
-			auto ok = HAL_SD_ReadBlocks(&hsd, (uint8_t *)&data, block, numblocks, 0xFFFFFF);
+			auto ok = HAL_SD_ReadBlocks(&hsd, (uint8_t *)&data, block, numblocks, timeout);
 			if (ok != HAL_OK)
 				read_error();
 		} else if (sizeof data < 512) {
 			uint8_t _data[512];
-			auto ok = HAL_SD_ReadBlocks(&hsd, _data, block, numblocks, 0xFFFFFF);
+			auto ok = HAL_SD_ReadBlocks(&hsd, _data, block, numblocks, timeout);
 			if (ok != HAL_OK)
 				read_error();
 

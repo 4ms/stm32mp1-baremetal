@@ -5,9 +5,6 @@
 #include "boot_sd.hh"
 #include "compiler.h"
 #include "print_messages.h"
-#include <cstdint>
-#include <optional>
-#include <span>
 
 struct AppImageInfo {
 	uint32_t load_addr = 0;
@@ -19,85 +16,80 @@ class BootMediaLoader {
 
 public:
 	BootMediaLoader(BootDetect::BootMethod boot_method)
-		: _bootmethod{boot_method}
 	{
-		printf_("Booted from %s (%x)\n", BootDetect::bootmethod_string(boot_method).data(), boot_method);
-	}
-
-	AppImageInfo read_app_image_header()
-	{
-		BootImageDef::image_header header;
-		static_assert(sizeof(header) == BootImageDef::HeaderSize);
-
-		switch (_bootmethod) {
-			case BootDetect::BOOT_NOR:
-				header = BootNorLoader::read_image_header();
-				break;
-
-			case BootDetect::BOOT_SDCARD: {
-				BootSDLoader sdloader;
-				header = sdloader.read_image_header();
-				break;
-			}
-
-			default:
-				panic("Unknown boot method");
-				break;
-		}
-
-		_parse_header(header);
-
-		return _image_info;
+		set_bootmethod(boot_method);
+		if (!_loader)
+			pr_err("BootMediaLoader(): Unknown boot method\n");
 	}
 
 	bool load_image()
 	{
-		if (!_header_parsed)
-			read_app_image_header();
-
-		bool ok;
-		switch (_bootmethod) {
-			case BootDetect::BOOT_NOR:
-				ok = BootNorLoader::load_image(_image_info.load_addr, _image_info.size);
-				break;
-
-			case BootDetect::BOOT_SDCARD:
-				ok = BootSDLoader::load_image(_image_info.load_addr, _image_info.size);
-				break;
-
-			default:
-				panic("Unknown boot method");
-				break;
+		if (!_loader) {
+			pr_err("BootMediaLoader::load_image(): Unknown boot method\n");
+			return false;
 		}
 
-		if (!ok)
-			panic("Failed reading Boot media\n");
+		BootImageDef::image_header header;
+		static_assert(sizeof(header) == BootImageDef::HeaderSize);
+
+		header = _loader->read_image_header();
+
+		if (!_parse_header(header)) {
+			pr_err("No valid img header found\n");
+			return false;
+		}
+
+		bool ok = _loader->load_image(_image_info.load_addr, _image_info.size);
+		if (!ok) {
+			pr_err("Failed reading boot media when loading app img\n");
+			return false;
+		}
 
 		_image_loaded = true;
-		return ok;
+		return true;
 	}
 
 	typedef void __attribute__((noreturn)) (*image_entry_noargs_t)(void);
 	void boot_image()
 	{
-		if (!_header_parsed)
-			read_app_image_header();
-
-		if (!_image_loaded)
-			load_image();
+		if (!_image_loaded) {
+			if (!load_image()) {
+				pr_err("Failed to jump to app because of error loading image\n");
+				return;
+			}
+		}
 
 		auto image_entry = reinterpret_cast<image_entry_noargs_t>(_image_info.entry_point);
 		log("image entry point: 0x%08x\n", _image_info.entry_point);
 		image_entry();
 	}
 
+	// You may call this to change boot methods. For example
+	// if load_image() fails, you can try a different boot method
+	bool set_bootmethod(BootDetect::BootMethod new_boot_method)
+	{
+		_loader = _get_boot_loader(new_boot_method);
+		return (_loader != nullptr);
+	}
+
 private:
-	BootDetect::BootMethod _bootmethod;
-	bool _header_parsed = false;
 	bool _image_loaded = false;
 	AppImageInfo _image_info;
+	// We don't have dynamic memory, so instead of having a static copy of each
+	// type of loader we use placement new.
+	uint8_t loader_storage[std::max(sizeof(BootSDLoader), sizeof(BootNorLoader))];
+	BootLoader *_loader;
 
-	void _parse_header(BootImageDef::image_header &header)
+	// To support a new boot media (such as NAND Flash),
+	// associate its class to the enum value BOOTROM uses for that media:
+	BootLoader *_get_boot_loader(BootDetect::BootMethod bootmethod)
+	{
+		return bootmethod == BootDetect::BOOT_NOR	 ? new (loader_storage) BootNorLoader :
+			   bootmethod == BootDetect::BOOT_SDCARD ? new (loader_storage) BootSDLoader :
+														 static_cast<BootLoader *>(nullptr);
+	}
+
+	bool _parse_header(BootImageDef::image_header &header)
 	{
 		log("Raw header (big-endian):\n");
 		log("  ih_magic: %x\n", header.ih_magic);
@@ -135,9 +127,12 @@ private:
 				_image_info.entry_point,
 				_image_info.size);
 
-			_header_parsed = true;
+			return true;
+
 		} else
 			// TODO: Handle raw images
-			panic("Failed to read a valid header: magic was %x, expected %x\n", magic, BootImageDef::IH_MAGIC);
+			pr_err("Failed to read a valid header: magic was %x, expected %x\n", magic, BootImageDef::IH_MAGIC);
+
+		return false;
 	}
 };
