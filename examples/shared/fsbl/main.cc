@@ -32,12 +32,10 @@ void main()
 	RamTests::run_all(ram_start, ram_size);
 
 	auto boot_method = BootDetect::read_boot_method();
-	BootMediaLoader loader{boot_method};
-
-	printf_("Reading app image header\n");
-	loader.read_app_image_header();
+	printf_("Booted from %s\n", BootDetect::bootmethod_string(boot_method).data());
 
 	printf_("Loading app image\n");
+	BootMediaLoader loader{boot_method};
 	loader.load_image();
 
 	printf_("Jumping to app\n");
