@@ -1,7 +1,7 @@
 BINARYNAME = fsbl
 BUILDDIR = build
 
-OPTFLAG = -O3
+OPTFLAG = -O0
 
 EXTLIBDIR = ../../../third-party
 SHAREDDIR = ../
@@ -25,6 +25,7 @@ SOURCES = startup.s \
 		  norflash/qspi_ll.c \
 		  norflash/qspi_norflash_read.c \
 		  uboot-port/common/memsize.c \
+		  uboot-port/lib/crc32.c \
 
 
 

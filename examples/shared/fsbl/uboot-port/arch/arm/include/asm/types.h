@@ -42,4 +42,6 @@ typedef u32 dma_addr_t;
 
 // #endif /* __KERNEL__ */
 
+// Added by DG:
+typedef unsigned char uchar;
 #endif
