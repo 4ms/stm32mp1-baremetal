@@ -3,7 +3,6 @@ extern "C" {
 #include "crc32.h"
 }
 #include "gpt/blk.h"
-#include "memcpy.h"
 #include "part_efi.h"
 #include "print_messages.h"
 

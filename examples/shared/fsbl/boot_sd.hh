@@ -64,7 +64,7 @@ struct BootSDLoader {
 				panic("No valid GPT header found\n");
 		}
 
-		log("Found 3rd partition at %llu\n", ssbl_blockaddr - 1);
+		log("Found 3rd partition at %llu\n", ssbl_blockaddr);
 
 		read(header, ssbl_blockaddr, 1);
 		// uint8_t data[512];
