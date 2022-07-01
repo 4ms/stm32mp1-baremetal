@@ -8,6 +8,8 @@
 #include <optional>
 
 struct BootSDLoader : BootLoader {
+	static constexpr uint32_t part_num = BootImageDef::SDCardSSBLPartition - 1;
+	static constexpr uint32_t InvalidPartitionNum = 0xFFFFFFFF;
 
 	BootSDLoader()
 	{
@@ -26,39 +28,29 @@ struct BootSDLoader : BootLoader {
 
 	BootImageDef::image_header read_image_header() override
 	{
-		BootImageDef::image_header header;
+		BootImageDef::image_header header{};
 
 		// TODO: get_next_gpt_header(&gpt_hdr)
 		// get_valid_gpt_header()
-		{
-			gpt_header gpt_hdr;
-			const uint32_t last_block = hsd.SdCard.BlockNbr;
-			const uint32_t gpt_addrs[2] = {1, last_block - 1};
+		gpt_header gpt_hdr;
+		const uint32_t last_block = hsd.SdCard.BlockNbr;
+		const uint32_t gpt_addrs[2] = {1, last_block - 1};
 
-			for (auto blockaddr : gpt_addrs) {
-				read(gpt_hdr, blockaddr);
-				if (validate_gpt_header(&gpt_hdr, blockaddr, last_block)) {
-					const uint32_t part_num = BootImageDef::SDCardSSBLPartition - 1;
+		for (auto blockaddr : gpt_addrs) {
+			read(gpt_hdr, blockaddr);
+			if (validate_gpt_header(&gpt_hdr, blockaddr, last_block)) {
 
-					// get_gpt_partition_startaddr(ptes[part_num])
-					std::array<gpt_entry, 4> ptes;
-					// Make sure we're loading 512B into a variable that's 512B
-					static_assert(sizeof(ptes) == 512);
-					if (hsd.SdCard.BlockSize != 512)
-						panic("SD Card block size is not 512!");
-
-					uint32_t part_lba = gpt_hdr.partition_entry_lba + (part_num / 4);
-					read(ptes, gpt_hdr.partition_entry_lba);
-					if (validate_partition_entry(ptes[part_num])) {
-						ssbl_blockaddr = ptes[part_num].starting_lba;
-						break;
-					}
-				}
+				ssbl_blockaddr = get_gpt_partition_startaddr(gpt_hdr);
+				if (ssbl_blockaddr != InvalidPartitionNum)
+					break;
 			}
-			if (!ssbl_blockaddr)
-				panic("No valid GPT header found\n");
 		}
-		log("GPT partition header says 3rd partition is at %llu. Reading\n", ssbl_blockaddr);
+		if (ssbl_blockaddr != InvalidPartitionNum) {
+			pr_err("No valid GPT header found\n");
+			return {};
+		}
+
+		log("GPT partition header says partition %d is at %llu. Reading\n", part_num, ssbl_blockaddr);
 		read(header, ssbl_blockaddr);
 		return header;
 	}
@@ -73,6 +65,24 @@ struct BootSDLoader : BootLoader {
 private:
 	SD_HandleTypeDef hsd;
 	uint64_t ssbl_blockaddr = 0;
+
+	uint64_t get_gpt_partition_startaddr(gpt_header &gpt_hdr)
+	{
+		std::array<gpt_entry, 4> ptes;
+
+		// Make sure we're loading 512B into a variable that's 512B
+		static_assert(sizeof(ptes) == 512);
+		if (hsd.SdCard.BlockSize != 512)
+			panic("SD Card block size is not 512!");
+
+		uint32_t part_lba = gpt_hdr.partition_entry_lba + (part_num / 4);
+		read(ptes, part_lba);
+		if (validate_partition_entry(ptes[part_num % 4])) {
+			return ptes[part_num % 4].starting_lba;
+		}
+
+		return InvalidPartitionNum;
+	}
 
 	void read(auto &data, uint32_t block)
 	{
