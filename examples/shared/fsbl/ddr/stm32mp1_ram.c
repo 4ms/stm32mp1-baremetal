@@ -84,6 +84,23 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, u32 mem_speed)
 
 static void stm32mp1_ddr_tz_init(void)
 {
+	/* enable TZC1 TZC2 clock */
+	// writel(BIT(11) | BIT(12), RCC_MP_APB5ENSETR);
+
+	/* Region 0 set to no access by default */
+	/* bit 0 / 16 => nsaid0 read/write Enable
+	 * bit 1 / 17 => nsaid1 read/write Enable
+	 * ...
+	 * bit 15 / 31 => nsaid15 read/write Enable
+	 */
+	// writel(0xFFFFFFFF, TZC_REGION_ID_ACCESS0);
+	/* bit 30 / 31 => Secure Global Enable : write/read */
+	/* bit 0 / 1 => Region Enable for filter 0/1 */
+	// writel(BIT(0) | BIT(1) | BIT(30) | BIT(31), TZC_REGION_ATTRIBUTE0);
+
+	/* Enable Filter 0 and 1 */
+	// setbits_le32(TZC_GATE_KEEPER, BIT(0) | BIT(1));
+
 	// TrustZone address space controller for DDR (TZC)
 	// TZC AXI port 1 clocks enable
 	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZC1EN;
