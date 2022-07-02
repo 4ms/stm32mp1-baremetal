@@ -5,11 +5,13 @@
 #include "delay.h"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
-#include "mmp9_conf.hh"
+// #include "mmp9_conf.hh"
+#include "osd32brk_conf.hh"
+#include "pmic.hh"
 #include "printf/printf.h"
 #include "stm32mp157cxx_ca7.h"
 
-namespace Board = MMp9;
+namespace Board = OSD32BRK;
 void security_init();
 
 void main()
@@ -23,6 +25,10 @@ void main()
 
 	Uart<Board::ConsoleUART> uart(Board::UartRX, Board::UartTX, 115200);
 	printf_("\n\n");
+
+	if constexpr (Board::PMIC::HasSTPMIC) {
+		STPMIC1 pmic{Board::PMIC::I2C_config};
+	}
 
 	printf_("Initializing RAM\n");
 	stm32mp1_ddr_setup();

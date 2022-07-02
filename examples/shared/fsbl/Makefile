@@ -1,7 +1,7 @@
 BINARYNAME = fsbl
 BUILDDIR = build
 
-OPTFLAG = -O3
+OPTFLAG = -O0
 
 EXTLIBDIR = ../../../third-party
 SHAREDDIR = ../
