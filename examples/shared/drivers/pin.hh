@@ -79,7 +79,7 @@ struct PinConf {
 			  PinPull pull = PinPull::None,
 			  PinPolarity polarity = PinPolarity::Normal,
 			  PinSpeed speed = PinSpeed::High,
-			  PinOType otype = PinOType::PushPull)
+			  PinOType otype = PinOType::PushPull) const
 	{
 		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
 		auto pin_ = static_cast<uint16_t>(1 << (pin & 0x0F));
