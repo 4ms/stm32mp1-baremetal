@@ -5,8 +5,8 @@
 // #define debug(...) printf_(__VA_ARGS__)
 #define debug(...)
 
-#define log(...) printf_(__VA_ARGS__)
-// #define log(...)
+// #define log(...) printf_(__VA_ARGS__)
+#define log(...)
 
 #define pr_err(...) printf_(__VA_ARGS__)
 
