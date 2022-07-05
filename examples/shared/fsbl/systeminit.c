@@ -31,3 +31,27 @@ void SystemInit(void)
 	L2C_Enable();
 #endif
 }
+
+void security_init()
+{
+	// Disable protection to RCC->BDCR, PWR->CR2, RTC, backup registers
+	PWR->CR1 = PWR->CR1 | PWR_CR1_DBP;
+	while (!(PWR->CR1 & PWR_CR1_DBP))
+		;
+
+	// Disable Trust Zone
+	RCC->TZCR = 0;
+
+	// Allow read/write for all securable peripherals (top 7 bits are reserved)
+	TZPC->DECPROT0 = 0x01FFFFFF;
+
+	// Allow non-secure access to SYSRAM
+	TZPC->TZMA1_SIZE = 0;
+
+	// Disable all tamper detection
+	TAMP->CR1 = 0;
+
+	// Allow non-secure access to GPIOZ
+	RCC->MP_AHB5ENSETR = RCC_MP_AHB5ENSETR_GPIOZEN;
+	GPIOZ->SECCFGR = 0;
+}
