@@ -5,6 +5,8 @@
 #include "drivers/i2c_conf.hh"
 #include "print_messages.h"
 
+// TODO: use Board Conf to set the voltage values
+// It just so happens that the OSD32-BRK and STM Disco boards use the same values
 class STPMIC1 {
 
 public:
@@ -14,64 +16,56 @@ public:
 		verify_chip_id();
 	}
 
+	bool setup_vddcore_pwr()
+	{
+		BUCKx_CR vddcore{.bits = {
+							 .enable = 1,
+							 .low_power = 0,
+							 .vout = BUCKx_1200mV,
+						 }};
+		return i2c.write_register_byte(RegisterMain::BUCK1_CR, vddcore.val);
+	}
+
 	bool setup_ddr3_pwr()
 	{
-		auto ldo3 = i2c.read_register_byte(Register::LDO3_CR);
-		log("Initial: LDO3_CR = 0x%x\n", ldo3.value_or(0xDEADBEEF));
-
-		auto buck2 = i2c.read_register_byte(Register::BUCK2_CR);
-		log("Initial: BUCK2_CR = 0x%x\n", buck2.value_or(0xDEADBEEF));
-
-		auto refddr = i2c.read_register_byte(Register::REFDDR_CR);
-		log("Initial: REFDDR_CR = 0x%x\n", refddr.value_or(0xDEADBEEF));
-
 		LDOx_CR vtt{.bits = {
 						.enable = 1,
 						.vout = LDO3_VOUT2DIV2,
 						.bypass = 0,
 					}};
-		if (!i2c.write_register_byte(Register::LDO3_CR, vtt.val))
-			return false;
 
 		BUCKx_CR vddr{.bits = {
-						  .enable = 0,
+						  .enable = 1,
 						  .low_power = 0,
 						  .vout = BUCK2_1350mV,
 					  }};
-		if (!i2c.write_register_byte(Register::BUCK2_CR, vddr.val))
+
+		REFDDRx_CR ref{.bits = {
+						   .enable = 1,
+					   }};
+
+		if (!i2c.write_register_byte(RegisterMain::LDO3_CR, vtt.val))
 			return false;
 
-		vddr.bits.enable = 1;
-		if (!i2c.write_register_byte(Register::BUCK2_CR, vddr.val))
+		if (!i2c.write_register_byte(RegisterMain::BUCK2_CR, vddr.val))
 			return false;
 
 		udelay(1000);
 
-		REFDDRx_CR ref{.bits = {.enable = 1}};
-		if (!i2c.write_register_byte(Register::REFDDR_CR, ref.val))
+		if (!i2c.write_register_byte(RegisterMain::REFDDR_CR, ref.val))
 			return false;
 
 		udelay(1000);
 
-		log("Writing LDO3_CR = 0x%x\n", vtt.val);
-		log("Writing BUCK2_CR = 0x%x\n", vddr.val);
-		log("Writing REFDDR_CR = 0x%x\n", ref.val);
-
-		ldo3 = i2c.read_register_byte(Register::LDO3_CR);
-		log("Read back: LDO3_CR = 0x%x\n", ldo3.value_or(0xDEADBEEF));
-
-		buck2 = i2c.read_register_byte(Register::BUCK2_CR);
-		log("Read back: BUCK2_CR = 0x%x\n", buck2.value_or(0xDEADBEEF));
-
-		refddr = i2c.read_register_byte(Register::REFDDR_CR);
-		log("Read back: REFDDR_CR = 0x%x\n", refddr.value_or(0xDEADBEEF));
-
+		log("Wrote PMIC reg %x (LDO3_CR) = 0x%x\n", RegisterMain::LDO3_CR, vtt.val);
+		log("Wrote PMIC reg %x (BUCK2_CR) = 0x%x\n", RegisterMain::BUCK2_CR, vddr.val);
+		log("Wrote PMIC reg %x (REFDDR_CR) = 0x%x\n", RegisterMain::REFDDR_CR, ref.val);
 		return true;
 	}
 
 	bool verify_chip_id()
 	{
-		auto id = i2c.read_register_byte(Register::ID);
+		auto id = i2c.read_register_byte(RegisterMain::ID);
 		if (!id) {
 			pr_err("Failed to read from PMIC\n");
 			return false;
@@ -80,21 +74,30 @@ public:
 		return true;
 	}
 
+	void print_reg(uint8_t reg)
+	{
+		auto val = i2c.read_register_byte(reg);
+		if (val.has_value())
+			log("Read reg 0x%x = 0x%x\n", reg, val.value());
+		else
+			log("Failed to read register %x\n", reg);
+	}
+
 private:
 	I2C_Controller i2c;
 
 	constexpr static uint32_t PMIC_I2C_Address = 0x33;
-	enum Register : uint8_t {
+	enum RegisterMain : uint8_t {
 		ID = 0x06,
 		BUCK1_CR = 0x20,
 		BUCK2_CR = 0x21,
 		BUCK3_CR = 0x22,
 		BUCK4_CR = 0x23,
+		REFDDR_CR = 0x24,
 		LDO1_CR = 0x25,
 		LDO2_CR = 0x26,
 		LDO3_CR = 0x27,
 		LDO4_CR = 0x28,
-		REFDDR_CR = 0x34,
 	};
 
 	enum RegisterAlt : uint8_t {
@@ -130,4 +133,6 @@ private:
 
 	constexpr static uint8_t LDO3_VOUT2DIV2 = 31; // See datasheet, Table 9
 	constexpr static uint8_t BUCK2_1350mV = 30;	  // See datasheet, Table 10
+
+	constexpr static uint8_t BUCKx_1200mV = 24; // See datasheet, Table 10
 };
