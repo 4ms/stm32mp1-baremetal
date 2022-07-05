@@ -12,7 +12,6 @@
 #include "systeminit.h"
 
 namespace Board = OSD32BRK;
-void security_init();
 
 void main()
 {
@@ -23,13 +22,17 @@ void main()
 	SystemClocks::init_core_clocks();
 	security_init();
 
-	Uart<Board::ConsoleUART> uart(Board::UartRX, Board::UartTX, 115200);
-	printf_("\n\n");
+	Uart<Board::ConsoleUART> console(Board::UartRX, Board::UartTX, 115200);
+	printf_("\n\nFSBL\n\n");
 
 	if constexpr (Board::PMIC::HasSTPMIC) {
 		STPMIC1 pmic{Board::PMIC::I2C_config};
+
+		if (!pmic.setup_vddcore_pwr())
+			panic("Could not setup VDDCORE with PMIC\n");
+
 		if (!pmic.setup_ddr3_pwr())
-			panic("Could not start PMIC\n");
+			panic("Could not setup DDR voltages with PMIC\n");
 	}
 
 	printf_("Initializing RAM\n");
@@ -41,7 +44,7 @@ void main()
 	auto boot_method = BootDetect::read_boot_method();
 	printf_("Booted from %s\n", BootDetect::bootmethod_string(boot_method).data());
 
-	printf_("Loading app image\n");
+	printf_("Loading app image...\n");
 	BootMediaLoader loader{boot_method};
 	bool image_ok = loader.load_image();
 
