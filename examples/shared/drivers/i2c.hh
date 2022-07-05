@@ -44,30 +44,36 @@ public:
 		i2c->TIMINGR = 0x6020070A;
 		i2c->CR1 = i2c->CR1 | I2C_CR1_PE;
 
-		if (!wait_on_flag_low_or_timeout(I2C_ISR_BUSY))
+		if (!wait_not_busy())
 			pr_err("I2C could not be init\n");
 	}
 
 	// Returns contents of an 8-bit register at the given address, or nullopt if failed
 	std::optional<uint8_t> read_register_byte(uint8_t mem_address)
 	{
-		if (request_register_read(mem_address)) {
-			return read_byte();
-		}
-		return std::nullopt;
+		uint8_t data[1];
+		if (read_register(mem_address, data))
+			return data[0];
+		else
+			return std::nullopt;
 	}
 
 	// Reads a register at mem_address into the data parameter
 	// Returns false if failed
 	bool read_register(uint8_t mem_address, std::span<uint8_t> data)
 	{
+		if (!wait_not_busy()) {
+			pr_err("I2C staying busy\n");
+			return false;
+		}
+
 		if (request_register_read(mem_address))
 			if (read(data))
 				return true;
 		return false;
 	}
 
-	// General read a number of bytes sent by the other device
+	// General read of a number of bytes sent by the other device
 	bool read(std::span<uint8_t> data)
 	{
 		const uint32_t num_bytes = data.size_bytes();
@@ -88,52 +94,39 @@ public:
 		return bytes_left == 0 ? true : false;
 	}
 
-	// Read a single byte sent by the other device
-	std::optional<uint8_t> read_byte()
-	{
-		const uint32_t num_bytes = 1;
-		i2c->CR2 = I2C_CR2_START | address << 1 | num_bytes << 16 | I2C_CR2_RD_WRN | I2C_CR2_AUTOEND;
-		if (!wait_on_flag_high_or_timeout(I2C_ISR_RXNE)) {
-			pr_err("Timed out on RXNE flag\n");
-			return std::nullopt;
-		}
-
-		uint8_t ret = i2c->RXDR;
-		return ret;
-	}
-
+	// Write a byte to a register at mem_address
 	bool write_register_byte(uint8_t mem_address, uint8_t val)
 	{
 		const uint32_t one_byte = 1;
 
+		if (!wait_not_busy())
+			pr_err("I2C staying busy\n");
+
+		// Req Mem Write: xfer config reload, start, write
 		i2c->CR2 = I2C_CR2_START | address << 1 | one_byte << 16 | I2C_CR2_RELOAD;
+
 		if (!wait_on_flag_or_ack_or_timeout(I2C_ISR_TXIS))
 			return false;
 
 		i2c->TXDR = mem_address;
+
 		if (!wait_on_flag_high_or_timeout(I2C_ISR_TCR))
 			return false;
 
-		// autoend, no startstop
+		// xfer config: size 1 autoend, no startstop
 		i2c->CR2 = address << 1 | one_byte << 16 | I2C_CR2_AUTOEND;
+
 		if (!wait_on_flag_or_ack_or_timeout(I2C_ISR_TXIS))
 			return false;
 
 		i2c->TXDR = val;
+
 		if (!wait_on_flag_or_ack_or_timeout(I2C_ISR_STOPF))
 			return false;
 
+		i2c->ICR = I2C_ICR_STOPCF;
+
 		return true;
-	}
-
-	// General write, without setting any address, etc. Is this useful?
-	bool write(const std::span<const uint8_t> data)
-	{
-		log("CR2: start | autoend | addr:%08x, | bytes:%zx\n", address << 1, data.size_bytes());
-		i2c->CR2 = I2C_CR2_START | address << 1 | data.size_bytes() << 16 | I2C_CR2_AUTOEND;
-		i2c->TXDR = *data.data();
-
-		return wait_on_flag_high_or_timeout(I2C_ISR_TXE);
 	}
 
 private:
@@ -141,7 +134,6 @@ private:
 	bool request_register_read(uint8_t mem_address)
 	{
 		constexpr uint32_t num_bytes = 1;
-		// printf_("CR2: start | addr:%08x, | bytes:%x\n", address << 1, num_bytes);
 
 		i2c->CR2 = I2C_CR2_START | address << 1 | num_bytes << 16;
 		if (!wait_on_flag_or_ack_or_timeout(I2C_ISR_TXIS))
@@ -155,21 +147,21 @@ private:
 		return true;
 	}
 
-	bool wait_on_flag_high_or_timeout(uint32_t flag, uint32_t timeout = 0xFFFFFFFF)
+	bool wait_on_flag_high_or_timeout(uint32_t flag, uint32_t timeout = 0xFFFFFF)
 	{
 		while (!(i2c->ISR & flag) && timeout--)
 			;
 		return (timeout > 0) ? true : false;
 	}
 
-	bool wait_on_flag_low_or_timeout(uint32_t flag, uint32_t timeout = 0xFFFFFFFF)
+	bool wait_not_busy(uint32_t timeout = 0xFFFFFF)
 	{
-		while ((i2c->ISR & flag) && timeout--)
+		while ((i2c->ISR & I2C_ISR_BUSY) && timeout--)
 			;
 		return (timeout > 0) ? true : false;
 	}
 
-	bool wait_on_flag_or_ack_or_timeout(uint32_t flag, uint32_t timeout = 0xFFFFFFFF)
+	bool wait_on_flag_or_ack_or_timeout(uint32_t flag, uint32_t timeout = 0xFFFFFF)
 	{
 		while (timeout--) {
 			uint32_t isr = i2c->ISR;
