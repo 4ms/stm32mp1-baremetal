@@ -28,14 +28,15 @@ void main()
 
 	if constexpr (Board::PMIC::HasSTPMIC) {
 		STPMIC1 pmic{Board::PMIC::I2C_config};
+		if (!pmic.setup_ddr3_pwr())
+			panic("Could not start PMIC\n");
 	}
 
 	printf_("Initializing RAM\n");
 	stm32mp1_ddr_setup();
 
 	printf_("Testing RAM.\n");
-	const auto ram_size = stm32mp1_ddr_get_size();
-	RamTests::run_all(DRAM_MEM_BASE, ram_size);
+	RamTests::run_all(DRAM_MEM_BASE, stm32mp1_ddr_get_size());
 
 	auto boot_method = BootDetect::read_boot_method();
 	printf_("Booted from %s\n", BootDetect::bootmethod_string(boot_method).data());
