@@ -11,7 +11,7 @@ bool test_first_word()
 	if (*addr == 0x12345678)
 		return true;
 
-	debug("RAM Test Fail: test_first_word(): Wrote 0x12345678, read %08x", *addr);
+	panic("RAM Test Fail: test_first_word(): Wrote 0x12345678, read %08x", *addr);
 	return false;
 }
 
