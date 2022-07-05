@@ -99,4 +99,36 @@ struct PinConf {
 				LL_GPIO_SetAFPin_0_7(port_, pin_, static_cast<uint32_t>(af));
 		}
 	}
+
+	// Same as init(), just args in a different order
+	// Makes it a little cleaner when init'ing AF OpenDrain pins such as I2C
+	void init(PinMode mode,
+			  PinOType otype,
+			  PinPull pull = PinPull::None,
+			  PinPolarity polarity = PinPolarity::Normal,
+			  PinSpeed speed = PinSpeed::High) const
+	{
+		init(mode, pull, polarity, speed, otype);
+	}
+
+	void low() const
+	{
+		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
+		auto pin_ = static_cast<uint16_t>(1 << (pin & 0x0F));
+		LL_GPIO_ResetOutputPin(port_, pin_);
+	}
+
+	void high() const
+	{
+		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
+		auto pin_ = static_cast<uint16_t>(1 << (pin & 0x0F));
+		LL_GPIO_SetOutputPin(port_, pin_);
+	}
+
+	bool read() const
+	{
+		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
+		auto pin_ = static_cast<uint16_t>(1 << (pin & 0x0F));
+		return LL_GPIO_IsInputPinSet(port_, pin_);
+	}
 };
