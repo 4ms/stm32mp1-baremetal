@@ -10,20 +10,22 @@
 #include "stm32mp157cxx_ca7.h"
 #include "systeminit.h"
 
-// Use
-// #include "osd32brk_conf.hh"
-// namespace Board = OSD32BRK;
-
+#include "osd32brk_conf.hh"
 #include "stm32disco_conf.hh"
-namespace Board = STM32MP1Disco;
+
+// Uncomment one of these to select your board:
+namespace Board = OSD32BRK;
+// namespace Board = STM32MP1Disco;
 
 void main()
 {
+	Board::OrangeLED led;
+
 	SystemClocks::init_core_clocks();
 	security_init();
 
 	Uart<Board::ConsoleUART> console(Board::UartRX, Board::UartTX, 115200);
-	printf_("\n\nFSBL\n\n");
+	printf_("\n\nMP1-Boot\n\n");
 
 	if constexpr (Board::PMIC::HasSTPMIC) {
 		STPMIC1 pmic{Board::PMIC::I2C_config};
@@ -45,6 +47,7 @@ void main()
 	printf_("Booted from %s\n", BootDetect::bootmethod_string(boot_method).data());
 
 	printf_("Loading app image...\n");
+
 	BootMediaLoader loader{boot_method};
 	bool image_ok = loader.load_image();
 
@@ -55,12 +58,11 @@ void main()
 
 	// Should not reach here, but in case we do, blink LED rapidly
 	printf_("FAILED! Did not find and load an app image\n");
-	Board::BlueLED blue_led;
 	constexpr uint32_t dlytime = 50000;
 	while (1) {
-		blue_led.on();
+		led.on();
 		udelay(dlytime);
-		blue_led.off();
+		led.off();
 		udelay(dlytime);
 	}
 }
