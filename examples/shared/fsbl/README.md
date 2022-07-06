@@ -34,11 +34,12 @@ found on the [st
 wiki](https://wiki.st.com/stm32mpu/wiki/STM32_MPU_ROM_code_overview).
 
 The linker script for this project links the binary to the correct addresses in
-SYSRAM, and pads 256 bytes for the header. A separate python script generates
-the header. The resulting file is `fsbl.stm32`. We copy this file to the boot
-medium (SD Card, for example) in the same way we copied the U-Boot images to
-the SD Card (using dd). The image gets copied to the sectors that the BOOTROM
-will be looking: LBA0 (address 0), and LBA512 (address 0x40000).
+SYSRAM, and pads 256 bytes for the header. A separate python script (taken from
+[here](https://github.com/WerWolv/STM32MP1OS)) generates the header. The resulting
+file is `fsbl.stm32`. We copy this file to the boot medium (SD Card, for
+example) in the same way we copied the U-Boot images to the SD Card (using dd).
+The image gets copied to the sectors that the BOOTROM will be looking: LBA0
+(address 0), and LBA512 (address 0x40000).
 
 Once loaded, MP1-Boot does the minimal tasks required to load an application into
 RAM and then boot into it:

@@ -1,4 +1,4 @@
-# From https://github.com/4ms/STM32MP1OS
+# From https://github.com/WerWolv/STM32MP1OS
 # 
 
 import struct
