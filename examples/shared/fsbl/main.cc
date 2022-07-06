@@ -5,20 +5,20 @@
 #include "delay.h"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
-#include "osd32brk_conf.hh"
 #include "pmic.hh"
 #include "printf/printf.h"
 #include "stm32mp157cxx_ca7.h"
 #include "systeminit.h"
 
-namespace Board = OSD32BRK;
+// Use
+// #include "osd32brk_conf.hh"
+// namespace Board = OSD32BRK;
+
+#include "stm32disco_conf.hh"
+namespace Board = STM32MP1Disco;
 
 void main()
 {
-	Board::BlueLED blue_led;
-	blue_led.off();
-	blue_led.on();
-
 	SystemClocks::init_core_clocks();
 	security_init();
 
@@ -55,6 +55,7 @@ void main()
 
 	// Should not reach here, but in case we do, blink LED rapidly
 	printf_("FAILED! Did not find and load an app image\n");
+	Board::BlueLED blue_led;
 	constexpr uint32_t dlytime = 50000;
 	while (1) {
 		blue_led.on();

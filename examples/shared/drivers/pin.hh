@@ -18,6 +18,25 @@ enum class GPIO : uint32_t {
 	Z = GPIOZ_BASE,
 };
 
+enum class PinNum : uint16_t {
+	_0 = (1 << 0),
+	_1 = (1 << 1),
+	_2 = (1 << 2),
+	_3 = (1 << 3),
+	_4 = (1 << 4),
+	_5 = (1 << 5),
+	_6 = (1 << 6),
+	_7 = (1 << 7),
+	_8 = (1 << 8),
+	_9 = (1 << 9),
+	_10 = (1 << 10),
+	_11 = (1 << 11),
+	_12 = (1 << 12),
+	_13 = (1 << 13),
+	_14 = (1 << 14),
+	_15 = (1 << 15),
+};
+
 enum class PinAF {
 	AFNone = 0,
 	AF_1,
@@ -72,7 +91,7 @@ enum class PinPolarity {
 // to a peripheral which performs the register initialization later
 struct PinConf {
 	GPIO gpio;
-	uint8_t pin;
+	PinNum pin;
 	PinAF af;
 
 	void init(PinMode mode,
@@ -82,7 +101,7 @@ struct PinConf {
 			  PinOType otype = PinOType::PushPull) const
 	{
 		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
-		auto pin_ = static_cast<uint16_t>(1 << (pin & 0x0F));
+		auto pin_ = static_cast<uint16_t>(pin);
 
 		mdrivlib::RCC_Enable::GPIO::enable(port_);
 		LL_GPIO_SetPinMode(port_, pin_, static_cast<uint32_t>(mode));
@@ -93,7 +112,7 @@ struct PinConf {
 			LL_GPIO_SetPinOutputType(port_, pin_, static_cast<uint32_t>(otype));
 
 		if (mode == PinMode::Alt) {
-			if (pin >= 8)
+			if (pin_ >= (1 << 8))
 				LL_GPIO_SetAFPin_8_15(port_, pin_, static_cast<uint32_t>(af));
 			else
 				LL_GPIO_SetAFPin_0_7(port_, pin_, static_cast<uint32_t>(af));
@@ -114,21 +133,21 @@ struct PinConf {
 	void low() const
 	{
 		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
-		auto pin_ = static_cast<uint16_t>(1 << (pin & 0x0F));
+		auto pin_ = static_cast<uint16_t>(pin);
 		LL_GPIO_ResetOutputPin(port_, pin_);
 	}
 
 	void high() const
 	{
 		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
-		auto pin_ = static_cast<uint16_t>(1 << (pin & 0x0F));
+		auto pin_ = static_cast<uint16_t>(pin);
 		LL_GPIO_SetOutputPin(port_, pin_);
 	}
 
 	bool read() const
 	{
 		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
-		auto pin_ = static_cast<uint16_t>(1 << (pin & 0x0F));
+		auto pin_ = static_cast<uint16_t>(pin);
 		return LL_GPIO_IsInputPinSet(port_, pin_);
 	}
 };

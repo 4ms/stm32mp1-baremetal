@@ -6,21 +6,21 @@
 enum class LedActive { Low, High };
 
 // Led is a generic class that controls a GPIO output.
-// Template parameters are:
-// GPIO_BASE_ADDR: the base address of the GPIO peripheral. Typically you'll use something like GPIOA_BASE or
-// GPIOD_BASE. PIN_NUM: this is the pin number, from 0 to 15 POLARITY: either LedActive::Low or LedActive::High
-// (default). It selects whether the LED turns on when the pin is low or high.
-template<GPIO GPIO_BASE_ADDR, uint32_t PIN_NUM, LedActive POLARITY = LedActive::High>
+// See drivers/pin.hh for enums. Template parameters are:
+// GPIOx: the GPIO to use, such as GPIO::B
+// PINx: the pin to use, such as PinNum::_2
+// POLARITY: either LedActive::Low or LedActive::High (default).
+//           It selects whether the LED turns on when the pin is low or high.
+
+template<GPIO GPIOx, uint32_t PINx, LedActive POLARITY = LedActive::High>
 class Led {
-	GPIO_TypeDef *const gpio;
-	const uint16_t pin_bit;
+	GPIO_TypeDef *const gpio = reinterpret_cast<GPIO_TypeDef *>(GPIOx);
+	constexpr static uint16_t pin_bit = static_cast<uint16_t>(PINx);
 
 public:
 	Led()
-		: gpio{reinterpret_cast<GPIO_TypeDef *>(GPIO_BASE_ADDR)}
-		, pin_bit{1 << PIN_NUM}
 	{
-		PinConf pin{GPIO_BASE_ADDR, PIN_NUM, PinAF::AFNone};
+		PinConf pin{static_cast<GPIO>(GPIOx), static_cast<PinNum>(1 << PINx), PinAF::AFNone};
 		pin.init(PinMode::Output);
 	}
 
