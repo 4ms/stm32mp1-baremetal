@@ -1,61 +1,67 @@
 ## FSBL (First Stage Bootloader)
 ### Fast, lightweight and opinionated replacement for U-Boot
 
-** Work in Progress: see notes **
-
 This project replaces U-Boot with a simple single-stage bootloader.
 
-It replaces both of U-Boot's stages (SPL and U-Boot proper) with one stage.
-Normally U-Boot's SPL loads the Second Stage Bootloader (SSBL), which in turn loads the application.
+Normally U-Boot's First Stage Bootloader (SPL) loads the Second Stage Bootloader (U-Boot proper), which in turn loads the application.
 When using this bootloader, it loads the application immediately.
 
 #### Why not U-Boot?
 
 Why re-invent the wheel? Primarily for educational purposes.
+
 Secondarily, for a particular project I required fast booting with a somewhat
-unorthodox boot sequence, and had no need for all the features of U-Boot
+unorthodox boot algorithm, and had no need for all the features of U-Boot
 (command line, USB gadget, etc).
 
-U-Boot is excellent and solid, it should be your first choice for a project.
+U-Boot is excellent and solid, it should be your first choice for a project, especially when developing.
 U-Boot excels at being portable (the "U" is for Universal), which means you can
 port to another platform easily. However, the complexity means debugging and
 customizing can be difficult, requiring a combination of modifying KConfig
-files, device trees (DTS), C code, and sometimes even linker outputs. 
+files, device trees (DTS), C code, and sometimes even linker outputs (`ll_entry_start()` etc).
 
 #### How it works
 
-A simple config file defines the board (same config files for OSD32-BRK and Discovery boards used in other projects)
+A simple config file defines the board (same config files for OSD32-BRK and Discovery boards used in other projects).
 
-On power-up, the MP1's BOOTROM attempts to read a 256-byte header from whatever interface the BOOT0/1/2
+A bit of background/review: on power-up, the STM32MP15x BOOTROM attempts to read a 256-byte header from whatever interface the BOOT0/1/2
 pins select (NOR Flash, SDMMC, etc). If the header has the right signature, then it will load the entire
-image into SYSRAM at a designed address, 0x2FFC2400. Then it jus
+image into SYSRAM at a designed address, 0x2FFC2400. Then it jumps to start executing code at 0x2FFC2500.
+Details about the boot procedure can be found on the [st wiki](https://wiki.st.com/stm32mpu/wiki/STM32_MPU_ROM_code_overview).
 
+The linker script for this project links the binary to the correct addresses in
+SYSRAM, and pads 256 bytes for the header. A separate python script generates
+the header. The resulting file is `fsbl.stm32`. We copy this file to the
+boot medium (SD Card, for example) in the same way we copied the U-Boot images to the SD Card (using dd).
+The image gets copied to the sectors that the BOOTROM will
+be looking: LBA0 (address 0), and LBA512 (address 0x40000).
 
-It does the minimal tasks required to load an application into RAM and then boot into it:
+Once loaded, FSBL does the minimal tasks required to load an application into RAM and then boot into it:
 
   - Initialize the PLL clocks for the MPU and DDR RAM
-  - Configure the PMIC, if present, to power the DDR RAM
+  - Initialize security settings (allowing the application full access)
+  - Configure the external PMIC chip, if present, to power the DDR RAM
   - Initialize the DDR RAM peripheral
   - Detect the boot method (NOR Flash, SD Card, EMMC, etc.)
-  - Load the application image from the boot medium into DDR RAM
+  - Verify the application image header, and load the image from the boot medium into DDR RAM
   - Jump into the application 
   - Indicate an error on failure
 
-Also there are two steps that are not strictly necessary, but useful:
+Also there is one step that is not strictly necessary, but useful:
 
   - Initialize the UART to allow for printf() messages
-  - Test the RAM
 
-With the optional steps enabled, first-stage boot time is 30ms from power-on 
-signal (valid Vdd) to the start of reading the app image.
+#### Boot time
+
+The fsbl image is aboutr 40kB. It takes BOOTROM about <F8>
+With the optional step enabled, first-stage boot time is about 30ms from
+power-on signal (valid Vdd) to the start of reading the app image.
 Disabling the UART saves about 2ms. 
 
 After the initial 30ms, the remaining boot time is spent reading the app image
 from the boot media (SD card, flash chip, etc). The duration of that of course
 depends on the size of the image and the speed of the transfer.
 
-RAM Tests will likely change before I'm done with this project. For now it just
-writes one word and verifies it.
 
 #### Project status
 
