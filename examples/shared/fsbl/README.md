@@ -20,8 +20,8 @@ U-Boot is excellent and solid, it should be your first choice for a project,
 especially when developing. U-Boot excels at being portable (the "U" is for
 Universal), which means you can port to another platform easily. However, the
 complexity means debugging and customizing can be difficult, requiring a
-combination of modifying KConfig files, device trees (DTS), C code, and
-sometimes even linker outputs (`ll_entry_start()` etc).
+combination of searching through and modifying KConfig files, device trees
+(DTS), C code, and sometimes even linker outputs (`ll_entry_start()` etc).
 
 #### How it works
 
