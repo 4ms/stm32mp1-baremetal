@@ -96,21 +96,13 @@ This currently works with SD Card or NOR Flash booting. It also works with
 a PMIC system or a discrete LDO system. 
 
   * Test with all example projects, ensuring they work with this
-
   * Faster NOR loading (use Quad mode)
-
   * Faster SDMMC loading (Debug OSD32-BRK speed limit of 16MHz)
-
   * Add extensive RAM tests (run optionally)
-
   * Add a driver for EMMC (SDMMC2)
-
   * Add a driver for UART booting
-
   * Reduce binary size by using our own RCC config instead of HAL (9kB)
-
   * Reduce binary size by using our own SDMMC config instead of HAL (10kB)
-
   * Reduce binary size by omitting printf library (9kB)
 
 
