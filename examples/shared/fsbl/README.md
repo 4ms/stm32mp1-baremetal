@@ -22,6 +22,14 @@ port to another platform easily. However, the complexity means debugging and
 customizing can be difficult, requiring a combination of modifying KConfig
 files, device trees (DTS), C code, and sometimes even linker outputs. 
 
+#### How it works
+
+A simple config file defines the board (same config files for OSD32-BRK and Discovery boards used in other projects)
+
+On power-up, the MP1's BOOTROM attempts to read a 256-byte header from whatever interface the BOOT0/1/2
+pins select (NOR Flash, SDMMC, etc). If the header has the right signature, then it will load the entire
+image into SYSRAM at a designed address, 0x2FFC2400. Then it jus
+
 
 It does the minimal tasks required to load an application into RAM and then boot into it:
 
@@ -54,13 +62,8 @@ writes one word and verifies it.
 This currently only works with SD Card and NOR Flash booting. It can work with a PMIC system or a
 discrete LDO system. 
 
-A simple config file defines the board (same config files for OSD32-BRK and Discovery boards used in other projects)
 
   * Instructions for creating an app img (create a python script?)
-
-  * Add a driver for EMMC (SDMMC2)
-
-  * Add extensive RAM tests (run optionally)
 
   * Re-visit other example projects, ensuring they work with this FSBL
 
@@ -69,6 +72,10 @@ A simple config file defines the board (same config files for OSD32-BRK and Disc
   * Faster NOR loading (use Quad mode)
 
   * Faster SDMMC loading (debug why faster clock causes RXOVERR)
+
+  * Add extensive RAM tests (run optionally)
+
+  * Add a driver for EMMC (SDMMC2)
 
 
 #### Using this
