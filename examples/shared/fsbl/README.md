@@ -1,4 +1,6 @@
-## MP1-Boot ### Minimal, Performant Bootloader for the STM32MP15x
+## MP1-Boot 
+
+### Minimal, Performant Bootloader for the STM32MP15x
 
 This project replaces U-Boot with a simple single-stage bootloader.
 
