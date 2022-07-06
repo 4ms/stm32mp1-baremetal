@@ -150,4 +150,25 @@ struct PinConf {
 		auto pin_ = static_cast<uint16_t>(pin);
 		return LL_GPIO_IsInputPinSet(port_, pin_);
 	}
+
+	static constexpr uint32_t bit_to_num(PinNum PINx)
+	{
+		return PINx == PinNum::_0  ? 0 :
+			   PINx == PinNum::_1  ? 1 :
+			   PINx == PinNum::_2  ? 2 :
+			   PINx == PinNum::_3  ? 3 :
+			   PINx == PinNum::_4  ? 4 :
+			   PINx == PinNum::_5  ? 5 :
+			   PINx == PinNum::_6  ? 6 :
+			   PINx == PinNum::_7  ? 7 :
+			   PINx == PinNum::_8  ? 8 :
+			   PINx == PinNum::_9  ? 9 :
+			   PINx == PinNum::_10 ? 10 :
+			   PINx == PinNum::_11 ? 11 :
+			   PINx == PinNum::_12 ? 12 :
+			   PINx == PinNum::_13 ? 13 :
+			   PINx == PinNum::_14 ? 14 :
+			   PINx == PinNum::_15 ? 15 :
+									   0;
+	}
 };
