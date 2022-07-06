@@ -1,6 +1,6 @@
-## MP1-Boot 
+# MP1-Boot 
 
-### Minimal, Performant Bootloader for the STM32MP15x
+## Minimal, Performant Bootloader for the STM32MP15x
 
 This project replaces U-Boot with a simple single-stage bootloader.
 
@@ -8,7 +8,7 @@ Normally U-Boot's First Stage Bootloader (SPL) loads the Second Stage
 Bootloader (U-Boot proper), which in turn loads the application. When using
 this bootloader, it loads the application immediately.
 
-#### Why not U-Boot?
+### Why not U-Boot?
 
 Why re-invent the wheel? Primarily for educational purposes.
 
@@ -23,7 +23,7 @@ complexity means debugging and customizing can be difficult, requiring a
 combination of searching through and modifying KConfig files, device trees
 (DTS), C code, and sometimes even linker outputs (`ll_entry_start()` etc).
 
-#### How it works
+### How it works
 
 A bit of background/review: on power-up, the STM32MP15x BOOTROM attempts to
 read a 256-byte header from whatever interface the BOOT0/1/2 pins select (NOR
@@ -36,10 +36,9 @@ wiki](https://wiki.st.com/stm32mpu/wiki/STM32_MPU_ROM_code_overview).
 The linker script for this project links the binary to the correct addresses in
 SYSRAM, and pads 256 bytes for the header. A separate python script (taken from
 [here](https://github.com/WerWolv/STM32MP1OS)) generates the header. The resulting
-file is `fsbl.stm32`. We copy this file to the boot medium (SD Card, for
-example) in the same way we copied the U-Boot images to the SD Card (using dd).
-The image gets copied to the sectors that the BOOTROM will be looking: LBA0
-(address 0), and LBA512 (address 0x40000).
+file is `fsbl.stm32`. We copy this image file to the SD Card using `dd` like we
+do for the other example projects. The image gets copied to the sectors that
+the BOOTROM will be looking: LBA0 (address 0), and LBA512 (address 0x40000).
 
 Once loaded, MP1-Boot does the minimal tasks required to load an application into
 RAM and then boot into it:
@@ -58,7 +57,7 @@ Also there is one step that is not strictly necessary, but useful:
 
   - Initialize the UART to allow for printf() messages
 
-#### Boot time
+### Boot time
 
 Boot time varies widely depending on the board and the boot medium (SD Card or
 NOR Flash).
@@ -91,7 +90,7 @@ widths, we can set our own transfer protocol rates. NOR Flash at 100MHz clock,
 
 All-in-all, a decent sized application can be running in under 100ms.
 
-#### Project status
+### Project status
 
 This currently works with SD Card or NOR Flash booting. It also works with
 a PMIC system or a discrete LDO system. 
@@ -115,7 +114,7 @@ a PMIC system or a discrete LDO system.
   * Reduce binary size by omitting printf library (9kB)
 
 
-#### Using this
+### Using this
 
 A simple config header defines such things as the console UART pins, whether or not the
 board has a PMIC, etc. These are the same config files for OSD32-BRK and
