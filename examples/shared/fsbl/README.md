@@ -134,15 +134,9 @@ After building, it will prompt you for the disk device name of the SD Card.
 Make sure a partitioned SD Card is inserted into your computer, and enter the
 device name (such as `/dev/disk4`). The card must be partitioned the same way
 it's done in the other example projects. Use the `scripts/partition-sdcard.sh`
-script to do this.
-
-Alternatively, you can load the image yourself:
-
-```
-make image
-sudo dd if=build/fsbl.stm32 of=/dev/sdXX1
-sudo dd if=build/fsbl.stm32 of=/dev/sdXX2
-```
+script to do this. (Alternatively, you can load the image yourself by running
+`make image` followed by `dd` commands to load `build/fsbl.stm32` onto
+partitions 1 and 2 of the SD Card.)
 
 Finally, copy the application uimg file to the 3rd partition like this:
 
