@@ -21,7 +21,7 @@ struct BootSDLoader : BootLoader {
 		hsd.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
 		hsd.Init.BusWide = SDMMC_BUS_WIDE_4B;
 		hsd.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-		hsd.Init.ClockDiv = 10; // 64MHz/2 / 10 = 3.2MHz seems to be the max. FIXME:why?
+		hsd.Init.ClockDiv = 2; // 64MHz/2 / 2 = 16MHz, seems to be the max OSD32-BRK can handle reliably
 
 		// These pins are not board-specific, they are required by BOOTROM
 		// for booting with SDMMC1
@@ -45,7 +45,6 @@ struct BootSDLoader : BootLoader {
 		BootImageDef::image_header header{};
 
 		// TODO: get_next_gpt_header(&gpt_hdr)
-		// get_valid_gpt_header()
 		gpt_header gpt_hdr;
 		const uint32_t last_block = hsd.SdCard.BlockNbr;
 		const uint32_t gpt_addrs[2] = {1, last_block - 1};
