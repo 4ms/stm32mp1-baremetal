@@ -1,46 +1,62 @@
 ## FSBL (First Stage Bootloader)
-### Fast, lightweight replacement for U-Boot
+### Fast, lightweight and opinionated replacement for U-Boot
 
 ** Work in Progress: see notes **
 
-This project aims to replace U-Boot with my own hand-rolled bootloader.
-While U-Boot excels at being portable (the U is for Universal), it comes at a cost of complexity,
-which means debugging and customizing is difficult. Also, sometimes booting quickly is more important than having bootloader features.
+This project replaces U-Boot with a simple single-stage bootloader.
 
-This project replaces U-Boot's SPL loader (the FSBL) and U-Boot proper (the SSBL). 
+It replaces both of U-Boot's stages (SPL and U-Boot proper) with one stage.
+Normally U-Boot's SPL loads the Second Stage Bootloader (SSBL), which in turn loads the application.
+When using this bootloader, it loads the application immediately.
 
-It does a minimal number of tasks required to load an application into RAM and then boot into it:
+#### Why not U-Boot?
+
+Why re-invent the wheel? Primarily for educational purposes.
+Secondarily, for a particular project I required fast booting with a somewhat
+unorthodox boot sequence, and had no need for all the features of U-Boot
+(command line, USB gadget, etc).
+
+U-Boot is excellent and solid, it should be your first choice for a project.
+U-Boot excels at being portable (the "U" is for Universal), which means you can
+port to another platform easily. However, the complexity means debugging and
+customizing can be difficult, requiring a combination of modifying KConfig
+files, device trees (DTS), C code, and sometimes even linker outputs. 
+
+
+It does the minimal tasks required to load an application into RAM and then boot into it:
 
   - Initialize the PLL clocks for the MPU and DDR RAM
-  - Initialize the DDR RAM
+  - Configure the PMIC, if present, to power the DDR RAM
+  - Initialize the DDR RAM peripheral
   - Detect the boot method (NOR Flash, SD Card, EMMC, etc.)
   - Load the application image from the boot medium into DDR RAM
   - Jump into the application 
+  - Indicate an error on failure
 
-Also there are two steps that are not strictly necessary but are useful:
+Also there are two steps that are not strictly necessary, but useful:
 
-  - Initialize the UART to allow for printf()
+  - Initialize the UART to allow for printf() messages
   - Test the RAM
 
 With the optional steps enabled, first-stage boot time is 30ms from power-on 
 signal (valid Vdd) to the start of reading the app image.
-Disabling the UART saves about 2ms. RAM Tests will likely change before I'm
-done with this project. For now it just writes one word and verifies it.
+Disabling the UART saves about 2ms. 
 
-After the initial 30ms, the remaining boot time is spent reading the app image from the boot media
-(SD card, flash chip, etc). The duration of that of course depends on the
-size of the image and the speed of the transfer.
+After the initial 30ms, the remaining boot time is spent reading the app image
+from the boot media (SD card, flash chip, etc). The duration of that of course
+depends on the size of the image and the speed of the transfer.
 
+RAM Tests will likely change before I'm done with this project. For now it just
+writes one word and verifies it.
 
 #### Project status
 
-Currently this only works on custom hardware which uses discrete LDOs and buck
-converters instead of a PMIC chip. I am extending it to work on the Discovery
-and OSD32 boards.
+This currently only works with SD Card and NOR Flash booting. It can work with a PMIC system or a
+discrete LDO system. 
 
-Here is the TODO list:
+A simple config file defines the board (same config files for OSD32-BRK and Discovery boards used in other projects)
 
-  * Add a step to initialize I2C, detect if PMIC is present, and configure voltage supplies if so.
+  * Instructions for creating an app img (create a python script?)
 
   * Add a driver for EMMC (SDMMC2)
 
@@ -76,6 +92,8 @@ Reboot your board with a UART-to-USB cable connected, and watch FSBL's startup m
 You should see:
 
 ```
+FSBL
+
 Initializing RAM
 name = DDR3-DDR3L 16bits 533000Khz
 speed = 533000 kHz
