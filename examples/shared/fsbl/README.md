@@ -159,5 +159,7 @@ Loading app image...
 Jumping to app 
 ```
 
+...followed by the application running.
+
 
 
