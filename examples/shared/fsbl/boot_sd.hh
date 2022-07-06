@@ -71,7 +71,9 @@ struct BootSDLoader : BootLoader {
 	bool load_image(uint32_t load_addr, uint32_t size) override
 	{
 		auto load_dst = reinterpret_cast<uint8_t *>(load_addr);
-		auto err = HAL_SD_ReadBlocks(&hsd, load_dst, ssbl_blockaddr, size / hsd.SdCard.BlockSize, 0xFFFFFF);
+		uint32_t num_blocks = (size + hsd.SdCard.BlockSize - 1) / hsd.SdCard.BlockSize;
+		log("Reading %d blocks starting with block %llu from SD Card\n", num_blocks, ssbl_blockaddr);
+		auto err = HAL_SD_ReadBlocks(&hsd, load_dst, ssbl_blockaddr, num_blocks, 0xFFFFFF);
 		return (err == HAL_OK);
 	}
 
