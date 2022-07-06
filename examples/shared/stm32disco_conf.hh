@@ -4,17 +4,17 @@
 
 namespace STM32MP1Disco
 {
-using OrangeLED = Led<GPIO::H, 7, LedActive::High>;
+using OrangeLED = Led<GPIO::H, PinNum::_7, LedActive::High>;
 using LD7 = OrangeLED;
 
-using BlueLED = Led<GPIO::D, 11, LedActive::High>;
+using BlueLED = Led<GPIO::D, PinNum::_11, LedActive::High>;
 using LD8 = BlueLED;
 
 // Note: Green and Red LEDs share a pin with User1Button and User2Button.
-using GreenLED = Led<GPIO::A, 14, LedActive::High>;
+using GreenLED = Led<GPIO::A, PinNum::_14, LedActive::High>;
 using LD5 = GreenLED;
 
-using RedLED = Led<GPIO::A, 13, LedActive::High>;
+using RedLED = Led<GPIO::A, PinNum::_13, LedActive::High>;
 using LD6 = RedLED;
 
 using RedLED2 = OrangeLED; // For compatibility with OSD32BRK board

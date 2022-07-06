@@ -5,10 +5,10 @@
 namespace OSD32BRK
 {
 
-using RedLED = Led<GPIO::Z, 6, LedActive::Low>;
-using GreenLED = Led<GPIO::Z, 7, LedActive::Low>;
-using RedLED2 = Led<GPIO::I, 8, LedActive::Low>;
-using GreenLED2 = Led<GPIO::I, 9, LedActive::Low>;
+using RedLED = Led<GPIO::Z, PinNum::_6, LedActive::Low>;
+using GreenLED = Led<GPIO::Z, PinNum::_7, LedActive::Low>;
+using RedLED2 = Led<GPIO::I, PinNum::_8, LedActive::Low>;
+using GreenLED2 = Led<GPIO::I, PinNum::_9, LedActive::Low>;
 
 using OrangeLED = GreenLED; // For compatibility with STM32MP1 Discovery board
 using BlueLED = RedLED2;	// For compatibility with STM32MP1 Discovery board
