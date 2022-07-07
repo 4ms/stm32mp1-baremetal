@@ -1,37 +1,25 @@
 #include "drivers/rcc.hh"
 #include "stm32mp1xx_hal_rcc.h"
+#include <stdint.h>
 
 struct SystemClocks {
 	static unsigned init_core_clocks(uint32_t MPU_MHz = 800)
 	{
-		RCC_OscInitTypeDef rcc_osc_conf = {
-			.OscillatorType = RCC_OSCILLATORTYPE_HSE,
-			.HSEState = RCC_HSE_BYPASS,
-			.PLL =
-				{
-					.PLLState = RCC_PLL_ON,
-					.PLLSource = RCC_PLL12SOURCE_HSE,
-					.PLLM = 3,
-					.PLLN = MPU_MHz == 650 ? 81U : 100U,
-					.PLLP = 1,
-					.PLLQ = 2,
-					.PLLR = 2,
-					.PLLFRACV = MPU_MHz == 650 ? 2048U : 0U,
-					.PLLMODE = MPU_MHz == 650 ? RCC_PLL_FRACTIONAL : RCC_PLL_INTEGER,
-				},
-			.PLL2 =
-				{
-					.PLLState = RCC_PLL_ON,
-					.PLLSource = RCC_PLL12SOURCE_HSE,
-					.PLLM = 3,
-					.PLLN = 66,
-					.PLLP = 2,
-					.PLLQ = 1,
-					.PLLR = 1,
-					.PLLFRACV = 5120,
-					.PLLMODE = RCC_PLL_FRACTIONAL,
-				},
-		};
+		constexpr uint32_t HSE_Clock = 24000000;
+
+		constexpr uint32_t pll1m = 3;
+		const uint32_t pll1n = (MPU_MHz == 650 ? 81U : 100U);
+		constexpr uint32_t pll1p = 1;
+		constexpr uint32_t pll1q = 2;
+		constexpr uint32_t pll1r = 2;
+		constexpr uint32_t pll1frac = 0;
+
+		constexpr uint32_t pll2m = 3;
+		constexpr uint32_t pll2n = 66;
+		constexpr uint32_t pll2p = 2;
+		constexpr uint32_t pll2q = 1;
+		constexpr uint32_t pll2r = 1;
+		constexpr uint32_t pll2frac = 5120;
 
 		using namespace mdrivlib;
 		using namespace mdrivlib::RCC_Clocks;
@@ -65,11 +53,11 @@ struct SystemClocks {
 			PLL12Source::write(PLL12SourceHSE);
 			while (!PLL12SourceReady::read())
 				;
-			PLL1::DIVM1::write(3 - 1);
-			PLL1::DIVN::write((MPU_MHz == 650 ? 81U : 100U) - 1);
-			PLL1::DIVP::write(1 - 1);
-			PLL1::DIVQ::write(2 - 1);
-			PLL1::DIVR::write(2 - 1);
+			PLL1::DIVM1::write(pll1m - 1);
+			PLL1::DIVN::write(pll1n - 1);
+			PLL1::DIVP::write(pll1p - 1);
+			PLL1::DIVQ::write(pll1q - 1);
+			PLL1::DIVR::write(pll1r - 1);
 			PLL1::FRACLatch::clear();
 			PLL1::FRACValue::write(0);
 			PLL1::FRACLatch::set();
@@ -92,13 +80,13 @@ struct SystemClocks {
 			while (PLL2::Ready::read())
 				;
 
-			PLL2::DIVM2::write(3 - 1);
-			PLL2::DIVN::write(66 - 1);
-			PLL2::DIVP::write(2 - 1);
-			PLL2::DIVQ::write(1 - 1);
-			PLL2::DIVR::write(1 - 1);
+			PLL2::DIVM2::write(pll2m - 1);
+			PLL2::DIVN::write(pll2n - 1);
+			PLL2::DIVP::write(pll2p - 1);
+			PLL2::DIVQ::write(pll2q - 1);
+			PLL2::DIVR::write(pll2r - 1);
 			PLL2::FRACLatch::clear();
-			PLL2::FRACValue::write(5120);
+			PLL2::FRACValue::write(pll2frac);
 			PLL2::FRACLatch::set();
 			PLL2::SpreadSpectrumClockGen::Enable::clear();
 
@@ -112,24 +100,19 @@ struct SystemClocks {
 		}
 
 		MPUClockSrc::write(MPUClockSrcPLL1);
-		while (!MPUClockReady::read())
+		while (!MPUClockSrcReady::read())
 			;
 
-		RCC_ClkInitTypeDef rcc_mpuclk_conf = {
-			.ClockType = RCC_CLOCKTYPE_MPU | RCC_CLOCKTYPE_ACLK,
-			.MPUInit =
-				{
-					.MPU_Clock = RCC_MPUSOURCE_PLL1,
-					.MPU_Div = RCC_MPU_DIV_OFF,
-				},
-			.AXISSInit =
-				{
-					.AXI_Clock = RCC_AXISSOURCE_PLL2,
-					.AXI_Div = RCC_MPU_DIV_OFF,
-				},
-		};
+		AXISClockSrc::write(AXISClockSrcPLL2);
+		while (!AXISClockSrcReady::read())
+			;
 
-		auto clk_err = HAL_RCC_ClockConfig(&rcc_mpuclk_conf);
-		return static_cast<unsigned>(clk_err);
+		AXIDiv::write(AXIDivOff);
+		while (!AXIDivReady::read())
+			;
+
+		float coreclock = (float)HSE_Clock * ((float)pll1n + (float)pll1frac / 8191.f) / ((float)pll1m * (float)pll1p);
+		SystemCoreClock = static_cast<uint32_t>(coreclock);
+		return SystemCoreClock;
 	}
 };
