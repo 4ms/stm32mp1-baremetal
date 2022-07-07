@@ -5,6 +5,7 @@ OPTFLAG = -O3
 
 EXTLIBDIR = ../../../third-party
 SHAREDDIR = ../
+SCRIPTDIR = ../../../scripts
 
 SOURCES = startup.s \
 		  main.cc \

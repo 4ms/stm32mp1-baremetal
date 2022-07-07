@@ -1,0 +1,15 @@
+---
+CompileFlags:
+	Add: [
+   "-DUSE_FULL_LL_DRIVER",
+   "-DSTM32MP157Cxx",
+   "-DSTM32MP1",
+   "-DCORE_CA7",
+	"-I.",
+	"-I../fsbl",
+	"-I../../third-party/CMSIS/Core_A/Include",
+	"-I../../third-party/CMSIS/Device/ST/STM32MP1xx/Include",
+	"-I../../third-party/STM32MP1xx_HAL_Driver/Inc",
+	"-I../../third-party/printf/src",
+	"-std=c++20",
+	]

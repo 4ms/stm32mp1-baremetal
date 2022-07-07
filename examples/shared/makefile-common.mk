@@ -6,6 +6,7 @@ UBOOTDIR ?= $(EXTLIBDIR)/u-boot/build
 BUILDDIR ?= build
 BINARYNAME ?= main
 UIMAGENAME ?= $(BUILDDIR)/a7-main.uimg
+SCRIPTDIR ?= ../../scripts
 
 OBJDIR = $(BUILDDIR)/obj/obj
 LOADADDR 	= 0xC2000040
@@ -113,13 +114,9 @@ $(HEX): $(ELF)
 	@$(OBJCPY) --output-target=ihex $< $@
 	@$(SZ) $(SZOPTS) $(ELF)
 
-$(UIMAGENAME): $(BIN) $(UBOOTDIR)/tools/mkimage
+$(UIMAGENAME): $(BIN)
 	$(info Creating uimg file)
-	@$(UBOOTDIR)/tools/mkimage -A arm -C none -T kernel -a $(LOADADDR) -e $(ENTRYPOINT) -d $< $@
-
-$(UBOOTDIR)/tools/mkimage:
-	$(info Building U-boot bootloader)
-	@cd ../.. && scripts/build-u-boot.sh
+	python $(SCRIPTDIR)/uimg_header.py $< $@
 
 %.d: ;
 
