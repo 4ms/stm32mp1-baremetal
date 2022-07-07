@@ -32,7 +32,8 @@ struct SystemClocks {
 				},
 		};
 
-		auto err_deinit = HAL_RCC_DeInit();
+		MODIFY_REG(RCC->MPCKSELR, (RCC_MPCKSELR_MPUSRC), 0U);
+		MODIFY_REG(RCC->ASSCKSELR, (RCC_ASSCKSELR_AXISSRC), 0U);
 
 		auto err = HAL_RCC_OscConfig(&rcc_osc_conf);
 
@@ -55,6 +56,6 @@ struct SystemClocks {
 		};
 
 		auto clk_err = HAL_RCC_ClockConfig(&rcc_mpuclk_conf);
-		return static_cast<unsigned>(err + 1000 * err_deinit + 10000 * clk_err);
+		return static_cast<unsigned>(err + 1000 * clk_err);
 	}
 };
