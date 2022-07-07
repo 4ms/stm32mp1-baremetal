@@ -1,8 +1,11 @@
 #pragma once
 #include <cstdint>
 
+// This is the "legacy" (ie non-FIT) U-Boot image header
 namespace BootImageDef
 {
+
+// U-Boot uses these values for the location of the next boot stage, so we will also:
 constexpr uint32_t NorFlashSSBLAddr = 0x80000;
 constexpr uint32_t SDCardSSBLPartition = 3;
 
@@ -28,18 +31,4 @@ struct image_header {
 
 constexpr uint32_t HeaderSize = sizeof(image_header);
 
-struct spl_image_info {
-	const char *name;
-	uint8_t os;
-	uintptr_t load_addr;
-	uintptr_t entry_point;
-	uint32_t boot_device;
-	uint32_t size;
-	uint32_t flags;
-	void *arg;
-};
-
-enum spl_image_flags {
-	SPL_COPY_PAYLOAD_ONLY = 1,
-};
 } // namespace BootImageDef
