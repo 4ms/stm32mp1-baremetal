@@ -29,7 +29,6 @@ data_crc = zlib.crc32(payload) & 0xffffffff
 
 # To calc the header CRC, we generate a header with the CRC zero'ed out
 # Then calc the CRC of that, then fill it back in
-# TODO: just replace bytes 4-7 with the CRC, how?
 header_no_crc = struct.pack("<IIIIIIIbbbb32s", 
     magic,                   # Image Header Magic Number	
     0,
@@ -45,22 +44,12 @@ header_no_crc = struct.pack("<IIIIIIIbbbb32s",
     image_name,              # Image Name		
     )
 
-header_crc = zlib.crc32(header_no_crc) & 0xffffffff
-
-header = struct.pack("<IIIIIIIbbbb32s", 
-    magic,                   # Image Header Magic Number	
-    header_crc,              # Header CRC
-    tmstamp,                 # Image Creation Timestamp	
-    datalen,                 # Image Data Size		
-    loadaddr,                # Data Load Address		
-    entryaddr,               # Entry Point Address		
-    data_crc,                # Image Data CRC Checksum	
-    os_uboot,                # Operating System		
-    arch_arm,                # CPU architecture		
-    image_type,              # Image Type			
-    compress,                # Compression Type		
-    image_name,              # Image Name		
-    )
+hcrc = (zlib.crc32(header_no_crc) & 0xffffffff).to_bytes(4, 'little')
+header = bytearray(header_no_crc)
+header[4] = hcrc[0]
+header[5] = hcrc[1]
+header[6] = hcrc[2]
+header[7] = hcrc[3]
 
 with open(sys.argv[2], "wb") as uimg_file:
     uimg_file.write(header + payload)
