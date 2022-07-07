@@ -4,17 +4,17 @@
 
 namespace MMp9
 {
-using RedLED = Led<GPIO::E, 2, LedActive::High>;
-using GreenLED = Led<GPIO::D, 3, LedActive::High>;
-using RedLED2 = Led<GPIO::B, 14, LedActive::High>;
-using GreenLED2 = Led<GPIO::E, 1, LedActive::High>;
+using RedLED = Led<GPIO::E, PinNum::_2, LedActive::High>;
+using GreenLED = Led<GPIO::D, PinNum::_3, LedActive::High>;
+using RedLED2 = Led<GPIO::B, PinNum::_14, LedActive::High>;
+using GreenLED2 = Led<GPIO::E, PinNum::_1, LedActive::High>;
 
 using OrangeLED = RedLED2;
-using BlueLED = Led<GPIO::A, 14, LedActive::Low>;
+using BlueLED = Led<GPIO::A, PinNum::_14, LedActive::Low>;
 
 constexpr uint32_t ConsoleUART = USART6_BASE;
-constexpr PinConf UartRX{GPIO::C, 7, PinAF::AF_7};
-constexpr PinConf UartTX{GPIO::C, 6, PinAF::AF_7};
+constexpr PinConf UartRX{GPIO::C, PinNum::_7, PinAF::AF_7};
+constexpr PinConf UartTX{GPIO::C, PinNum::_6, PinAF::AF_7};
 
 namespace PMIC
 {
