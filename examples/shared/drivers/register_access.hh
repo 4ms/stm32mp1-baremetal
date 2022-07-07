@@ -13,8 +13,8 @@ using regsize_t = uint32_t;
 // todo: Require AccessPolicyT has read() write() set() clear()
 template<typename AccessPolicyT, regsize_t address, regsize_t mask>
 struct RegisterBits {
-	static const regsize_t BaseAddress = address;
-	static const regsize_t Mask = mask;
+	static constexpr regsize_t BaseAddress = address;
+	static constexpr regsize_t Mask = mask;
 
 	static regsize_t read() {
 		return AccessPolicyT::read(reinterpret_cast<volatile regsize_t *>(address), mask);
@@ -136,4 +136,7 @@ struct RegisterDualSetClear {
 		WriteOnly::set(reinterpret_cast<volatile regsize_t *>(ClearAddress), ClearMask);
 	}
 };
+
+template<typename SetT, typename ClearT>
+using RegisterSetClear = RegisterDualSetClear<SetT::BaseAddress, SetT::Mask, ClearT::BaseAddress, ClearT::Mask>;
 } // namespace mdrivlib
