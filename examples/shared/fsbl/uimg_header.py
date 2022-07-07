@@ -20,7 +20,7 @@ loadaddr = 0xC2000040
 entryaddr = 0xC2000040
 image_name = bytes("stm32mp1-baremetal image", "ascii")
 compress = compress_none
-image_type = image_type_kernel
+image_type = image_type_firmware
 
 datalen = len(payload)
 tmstamp = int(time.time())
@@ -29,7 +29,7 @@ data_crc = zlib.crc32(payload) & 0xffffffff
 
 # To calc the header CRC, we generate a header with the CRC zero'ed out
 # Then calc the CRC of that, then fill it back in
-header_no_crc = struct.pack("<IIIIIIIbbbb32s", 
+header_no_crc = struct.pack(">IIIIIIIbbbb32s", 
     magic,                   # Image Header Magic Number	
     0,
     tmstamp,                 # Image Creation Timestamp	
@@ -44,7 +44,7 @@ header_no_crc = struct.pack("<IIIIIIIbbbb32s",
     image_name,              # Image Name		
     )
 
-hcrc = (zlib.crc32(header_no_crc) & 0xffffffff).to_bytes(4, 'little')
+hcrc = (zlib.crc32(header_no_crc) & 0xffffffff).to_bytes(4, 'big')
 header = bytearray(header_no_crc)
 header[4] = hcrc[0]
 header[5] = hcrc[1]
