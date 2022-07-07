@@ -45,7 +45,7 @@ include ../makefile-common.mk
 SD_DISK_DEV ?= /dev/disk4
 
 image: all $(BIN)
-	python3 fix_header.py $(BUILDDIR)/$(BINARYNAME).bin $(BUILDDIR)/$(BINARYNAME).stm32
+	python3 fsbl_header.py $(BUILDDIR)/$(BINARYNAME).bin $(BUILDDIR)/$(BINARYNAME).stm32
 	@ls -l $(BUILDDIR)/$(BINARYNAME).stm32
 
 load: image
