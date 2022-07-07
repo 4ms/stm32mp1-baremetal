@@ -14,6 +14,7 @@ constexpr uint32_t IH_NMLEN = 32;		  /* Image Name Length		*/
 
 //  Legacy format image header,
 //  all data in network byte order (aka natural aka bigendian).
+//  Taken from u-boot include/image.h
 struct image_header {
 	uint32_t ih_magic;		   /* Image Header Magic Number	*/
 	uint32_t ih_hcrc;		   /* Image Header CRC Checksum	*/

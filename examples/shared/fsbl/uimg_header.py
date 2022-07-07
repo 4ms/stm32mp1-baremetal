@@ -1,30 +1,67 @@
 import struct
 import sys
+import time
+import zlib
 
-with open(sys.argv[1], "rb") as fsbl_file:
-    fsbl = fsbl_file.read();
+magic = 0x27051956
+image_type_kernel = 2
+image_type_firmware = 5
+os_uboot = 17
+arch_arm = 2
+compress_none = 0
+compress_gzip = 1
+compress_bzip2 = 2
 
-if fsbl[:4] == b"STM2":
-    exit("Header already fixed")
+with open(sys.argv[1], "rb") as bin_file:
+    payload = bin_file.read();
 
-payload = bytearray(fsbl[0x100:])
+#TODO: these should be cmdline args:
+loadaddr = 0xC2000040
+entryaddr = 0xC2000040
+image_name = bytes("stm32mp1-baremetal image", "ascii")
+compress = compress_none
+image_type = image_type_kernel
 
-header = struct.pack("<ccccQQQQQQQQIIIIIIIIIIQQQQQQQQ83xb",
-    bytes('S', "ascii"), bytes('T', "ascii"), bytes('M', "ascii"), bytes('2', "ascii"), # Header magic
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,                                     # ECDSA signature, unsigned here
-    sum(payload),                                                                       # Checksum of payload, sum of all bytes
-    0x00010000,                                                                         # Header version 1.0
-    len(payload),                                                                       # Length of payload
-    0x2FFC0000 + 0x2400 + 0x100,                                                        # Entrypoint address. SYSRAM + 0x2400 to skip past boot ROM data + 0x100 to skip past this header
-    0x00,                                                                               # Reserved
-    0x2FFC0000 + 0x2400,                                                                # Load address of image, unused
-    0x00,                                                                               # Reserved
-    0x00,                                                                               # Image version                                                                         
-    0x01,                                                                               # Option flags, disable signature verification
-    0x01,                                                                               # ECDSA algorithm set to P-256 NIST, unused
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,                                     # ECDSA signature, unsigned here
-    0x00                                                                                # Binary type: U-Boot
+datalen = len(payload)
+tmstamp = int(time.time())
+
+data_crc = zlib.crc32(payload) & 0xffffffff
+
+# To calc the header CRC, we generate a header with the CRC zero'ed out
+# Then calc the CRC of that, then fill it back in
+# TODO: just replace bytes 4-7 with the CRC, how?
+header_no_crc = struct.pack("<IIIIIIIbbbb32s", 
+    magic,                   # Image Header Magic Number	
+    0,
+    tmstamp,                 # Image Creation Timestamp	
+    datalen,                 # Image Data Size		
+    loadaddr,                # Data Load Address		
+    entryaddr,               # Entry Point Address		
+    data_crc,                # Image Data CRC Checksum	
+    os_uboot,                # Operating System		
+    arch_arm,                # CPU architecture		
+    image_type,              # Image Type			
+    compress,                # Compression Type		
+    image_name,              # Image Name		
     )
 
-with open(sys.argv[2], "wb") as fsbl_file:
-    fsbl_file.write(header + payload)
+header_crc = zlib.crc32(header_no_crc) & 0xffffffff
+
+header = struct.pack("<IIIIIIIbbbb32s", 
+    magic,                   # Image Header Magic Number	
+    header_crc,              # Header CRC
+    tmstamp,                 # Image Creation Timestamp	
+    datalen,                 # Image Data Size		
+    loadaddr,                # Data Load Address		
+    entryaddr,               # Entry Point Address		
+    data_crc,                # Image Data CRC Checksum	
+    os_uboot,                # Operating System		
+    arch_arm,                # CPU architecture		
+    image_type,              # Image Type			
+    compress,                # Compression Type		
+    image_name,              # Image Name		
+    )
+
+with open(sys.argv[2], "wb") as uimg_file:
+    uimg_file.write(header + payload)
+
