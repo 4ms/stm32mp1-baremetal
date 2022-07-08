@@ -21,10 +21,10 @@ SOURCES = startup.s \
 		  ddr/stm32mp1_ddr.cc \
 		  ddr/stm32mp1_ram.cc \
 		  ddr/ram_tests.cc \
+		  ddr/uboot-headers/common/memsize.c \
+		  ddr/uboot-headers/lib/crc32.c \
 		  norflash/qspi_ll.c \
 		  norflash/qspi_norflash_read.c \
-		  uboot-port/common/memsize.c \
-		  uboot-port/lib/crc32.c \
 		  gpt/gpt.cc \
 
 INCLUDES = -I. \
@@ -33,8 +33,8 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(SHAREDDIR) \
 		   -Iddr/ \
-		   -Iuboot-port/include \
-		   -Iuboot-port/arch/arm/include \
+		   -Iddr/uboot-headers/include \
+		   -Iddr/uboot-headers/arch/arm/include \
 
 include ../makefile-common.mk
 
