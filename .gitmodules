@@ -1,3 +1,0 @@
-[submodule "third-party/printf"]
-	path = third-party/printf
-	url = https://github.com/eyalroz/printf.git
