@@ -47,6 +47,7 @@ INCLUDES = -I. \
 		   -I.. \
 		   -Ilib \
 		   -Iutil \
+		   -I$(SHAREDDIR) \
 		   -I$(mdrivlibdir) \
 		   -I$(mdrivlibdir)/drivers \
 		   -I$(mdrivlibdir)/target/stm32mp1 \
