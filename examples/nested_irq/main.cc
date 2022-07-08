@@ -6,6 +6,12 @@
 #include "stm32mp157cxx_ca7.h"
 #include <cstdint>
 
+#include "osd32brk_conf.hh"
+#include "stm32disco_conf.hh"
+// Uncomment one of these to select your board:
+namespace Board = OSD32BRK;
+// namespace Board = STM32MP1Disco;
+
 // For debugging, it's handy to know these values:
 // IRQn = 0x62 (98) | PRIORITY: Reg 24 bit 2 | CFGR: Reg 16, bit 2 | ENABLE Reg 3, bit2
 // IRQn = 0x63 (99) | PRIORITY: Reg 24 bit 3 | CFGR: Reg 16, bit 3 | ENABLE Reg 3, bit3
@@ -15,7 +21,7 @@ using namespace OSD32BRK;
 void main()
 {
 	// UART
-	Uart<UART4_BASE> uart;
+	Uart<Board::ConsoleUART> uart;
 	uart.write("\r\n\r\nTesting nested interrupts\r\n");
 	uart.write("Make sure this is compiled with -O1 to test register clobbering (Makefile line 4, OPTFLAG)\r\n");
 	uart.write("To see the floating-point register test fail, ");
@@ -26,12 +32,8 @@ void main()
 	// LEDs
 	RedLED2 red_led;
 	GreenLED2 green_led;
-	Led<GPIOE_BASE, 15, LedActive::Low> debug_pin2;
-	Led<GPIOG_BASE, 15, LedActive::Low> debug_pin3;
-	red_led.init();
-	green_led.init();
-	debug_pin2.init();
-	debug_pin3.init();
+	Led<GPIO::E, PinNum::_15, LedActive::Low> debug_pin2;
+	Led<GPIO::G, PinNum::_15, LedActive::Low> debug_pin3;
 
 	// Pin Change interrupts
 	PinChangeISR<GPIOI_BASE, 8> red_led_pinchange;
