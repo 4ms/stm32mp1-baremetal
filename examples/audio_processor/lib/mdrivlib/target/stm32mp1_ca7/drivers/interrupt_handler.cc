@@ -1,4 +1,4 @@
-#include "drivers/interrupt.hh"
+#include "../../../mdrivlib/drivers/interrupt.hh"
 
 extern "C" {
 void __attribute__((used)) ISRHandler(unsigned irqnum) {
