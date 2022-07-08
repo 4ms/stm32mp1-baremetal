@@ -3,7 +3,11 @@ extern "C" {
 }
 #include "compiler.h"
 #include "part_efi.h"
-#include "print_messages.h"
+
+// TODO: convert pr_err and log messages to print() format
+#include "print_messages.hh"
+// #define log(...)
+// #define pr_err(...)
 
 u32 efi_crc32(const void *buf, u32 len)
 {

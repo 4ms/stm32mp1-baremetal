@@ -3,11 +3,12 @@
  * Copyright (C) 2018, STMicroelectronics - All Rights Reserved
  */
 
+#include "asm/io.h"
 #include "memsize.h"
+#include "print_messages.hh"
 #include "stm32mp15-osd32mp1-ddr3-1x4Gb.dtsi"
 #include "stm32mp1_ddr.h"
 #include "stm32mp1xx.h"
-#include <asm/io.h>
 
 static void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config *cfg);
 
@@ -70,10 +71,10 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, u32 mem_speed)
 
 	ddrphy_clk = stm32mp1_get_pll2_r_freq();
 
-	log("DDR: mem_speed (%d kHz), RCC %d kHz\n", mem_speed, (u32)(ddrphy_clk / 1000));
+	log("DDR: mem_speed ", mem_speed, " kHz, RCC ", (u32)(ddrphy_clk / 1000), " kHz\n");
 
 	/* max 10% frequency delta */
-	ddr_clk = abs(ddrphy_clk - mem_speed * 1000);
+	ddr_clk = abs((int)ddrphy_clk - (int)mem_speed * 1000);
 	if (ddr_clk > (mem_speed * 100)) {
 		pr_err("DDR expected freq %d kHz, current is %d kHz\n", mem_speed, (u32)(ddrphy_clk / 1000));
 		return -EINVAL;
@@ -166,9 +167,9 @@ int stm32mp1_ddr_setup(void)
 	RCC->DDRITFCR = RCC->DDRITFCR | RCC_DDRITFCR_AXIDCGEN;
 
 	/* check size */
-	debug("%s : get_ram_size(%x, %x)\n", __func__, (u32)priv->info.base, (u32)DDR_MEM_SIZE);
+	debug("get_ram_size(", Hex{(u32)priv->info.base}, ", ", Hex{(u32)DDR_MEM_SIZE}, ")\n");
 	priv->info.size = get_ram_size((long *)priv->info.base, DDR_MEM_SIZE);
-	debug("%s : %x\n", __func__, (u32)priv->info.size);
+	debug(Hex{(u32)priv->info.size}, "\n");
 
 	/* check memory access for all memory */
 	if (config.info.size != priv->info.size) {

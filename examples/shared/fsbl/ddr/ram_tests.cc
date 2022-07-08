@@ -1,4 +1,4 @@
-#include "print_messages.h"
+#include "print_messages.hh"
 #include <cstdint>
 
 namespace RamTests
@@ -11,7 +11,7 @@ bool test_first_word()
 	if (*addr == 0x12345678)
 		return true;
 
-	panic("RAM Test Fail: test_first_word(): Wrote 0x12345678, read %08x", *addr);
+	panic("RAM Test Fail: test_first_word(): Wrote 0x12345678, read 0x", Hex{*addr});
 	return false;
 }
 

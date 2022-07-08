@@ -4,7 +4,7 @@ BUILDDIR = build
 OPTFLAG = -O3
 
 EXTLIBDIR = ../../../third-party
-SHAREDDIR = ../
+SHAREDDIR = ..
 SCRIPTDIR = ../../../scripts
 
 SOURCES = startup.s \
@@ -18,9 +18,8 @@ SOURCES = startup.s \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal.c \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_ll_sdmmc.c \
 		  $(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal_sd.c \
-		  $(EXTLIBDIR)/printf/src/printf/printf.c \
-		  ddr/stm32mp1_ddr.c \
-		  ddr/stm32mp1_ram.c \
+		  ddr/stm32mp1_ddr.cc \
+		  ddr/stm32mp1_ram.cc \
 		  ddr/ram_tests.cc \
 		  norflash/qspi_ll.c \
 		  norflash/qspi_norflash_read.c \
@@ -28,13 +27,10 @@ SOURCES = startup.s \
 		  uboot-port/lib/crc32.c \
 		  gpt/gpt.cc \
 
-
-
 INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Inc \
 		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
-		   -I$(EXTLIBDIR)/printf/src \
 		   -I$(SHAREDDIR) \
 		   -Iddr/ \
 		   -Iuboot-port/include \

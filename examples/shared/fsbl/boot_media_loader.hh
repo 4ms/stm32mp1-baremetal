@@ -4,7 +4,7 @@
 #include "boot_nor.hh"
 #include "boot_sd.hh"
 #include "compiler.h"
-#include "print_messages.h"
+#include "print_messages.hh"
 
 struct AppImageInfo {
 	uint32_t load_addr = 0;
@@ -60,7 +60,7 @@ public:
 		}
 
 		auto image_entry = reinterpret_cast<image_entry_noargs_t>(_image_info.entry_point);
-		log("image entry point: 0x%08x\n", _image_info.entry_point);
+		log("image entry point: 0x", Hex{_image_info.entry_point}, "\n");
 		image_entry();
 	}
 
@@ -92,23 +92,29 @@ private:
 	bool _parse_header(BootImageDef::image_header &header)
 	{
 		log("Raw header (big-endian):\n");
-		log("  ih_magic: %x\n", header.ih_magic);
-		log("  ih_hcrc: %x\n", header.ih_hcrc);
-		log("  ih_time: %x\n", header.ih_time);
-		log("  ih_size: %x\n", header.ih_size);
-		log("  ih_load: %x\n", header.ih_load);
-		log("  ih_ep: %x\n", header.ih_ep);
-		log("  ih_dcrc: %x\n", header.ih_dcrc);
-		log("  ih_os: %x\n", header.ih_os);
-		log("  ih_arch: %x\n", header.ih_arch);
-		log("  ih_type: %x\n", header.ih_type);
-		log("  ih_comp: %x\n", header.ih_comp);
-		log("  ih_name: %32s\n", header.ih_name);
+		log("  ih_magic: ", Hex{header.ih_magic}, "\n");
+		log("  ih_hcrc: ", Hex{header.ih_hcrc}, "\n");
+		log("  ih_time: ", Hex{header.ih_time}, "\n");
+		log("  ih_size: ", Hex{header.ih_size}, "\n");
+		log("  ih_load: ", Hex{header.ih_load}, "\n");
+		log("  ih_ep: ", Hex{header.ih_ep}, "\n");
+		log("  ih_dcrc: ", Hex{header.ih_dcrc}, "\n");
+		log("  ih_os: ", Hex{header.ih_os}, "\n");
+		log("  ih_arch: ", Hex{header.ih_arch}, "\n");
+		log("  ih_type: ", Hex{header.ih_type}, "\n");
+		log("  ih_comp: ", Hex{header.ih_comp}, "\n");
+		// Convert 32-char string to 0-padded C string:
+		char name_cstr[BootImageDef::IH_NMLEN + 1];
+		char *p = name_cstr;
+		for (char c : header.ih_name)
+			*p++ = c;
+		name_cstr[BootImageDef::IH_NMLEN] = 0;
+		log("  ih_name: ", name_cstr, "\n");
 
 		uint32_t magic = be32_to_cpu(header.ih_magic);
 		if (magic == BootImageDef::IH_MAGIC) {
 			if (header.ih_load == 0) {
-				printf_("ih_load is 0\n");
+				debug("ih_load is 0\n");
 				// On some system (e.g. powerpc), the load-address and
 				// entry-point is located at address 0. We can't load
 				// to 0-0x40. So skip header in this case.
@@ -122,16 +128,17 @@ private:
 				_image_info.size = be32_to_cpu(header.ih_size) + header_size;
 			}
 
-			log("Image load addr: 0x%08x entry_addr: %08x size: %08x\n",
-				_image_info.load_addr,
-				_image_info.entry_point,
-				_image_info.size);
+			log("Image load addr: 0x", Hex{_image_info.load_addr});
+			log(" entry_addr: 0x", Hex{_image_info.entry_point});
+			log(" size: ", Hex{_image_info.size}, "\n");
 
 			return true;
 
-		} else
+		} else {
 			// TODO: Handle raw images
-			pr_err("Failed to read a valid header: magic was %x, expected %x\n", magic, BootImageDef::IH_MAGIC);
+			pr_err("Failed to read a valid header: magic was ", Hex{magic});
+			pr_err(" expected ", Hex{BootImageDef::IH_MAGIC}, "\n");
+		}
 
 		return false;
 	}

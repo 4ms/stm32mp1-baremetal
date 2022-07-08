@@ -7,7 +7,6 @@
 #include "drivers/uart.hh"
 #include "pmic.hh"
 #include "print.hh"
-#include "printf/printf.h"
 #include "stm32mp157cxx_ca7.h"
 #include "systeminit.h"
 

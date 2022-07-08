@@ -2,7 +2,6 @@
 #include "boot_image_def.hh"
 #include "boot_loader.hh"
 #include "norflash/qspi_norflash_read.h"
-#include "print_messages.h"
 #include <cstdint>
 
 struct BootNorLoader : BootLoader {
@@ -17,7 +16,7 @@ struct BootNorLoader : BootLoader {
 
 		auto ok = QSPI_read_SIO((uint8_t *)(&header), BootImageDef::NorFlashSSBLAddr, BootImageDef::HeaderSize);
 		if (!ok) {
-			pr_err("Failed reading NOR Flash\n");
+			// pr_err("Failed reading NOR Flash\n");
 			return {};
 		}
 

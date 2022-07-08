@@ -8,8 +8,8 @@
 #include "delay.h"
 #include "linux/iopoll.h"
 #include "mach/ddr.h"
+#include "print_messages.hh"
 #include "stm32mp1_ddr_regs.h"
-// #include "debug_pin.h"
 
 #define RCC_DDRITFCR 0xD8
 
@@ -272,15 +272,15 @@ static void set_reg(const struct ddr_info *priv, enum reg_type type, const void 
 	u32 base_addr = get_base_addr(priv, base);
 	const struct reg_desc *desc = ddr_registers[type].desc;
 
-	debug("init %s\n", ddr_registers[type].name);
+	debug("init ", ddr_registers[type].name, "\n");
 	for (i = 0; i < ddr_registers[type].size; i++) {
 		ptr = (unsigned int *)(base_addr + desc[i].offset);
 		if (desc[i].par_offset == INVALID_OFFSET) {
-			pr_err("invalid parameter offset for %s", desc[i].name);
+			pr_err("invalid parameter offset for ", desc[i].name);
 		} else {
 			value = *((u32 *)((u32)param + desc[i].par_offset));
 			writel(value, ptr);
-			debug("[0x%x] %s= 0x%08x\n", (u32)ptr, desc[i].name, value);
+			debug("[0x", Hex{(u32)ptr}, "] ", desc[i].name, "= 0x", value, "\n");
 		}
 	}
 }
@@ -291,7 +291,7 @@ static void stm32mp1_dump_reg_desc(u32 base_addr, const struct reg_desc *desc)
 	unsigned int *ptr;
 
 	ptr = (unsigned int *)(base_addr + desc->offset);
-	printf("%s= 0x%08x\n", desc->name, readl(ptr));
+	log(desc->name, "= 0x", Hex{readl(ptr)}, "\n");
 }
 
 static void stm32mp1_dump_param_desc(u32 par_addr, const struct reg_desc *desc)
@@ -299,7 +299,7 @@ static void stm32mp1_dump_param_desc(u32 par_addr, const struct reg_desc *desc)
 	unsigned int *ptr;
 
 	ptr = (unsigned int *)(par_addr + desc->par_offset);
-	printf("%s= 0x%08x\n", desc->name, readl(ptr));
+	log(desc->name, "= 0x", Hex{readl(ptr)}, "\n");
 }
 
 static const struct reg_desc *found_reg(const char *name, enum reg_type *type)
@@ -345,7 +345,7 @@ int stm32mp1_dump_reg(const struct ddr_info *priv, const char *name)
 			result = 0;
 			desc = ddr_registers[i].desc;
 			base_addr = get_base_addr(priv, p_base);
-			printf("==%s.%s==\n", base_name[p_base], p_name);
+			log("==", base_name[p_base], ".", p_name, "==\n");
 			for (j = 0; j < ddr_registers[i].size; j++)
 				stm32mp1_dump_reg_desc(base_addr, &desc[j]);
 		}
@@ -373,18 +373,18 @@ void stm32mp1_edit_reg(const struct ddr_info *priv, char *name, char *string)
 	desc = found_reg(name, &type);
 
 	if (!desc) {
-		printf("%s not found\n", name);
+		log(name, " not found\n");
 		return;
 	}
 	if (strict_strtoul(string, 16, &value) < 0) {
-		printf("invalid value %s\n", string);
+		log("invalid value ", string, "\n");
 		return;
 	}
 	base = ddr_registers[type].base;
 	base_addr = get_base_addr(priv, base);
 	ptr = (unsigned long *)(base_addr + desc->offset);
 	writel(value, ptr);
-	printf("%s= 0x%08x\n", desc->name, readl(ptr));
+	log(desc->name, "= 0x", Hex{readl(ptr)}, "\n");
 }
 
 static u32 get_par_addr(const struct stm32mp1_ddr_config *config, enum reg_type type)
@@ -450,7 +450,7 @@ int stm32mp1_dump_param(const struct stm32mp1_ddr_config *config, const char *na
 		if (!name || (filter == p_base || !strcmp(name, p_name))) {
 			result = 0;
 			desc = ddr_registers[i].desc;
-			printf("==%s.%s==\n", base_name[p_base], p_name);
+			log("==", base_name[p_base], ".", p_name, "==\n");
 			for (j = 0; j < ddr_registers[i].size; j++)
 				stm32mp1_dump_param_desc(par_addr, &desc[j]);
 		}
@@ -477,21 +477,21 @@ void stm32mp1_edit_param(const struct stm32mp1_ddr_config *config, char *name, c
 
 	desc = found_reg(name, &type);
 	if (!desc) {
-		printf("%s not found\n", name);
+		log(name, " not found\n");
 		return;
 	}
 	if (strict_strtoul(string, 16, &value) < 0) {
-		printf("invalid value %s\n", string);
+		log("invalid value ", string, "\n");
 		return;
 	}
 	par_addr = get_par_addr(config, type);
 	if (!par_addr) {
-		printf("no parameter %s\n", name);
+		log("no parameter ", name, "\n");
 		return;
 	}
 	ptr = (unsigned long *)(par_addr + desc->par_offset);
 	writel(value, ptr);
-	printf("%s= 0x%08x\n", desc->name, readl(ptr));
+	log(desc->name, "= 0x", Hex{readl(ptr)}, "\n");
 }
 #endif
 
@@ -535,14 +535,14 @@ static void ddrphy_idone_wait(struct stm32mp1_ddrphy *phy)
 			error++;
 		}
 	} while (((pgsr & DDRPHYC_PGSR_IDONE) == 0U) && (error == 0));
-	debug("\n[0x%08x] pgsr = 0x%08x\n", (u32)&phy->pgsr, pgsr);
+	debug("\n[0x", Hex{(u32)&phy->pgsr}, "] pgsr = 0x", Hex{pgsr}, "\n");
 }
 
 void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, u32 pir)
 {
 	pir |= DDRPHYC_PIR_INIT;
 	writel(pir, &phy->pir);
-	debug("[0x%08x] pir = 0x%08x -> 0x%08x\n", (u32)&phy->pir, pir, readl(&phy->pir));
+	debug("[0x", Hex{(u32)&phy->pir}, "] pir = 0x", Hex{pir}, " -> 0x", Hex{readl(&phy->pir)}, "\n");
 
 	/* need to wait 10 configuration clock before start polling */
 	udelay(10);
@@ -567,9 +567,9 @@ static void wait_sw_done_ack(struct stm32mp1_ddrctl *ctl)
 
 	ret = readl_poll_timeout(&ctl->swstat, swstat, swstat & DDRCTRL_SWSTAT_SW_DONE_ACK, 1000000);
 	if (ret)
-		panic("Timeout initialising DRAM : DDR->swstat = %x\n", swstat);
+		panic("Timeout initialising DRAM : DDR->swstat = ", swstat, "\n");
 
-	debug("[0x%08x] swstat = 0x%08x\n", (u32)&ctl->swstat, swstat);
+	debug("[0x", Hex{(u32)&ctl->swstat}, "] swstat = 0x", Hex{swstat}, "\n");
 }
 
 /* wait quasi dynamic register update */
@@ -594,9 +594,9 @@ static void wait_operating_mode(struct ddr_info *priv, int mode)
 		&priv->ctl->stat, stat, ((stat & mask) == val) || (mask2 && ((stat & mask2) == val2)), 1000000);
 
 	if (ret)
-		panic("Timeout DRAM : DDR->stat = %x\n", stat);
+		panic("Timeout DRAM : DDR->stat = ", stat, "\n");
 
-	debug("[0x%08x] stat = 0x%08x\n", (u32)&priv->ctl->stat, stat);
+	debug("[0x", Hex{(u32)&priv->ctl->stat}, "] stat = 0x", Hex{stat}, "\n");
 }
 
 void stm32mp1_refresh_disable(struct stm32mp1_ddrctl *ctl)
@@ -665,9 +665,9 @@ void stm32mp1_ddr_init(struct ddr_info *priv, const struct stm32mp1_ddr_config *
 		panic("ddr power init failed\n");
 
 ddr_start:
-	log("name = %s\n", config->info.name);
-	log("speed = %d kHz\n", config->info.speed);
-	log("size = 0x%x\n", config->info.size);
+	log("name = ", config->info.name, "\n");
+	log("speed = ", config->info.speed, " kHz\n");
+	log("size = 0x", Hex{config->info.size}, "\n");
 	/*
 	 * 1. Program the DWC_ddr_umctl2 registers
 	 * 1.1 RESETS: presetn, core_ddrc_rstn, aresetn
@@ -682,7 +682,7 @@ ddr_start:
 
 	/* 1.2. start CLOCK */
 	if (stm32mp1_ddr_clk_enable(priv, config->info.speed))
-		panic("invalid DRAM clock : %d kHz\n", config->info.speed);
+		panic("invalid DRAM clock : ", config->info.speed, " kHz\n");
 
 	/* 1.3. deassert reset */
 	/* de-assert PHY rstn and ctl_rstn via DPHYRST and DPHYCTLRST */
@@ -703,7 +703,7 @@ ddr_start:
 	/* 1.5. initialize registers ddr_umctl2 */
 	/* Stop uMCTL2 before PHY is ready */
 	clrbits_le32(&priv->ctl->dfimisc, DDRCTRL_DFIMISC_DFI_INIT_COMPLETE_EN);
-	debug("[0x%08x] dfimisc = 0x%08x\n", (u32)&priv->ctl->dfimisc, readl(&priv->ctl->dfimisc));
+	debug("[0x", Hex{(u32)&priv->ctl->dfimisc}, "] dfimisc = 0x", Hex{readl(&priv->ctl->dfimisc)}, "\n");
 
 	set_reg(priv, REG_REG, &config->c_reg);
 	set_reg(priv, REG_TIMING, &config->c_timing);

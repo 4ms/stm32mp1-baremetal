@@ -3,7 +3,7 @@
 #include "delay.h"
 #include "drivers/i2c.hh"
 #include "drivers/i2c_conf.hh"
-#include "print_messages.h"
+#include "print_messages.hh"
 
 // TODO: use Board Conf to set the voltage values
 // It just so happens that the OSD32-BRK and STM Disco boards use the same values
@@ -57,9 +57,9 @@ public:
 
 		udelay(1000);
 
-		log("Wrote PMIC reg %x (LDO3_CR) = 0x%x\n", RegisterMain::LDO3_CR, vtt.val);
-		log("Wrote PMIC reg %x (BUCK2_CR) = 0x%x\n", RegisterMain::BUCK2_CR, vddr.val);
-		log("Wrote PMIC reg %x (REFDDR_CR) = 0x%x\n", RegisterMain::REFDDR_CR, ref.val);
+		debug("Wrote PMIC reg ", RegisterMain::LDO3_CR, " (LDO3_CR) = 0x", Hex{vtt.val}, "\n");
+		debug("Wrote PMIC reg ", RegisterMain::BUCK2_CR, " (BUCK2_CR) = 0x", Hex{vddr.val}, "\n");
+		debug("Wrote PMIC reg ", RegisterMain::REFDDR_CR, " (REFDDR_CR) = 0x", Hex{ref.val}, "\n");
 		return true;
 	}
 
@@ -70,7 +70,7 @@ public:
 			pr_err("Failed to read from PMIC\n");
 			return false;
 		}
-		log("Read ID from PMIC: %02x\n", id.value());
+		log("Read ID from PMIC: ", Hex{id.value()}, "\n");
 		return true;
 	}
 
@@ -78,9 +78,9 @@ public:
 	{
 		auto val = i2c.read_register_byte(reg);
 		if (val.has_value())
-			log("Read reg 0x%x = 0x%x\n", reg, val.value());
+			log("Read reg 0x", Hex{reg}, " = 0x", Hex{val.value()}, "\n");
 		else
-			log("Failed to read register %x\n", reg);
+			log("Failed to read register ", Hex{reg}, "\n");
 	}
 
 private:
