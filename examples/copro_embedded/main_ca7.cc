@@ -1,12 +1,17 @@
-#include "delay.hh"
-#include "leds.hh"
-/* #include "mdrivlib/interrupt.hh" */
-/* #include "mdrivlib/interrupt_control.hh" */
+#include "drivers/delay.hh"
+#include "drivers/leds.hh"
+#include "drivers/uart.hh"
 #include "firmware_m4.h"
 #include "firmware_m4_vectors.h"
 #include "stm32mp157cxx_ca7.h"
-#include "uart.hh"
 #include <stdint.h>
+
+#include "osd32brk_conf.hh"
+#include "stm32disco_conf.hh"
+
+// Uncomment one of these to select your board:
+namespace Board = OSD32BRK;
+// namespace Board = STM32MP1Disco;
 
 void cpy(uint32_t *dst, uint32_t *src, uint32_t length)
 {
@@ -17,12 +22,10 @@ void cpy(uint32_t *dst, uint32_t *src, uint32_t length)
 
 void main()
 {
-	Uart<UART4_BASE> uart;
+	Uart<Board::ConsoleUART> uart;
 
-	Led<GPIOZ_BASE, 6, LedActive::Low> red_led1;
-	Led<GPIOZ_BASE, 7, LedActive::Low> green_led1;
-	red_led1.init();
-	green_led1.init();
+	Board::RedLED red_led1;
+	Board::GreenLED green_led1;
 
 	uart.write("\r\n\r\nA7: Hello from Cortex-A7!\r\n");
 
