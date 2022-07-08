@@ -1,7 +1,7 @@
 #pragma once
 #include "arch.hh"
+#include "drivers/rcc.hh"
 #include "periph.hh"
-#include "rcc.hh"
 #include "stm32xx.h"
 
 // Todo: once all drivers are using constexpr init, much of these can go away,

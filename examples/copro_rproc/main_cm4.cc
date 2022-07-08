@@ -4,15 +4,20 @@
 #include "stm32mp157cxx_cm4.h"
 #include <stdint.h>
 
+#include "osd32brk_conf.hh"
+#include "stm32disco_conf.hh"
+
+// Uncomment one of these to select your board:
+namespace Board = OSD32BRK;
+// namespace Board = STM32MP1Disco;
+
 void main()
 {
-	Uart<UART4_BASE> uart;
-	uart.write("Hello from M4!\r\n");
+	Uart<Board::ConsoleUART> uart;
+	uart.write("M4: * yawn * \r\nM4: Hello from Cortex-M4!\r\n");
 
-	Led<GPIOI_BASE, 8, LedActive::Low> red_led2;
-	Led<GPIOI_BASE, 9, LedActive::Low> green_led2;
-	red_led2.init();
-	green_led2.init();
+	Board::RedLED2 red_led2;
+	Board::GreenLED2 green_led2;
 
 	red_led2.off();
 	green_led2.off();

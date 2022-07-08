@@ -1,9 +1,9 @@
 #include "i2c.hh"
 #include "clocks.hh"
+#include "drivers/rcc.hh"
+#include "drivers/register_access.hh"
 #include "i2c_target.hh"
 #include "interrupt.hh"
-#include "rcc.hh"
-#include "register_access.hh"
 #include "stm32xx.h"
 
 namespace mdrivlib

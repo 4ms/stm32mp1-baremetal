@@ -1,13 +1,9 @@
 #include "audio_stream.hh"
 #include "drivers/stm32xx.h"
-#include "shared/drivers/leds.hh"
 #include "shared/drivers/uart.hh"
-#include "shared/stm32disco_conf.hh"
-#include "shared/stm32disco_buttons_conf.hh"
+#include "stm32disco_buttons_conf.hh"
 
 #include "synth_list.hh"
-
-using namespace STM32MP1Disco;
 
 void main()
 {
@@ -17,8 +13,8 @@ void main()
 	uart.write("Press User1 button to select a synth\r\n");
 
 	// BlueLED blue_led;
-	User1Button button1;
-	User2Button button2;
+	STM32MP1Disco::User1Button button1;
+	STM32MP1Disco::User2Button button2;
 
 	SynthList synths;
 	int current_synth = SynthList::Synths::DualFMOscillators;

@@ -1,6 +1,6 @@
 #include "pin.hh"
 #include "arch.hh"
-#include "rcc.hh"
+#include "drivers/rcc.hh"
 
 namespace mdrivlib
 {
