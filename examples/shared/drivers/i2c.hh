@@ -2,13 +2,14 @@
 #include "drivers/i2c_conf.hh"
 #include "drivers/pin.hh"
 #include "drivers/rcc.hh"
-#include "print_messages.h"
+#include "stm32mp1xx.h"
 #include <optional>
 #include <span>
 
 class I2C_Controller {
 	I2C_TypeDef *i2c;
 	uint32_t address;
+	bool _is_init = false;
 
 public:
 	I2C_Controller(uint32_t i2c_address, const I2C_Config &conf)
@@ -41,14 +42,15 @@ public:
 		i2c = reinterpret_cast<I2C_TypeDef *>(conf.periph);
 
 		i2c->CR1 = i2c->CR1 & ~I2C_CR1_PE;
-		i2c->TIMINGR = 0x6020070A;
+		i2c->TIMINGR = 0x6020070A; // Value copied from OSD32MP1-BRK dts
 		i2c->CR1 = i2c->CR1 | I2C_CR1_PE;
 
-		if (!wait_not_busy())
-			pr_err("I2C could not be init\n");
+		if (wait_not_busy())
+			_is_init = true;
 	}
 
 	// Returns contents of an 8-bit register at the given address, or nullopt if failed
+	// Returns false if failed
 	std::optional<uint8_t> read_register_byte(uint8_t mem_address)
 	{
 		uint8_t data[1];
@@ -62,10 +64,8 @@ public:
 	// Returns false if failed
 	bool read_register(uint8_t mem_address, std::span<uint8_t> data)
 	{
-		if (!wait_not_busy()) {
-			pr_err("I2C staying busy\n");
+		if (!wait_not_busy())
 			return false;
-		}
 
 		if (request_register_read(mem_address))
 			if (read(data))
@@ -73,7 +73,8 @@ public:
 		return false;
 	}
 
-	// General read of a number of bytes sent by the other device
+	// General read of any number of bytes sent by the other device
+	// Returns false if failed
 	bool read(std::span<uint8_t> data)
 	{
 		const uint32_t num_bytes = data.size_bytes();
@@ -95,12 +96,13 @@ public:
 	}
 
 	// Write a byte to a register at mem_address
+	// Returns false if failed
 	bool write_register_byte(uint8_t mem_address, uint8_t val)
 	{
 		const uint32_t one_byte = 1;
 
 		if (!wait_not_busy())
-			pr_err("I2C staying busy\n");
+			return false;
 
 		// Req Mem Write: xfer config reload, start, write
 		i2c->CR2 = I2C_CR2_START | address << 1 | one_byte << 16 | I2C_CR2_RELOAD;
@@ -129,6 +131,11 @@ public:
 		return true;
 	}
 
+	bool is_init()
+	{
+		return _is_init;
+	}
+
 private:
 	// Writes the register address, without generating a stop
 	bool request_register_read(uint8_t mem_address)
@@ -141,8 +148,10 @@ private:
 
 		i2c->TXDR = mem_address;
 
-		if (!wait_on_flag_high_or_timeout(I2C_ISR_TC))
-			printf_("Timed out on TC flag\n");
+		if (!wait_on_flag_high_or_timeout(I2C_ISR_TC)) {
+			return false;
+			// pr_err("Timed out on TC flag\n");
+		}
 
 		return true;
 	}
@@ -168,12 +177,10 @@ private:
 			if (isr & flag)
 				return true;
 
-			if (isr & I2C_ISR_NACKF) {
-				printf_("NACKF\n");
+			if (isr & I2C_ISR_NACKF)
 				return false;
-			}
 		}
-		printf_("Timed out waiting on flag\n");
+
 		return false;
 	}
 };
