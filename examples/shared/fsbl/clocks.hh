@@ -3,10 +3,8 @@
 #include <stdint.h>
 
 struct SystemClocks {
-	static unsigned init_core_clocks(uint32_t MPU_MHz = 800)
+	static unsigned init_core_clocks(uint32_t HSE_Clock = 24000000, uint32_t MPU_MHz = 800)
 	{
-		constexpr uint32_t HSE_Clock = 24000000;
-
 		constexpr uint32_t pll1m = 3;
 		const uint32_t pll1n = (MPU_MHz == 650 ? 81U : 100U);
 		constexpr uint32_t pll1p = 1;

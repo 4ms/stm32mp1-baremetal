@@ -21,11 +21,12 @@ void main()
 {
 	Board::OrangeLED led;
 
-	SystemClocks::init_core_clocks();
+	auto clockspeed = SystemClocks::init_core_clocks(Board::HSE_Clock_Hz, Board::MPU_MHz);
 	security_init();
 
 	Uart<Board::ConsoleUART> console(Board::UartRX, Board::UartTX, 115200);
 	printf_("\n\nMP1-Boot\n\n");
+	// print("MPU clock: ", clockspeed, " Hz\n");
 
 	if constexpr (Board::PMIC::HasSTPMIC) {
 		STPMIC1 pmic{Board::PMIC::I2C_config};

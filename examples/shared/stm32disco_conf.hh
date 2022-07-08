@@ -33,4 +33,7 @@ constexpr I2C_Config I2C_config{
 	.scl_pin = {GPIO::Z, PinNum::_4, PinAF::AF_6},
 };
 } // namespace PMIC
+
+constexpr uint32_t HSE_Clock_Hz = 24000000;
+constexpr uint32_t MPU_MHz = 650;
 } // namespace STM32MP1Disco
