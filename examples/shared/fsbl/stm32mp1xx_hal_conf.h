@@ -25,6 +25,9 @@
 extern "C" {
 #endif
 
+// To allow HAL SDMMC to work without compiling/linking _hal_rcc.c
+#define HAL_RCC_GetSystemCoreClockFreq() (SystemCoreClock)
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
@@ -54,7 +57,7 @@ extern "C" {
 //#define HAL_MDMA_MODULE_ENABLED
 //#define HAL_PWR_MODULE_ENABLED
 //#define HAL_QSPI_MODULE_ENABLED
-#define HAL_RCC_MODULE_ENABLED
+// #define HAL_RCC_MODULE_ENABLED
 //#define HAL_RNG_MODULE_ENABLED
 //#define HAL_RTC_MODULE_ENABLED
 //#define HAL_SAI_MODULE_ENABLED
