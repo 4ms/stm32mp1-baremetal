@@ -5,14 +5,21 @@
 #include "stm32mp157cxx_ca7.h"
 #include <cstdint>
 
+#include "osd32brk_conf.hh"
+#include "stm32disco_conf.hh"
+
+// Uncomment one of these to select your board:
+namespace Board = OSD32BRK;
+// namespace Board = STM32MP1Disco;
+
 namespace BasicIRQ
 {
 Uart<UART4_BASE> uart;
 
-PinChangeISR<GPIOI_BASE, 8> red_led_pinchange;
+PinChangeISR<Board::RedLED2::gpio, Board::RedLED2::pin_num> red_led_pinchange;
 const auto red_led_irqnum = red_led_pinchange.get_IRQ_num();
 
-PinChangeISR<GPIOI_BASE, 9> green_led_pinchange;
+PinChangeISR<Board::GreenLED2::gpio, Board::RedLED2::pin_num> green_led_pinchange;
 const auto green_led_irqnum = green_led_pinchange.get_IRQ_num();
 
 uint32_t num_times_red_led_irq_called = 0;
@@ -25,10 +32,10 @@ void main()
 	using namespace BasicIRQ;
 	uart.write("\r\n\r\nTesting interrupts\r\n");
 
-	Led<GPIOI_BASE, 8, LedActive::Low> red_led1;
-	Led<GPIOI_BASE, 9, LedActive::Low> green_led1;
-	red_led1.off();
-	green_led1.off();
+	Board::RedLED2 red_led;
+	Board::GreenLED2 green_led;
+	red_led.off();
+	green_led.off();
 
 	GIC_DisableIRQ(red_led_irqnum);
 	GIC_SetTarget(red_led_irqnum, 1);
@@ -36,13 +43,13 @@ void main()
 	GIC_SetConfiguration(red_led_irqnum, 0b10);
 
 	// Toggle the LEDs just to prove the ISR is not getting called
-	red_led1.on();
-	red_led1.off();
-	red_led1.on();
+	red_led.on();
+	red_led.off();
+	red_led.on();
 
-	green_led1.on();
-	green_led1.off();
-	green_led1.on();
+	green_led.on();
+	green_led.off();
+	green_led.on();
 
 	// Enable the ISRs
 	red_led_pinchange.enable_isr_on_rising_falling_edges(true, false);
@@ -72,7 +79,7 @@ void main()
 	Delay::cycles(0x2000000);
 	uart.write("\r0 \r");
 	// Flip the red LED pin, triggering the pin-change interrupt
-	red_led1.off();
+	red_led.off();
 
 	Delay::cycles(0x2000000);
 
@@ -91,7 +98,7 @@ void main()
 	uart.write("\r0 \r");
 
 	// Flip the green LED pin, triggering the pin-change interrupt
-	green_led1.off();
+	green_led.off();
 
 	int i = 0;
 	while (1) {
