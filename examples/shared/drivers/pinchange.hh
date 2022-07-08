@@ -1,5 +1,5 @@
 #pragma once
-#include "stm32mp157cxx_ca7.h"
+#include "stm32mp1xx.h"
 
 template<uint32_t GPIO_BASE_ADDR, uint32_t PIN_NUM>
 class PinChangeISR {

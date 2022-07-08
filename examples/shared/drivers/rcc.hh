@@ -1,6 +1,6 @@
 #pragma once
-#include "drivers/rcc_common.hh"
-#include "drivers/register_access.hh"
+#include "rcc_common.hh"
+#include "register_access.hh"
 #include "stm32mp1xx.h"
 #include <variant>
 
