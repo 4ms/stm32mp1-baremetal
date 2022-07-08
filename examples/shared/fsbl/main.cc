@@ -34,10 +34,10 @@ void main()
 		STPMIC1 pmic{Board::PMIC::I2C_config};
 
 		if (!pmic.setup_vddcore_pwr())
-			panic("Could not setup VDDCORE with PMIC\n");
+			panic("Could not setup PMIC VDDCORE\n");
 
 		if (!pmic.setup_ddr3_pwr())
-			panic("Could not setup DDR voltages with PMIC\n");
+			panic("Could not setup PMIC DDR voltages\n");
 	}
 
 	print("Initializing RAM\n");
@@ -60,7 +60,7 @@ void main()
 	}
 
 	// Should not reach here, but in case we do, blink LED rapidly
-	print("FAILED! Did not find and load an app image\n");
+	print("FAILED!\n");
 	constexpr uint32_t dlytime = 50000;
 	while (1) {
 		led.on();
@@ -68,12 +68,6 @@ void main()
 		led.off();
 		udelay(dlytime);
 	}
-}
-
-// Allows use of printf_(...)
-extern "C" void putchar_(char c)
-{
-	Uart<Board::ConsoleUART>::putchar(c);
 }
 
 void putchar_s(const char c)
