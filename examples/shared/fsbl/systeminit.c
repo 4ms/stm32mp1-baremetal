@@ -54,4 +54,22 @@ void security_init()
 	// Allow non-secure access to GPIOZ
 	RCC->MP_AHB5ENSETR = RCC_MP_AHB5ENSETR_GPIOZEN;
 	GPIOZ->SECCFGR = 0;
+
+	// TZC AXI port 1 and 2 clocks enable
+	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZC1EN;
+	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZC2EN;
+
+	// Region 0 set to no access by default
+	// bit 0 / 16 => nsaid0 read/write Enable
+	// bit 1 / 17 => nsaid1 read/write Enable
+	// ...
+	// bit 15 / 31 => nsaid15 read/write Enable
+	TZC->REG_ID_ACCESSO = 0xFFFFFFFF;
+
+	// bit 30 / 31 => Secure Global Enable : write/read
+	// bit 0 / 1 => Region Enable for filter 0/1
+	TZC->REG_ATTRIBUTESO = TZC->REG_ATTRIBUTESO | (1 << 0) | (1 << 1) | (1 << 30) | (1 << 31);
+
+	// Enable Filter 0 and 1
+	TZC->GATE_KEEPER = TZC->GATE_KEEPER | (1 << 0) | (1 << 1);
 }

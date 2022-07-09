@@ -4,6 +4,7 @@
  */
 
 #include "asm/io.h"
+#include "drivers/rcc.hh"
 #include "memsize.h"
 #include "print_messages.hh"
 #include "stm32mp15-osd32mp1-ddr3-1x4Gb.dtsi"
@@ -11,51 +12,6 @@
 #include "stm32mp1xx.h"
 
 static void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config *cfg);
-
-unsigned long stm32mp1_get_hse_freq(void)
-{
-	return 24000000uL;
-}
-
-unsigned long stm32mp1_get_hsi_freq(void)
-{
-	const uint_fast32_t hsi = 64000000UL;
-	const uint_fast32_t hsidiv = (RCC->HSICFGR & RCC_HSICFGR_HSIDIV_Msk) >> RCC_HSICFGR_HSIDIV_Pos;
-	return hsi >> hsidiv;
-}
-
-unsigned long stm32mp1_get_pll1_2_ref_freq(void)
-{
-	// PLL1, PLL2 source mux
-	// 0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
-	// 0x1: HSE selected as PLL clock (hse_ck)
-	switch ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRC_Msk) >> RCC_RCK12SELR_PLL12SRC_Pos) {
-		default:
-		case 0x00:
-			return stm32mp1_get_hsi_freq();
-		case 0x01:
-			return stm32mp1_get_hse_freq();
-	}
-}
-
-unsigned long stm32mp1_get_pll2_freq(void)
-{
-	const uint_fast32_t pll2divn = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVN_Msk) >> RCC_PLL2CFGR1_DIVN_Pos) + 1;
-	const uint_fast32_t pll2divm = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVM2_Msk) >> RCC_PLL2CFGR1_DIVM2_Pos) + 1;
-	return (uint_fast64_t)stm32mp1_get_pll1_2_ref_freq() * pll2divn / pll2divm;
-}
-
-unsigned long stm32mp1_get_pll2_p_freq(void)
-{
-	const uint_fast32_t pll2divp = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVP_Msk) >> RCC_PLL2CFGR2_DIVP_Pos) + 1;
-	return stm32mp1_get_pll2_freq() / pll2divp;
-}
-
-unsigned long stm32mp1_get_pll2_r_freq(void)
-{
-	const uint_fast32_t pll2divr = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVR_Msk) >> RCC_PLL2CFGR2_DIVR_Pos) + 1;
-	return stm32mp1_get_pll2_freq() / pll2divr;
-}
 
 int stm32mp1_ddr_clk_enable(struct ddr_info *priv, u32 mem_speed)
 {
@@ -69,7 +25,13 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, u32 mem_speed)
 	int ret;
 	unsigned int idx;
 
-	ddrphy_clk = stm32mp1_get_pll2_r_freq();
+	constexpr uint32_t hse_clock = 24000000; // TODO: allow for different values
+	const auto pll2n = mdrivlib::RCC_Clocks::PLL2::DIVN::read() + 1;
+	const auto pll2m = mdrivlib::RCC_Clocks::PLL2::DIVM2::read() + 1;
+	const auto pll2r = mdrivlib::RCC_Clocks::PLL2::DIVR::read() + 1;
+	auto pll2r_clk = (hse_clock * pll2n) / (pll2m * pll2r);
+
+	ddrphy_clk = pll2r_clk; // stm32mp1_get_pll2_r_freq();
 
 	log("DDR: mem_speed ", mem_speed, " kHz, RCC ", (u32)(ddrphy_clk / 1000), " kHz\n");
 
@@ -83,58 +45,6 @@ int stm32mp1_ddr_clk_enable(struct ddr_info *priv, u32 mem_speed)
 	return 0;
 }
 
-static void stm32mp1_ddr_tz_init(void)
-{
-	/* enable TZC1 TZC2 clock */
-	// writel(BIT(11) | BIT(12), RCC_MP_APB5ENSETR);
-
-	/* Region 0 set to no access by default */
-	/* bit 0 / 16 => nsaid0 read/write Enable
-	 * bit 1 / 17 => nsaid1 read/write Enable
-	 * ...
-	 * bit 15 / 31 => nsaid15 read/write Enable
-	 */
-	// writel(0xFFFFFFFF, TZC_REGION_ID_ACCESS0);
-	/* bit 30 / 31 => Secure Global Enable : write/read */
-	/* bit 0 / 1 => Region Enable for filter 0/1 */
-	// writel(BIT(0) | BIT(1) | BIT(30) | BIT(31), TZC_REGION_ATTRIBUTE0);
-
-	/* Enable Filter 0 and 1 */
-	// setbits_le32(TZC_GATE_KEEPER, BIT(0) | BIT(1));
-
-	// TrustZone address space controller for DDR (TZC)
-	// TZC AXI port 1 clocks enable
-	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZC1EN;
-
-	// TZC AXI port 2 clocks enable
-	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZC2EN;
-
-	TZC->ACTION = 0x00;
-	const uint8_t lastfilter = (TZC->BUILD_CONFIG >> 24) & 0x03;
-	const uint32_t mask = (1uL << (lastfilter + 1)) - 1;
-	TZC->GATE_KEEPER = mask; // Gate open request
-
-	// Check open status
-	while (((TZC->GATE_KEEPER >> 16) & mask) != mask)
-		;
-	TZC->REG_ATTRIBUTESO |= 0xC0000000; // All (read and write) permitted
-
-	TZC->REG_ID_ACCESSO = 0xFFFFFFFF; // NSAID_WR_EN[15:0], NSAID_RD_EN[15:0] - permits read and write non-secure to the
-									  // region for all NSAIDs
-
-	const uint8_t lastregion = TZC->BUILD_CONFIG & 0x1f;
-	for (uint8_t i = 1; i <= lastregion; ++i) {
-		volatile uint32_t *const REG_ATTRIBUTESx = &TZC->REG_ATTRIBUTESO + (i * 8);
-		volatile uint32_t *const REG_ID_ACCESSx = &TZC->REG_ID_ACCESSO + (i * 8);
-		volatile uint32_t *const REG_BASE_LOWx = &TZC->REG_BASE_LOWO + (i * 8);
-		volatile uint32_t *const REG_BASE_HIGHx = &TZC->REG_BASE_HIGHO + (i * 8);
-		volatile uint32_t *const REG_TOP_LOWx = &TZC->REG_TOP_LOWO + (i * 8);
-		volatile uint32_t *const REG_TOP_HIGHx = &TZC->REG_TOP_HIGHO + (i * 8);
-
-		*REG_ATTRIBUTESx &= ~0x03uL;
-	}
-}
-
 int stm32mp1_ddr_setup(void)
 {
 	struct ddr_info _priv;
@@ -142,8 +52,6 @@ int stm32mp1_ddr_setup(void)
 	int ret;
 	unsigned int idx;
 	struct stm32mp1_ddr_config config;
-
-	stm32mp1_ddr_tz_init();
 
 	priv->ctl = (struct stm32mp1_ddrctl *)DDRCTRL_BASE;
 	priv->phy = (struct stm32mp1_ddrphy *)DDRPHYC_BASE;
