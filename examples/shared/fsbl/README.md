@@ -55,7 +55,24 @@ RAM and then boot into it:
 
 Also there is one step that is not strictly necessary, but useful:
 
-  - Initialize the UART to allow for printf() messages
+  - Initialize the UART to allow for printing messages to the console
+
+### Dependencies, attribution, and inspriation
+
+The python script that adds the stm32 header is from
+[here](https://github.com/WerWolv/STM32MP1OS).
+
+The DDR init code ported from U-Boot [ram
+drivers](https://github.com/u-boot/u-boot/tree/master/drivers/ram/stm32mp1). I
+also studied the port by @ua1arn in the hftrx project
+[here](https://github.com/ua1arn/hftrx/blob/master/src/sdram/sdram.c).
+
+The GPT and CRC32 code (for determining the block number on an SD Card based on
+the partition number), is also ported from U-Boot
+[disk drivers](https://github.com/u-boot/u-boot/blob/master/disk/part_efi.c).
+The vast majority of code was removed, but the basic GPT structure and how to
+read it remains.
+
 
 ### Boot time
 
@@ -65,10 +82,13 @@ NOR Flash).
 With an SD Card on the OSD32-BRK, it takes about 500ms from power-on to loading
 the application binary.
 
-With NOR Flash on a custom board of mine, it takes about 70ms. 
+With NOR Flash on a custom board of mine, it takes about 70ms from power-on to
+app loading. 
 
 The main reason for the large difference in boot time is that the BOOTROM uses
 a clock speed of 21MHz for the NOR Flash, and 175kHz for SDMMC.
+The MP1-Boot image is about 29kB. It takes the BOOTROM about 150-200ms to load it from
+the SD Card. When using NOR Flash it takes about 18ms.
 
 There also seems to be a board-specific difference in timing before BOOTROM
 begins loading from the boot medium. From the Reset pulse on the OSD32-BRK
@@ -76,11 +96,8 @@ board, it takes about 120ms - 150ms for the BOOTROM to begin reading from the
 SD Card. On a custom board of mine, it takes only 11ms. I don't know the reason
 for this.
 
-The MP1-Boot image is about 48kB. It takes the BOOTROM about 350ms to load it from
-the SD Card. When using NOR Flash it takes about 18ms.
-
-MP1-Boot takes about 33ms to run. If there is no PMIC, it's 2.5ms less. If UART
-output is disabled, it's another 2ms faster.
+Once loaded, MP1-Boot takes about 33ms to run. If there is no PMIC, it's 2.5ms
+less. If UART output is disabled, it's another 2ms faster.
 
 The remaining boot time is spent reading the app image from the boot media. The
 duration of that depends on the size of the image and the speed of the
@@ -88,22 +105,21 @@ transfer. Since we are no longer dependent on BOOTROM's hard-coded speeds and bu
 widths, we can set our own transfer protocol rates. NOR Flash at 100MHz clock,
 4-bit wide data path would take about 20ms to transfer a 1MB application image.
 
-All-in-all, a decent sized application can be running in under 100ms.
+All-in-all, a decent sized application can be running in under 100ms. This is vast
+improvement on default U-Boot settings, which takes about 7 seconds (this can be
+improved, using Falcon boot and other techniques).
 
 ### Project status
 
 This currently works with SD Card or NOR Flash booting. It also works with
 a PMIC system or a discrete LDO system. 
 
-  * Test with all example projects, ensuring they work with this
   * Faster NOR loading (use Quad mode)
   * Faster SDMMC loading (Debug OSD32-BRK speed limit of 16MHz)
   * Add extensive RAM tests (run optionally)
   * Add a driver for EMMC (SDMMC2)
   * Add a driver for UART booting
-  * Reduce binary size by using our own RCC config instead of HAL (9kB)
   * Reduce binary size by using our own SDMMC config instead of HAL (10kB)
-  * Reduce binary size by omitting printf library (9kB)
 
 
 ### Using this
