@@ -1,7 +1,7 @@
 #include "audio_stream.hh"
 #include "drivers/stm32xx.h"
-#include "shared/drivers/uart.hh"
 #include "stm32disco_buttons_conf.hh"
+#include "uart.hh"
 
 #include "synth_list.hh"
 

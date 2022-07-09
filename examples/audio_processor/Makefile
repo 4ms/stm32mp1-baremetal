@@ -38,16 +38,11 @@ SOURCES = main.cc \
 		  $(EXTLIBDIR)/DaisySP/Source/Synthesis/oscillator.cpp \
 		  $(EXTLIBDIR)/DaisySP/Source/Utility/metro.cpp \
 
-		
-
-		  # $(STM32HALDIR)/Src/stm32mp1xx_ll_gpio.c \
-		  # $(mdrivlibdir)/target/stm32mp1_ca7/boot/startup_ca7.s \
 
 INCLUDES = -I. \
 		   -I.. \
 		   -Ilib \
 		   -Iutil \
-		   -I$(SHAREDDIR) \
 		   -I$(mdrivlibdir) \
 		   -I$(mdrivlibdir)/drivers \
 		   -I$(mdrivlibdir)/target/stm32mp1 \
@@ -61,6 +56,9 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(EXTLIBDIR)/DaisySP/Source \
 		   -I$(EXTLIBDIR)/DaisySP/Source/Utility \
+		   
+# Do not include ../shared for this project, because of conflict between ../shared/drivers/ and lib/mdrivlib/drivers/
+		   # -I$(SHAREDDIR) \
 
 EXTRACFLAGS = -DUSE_HAL_DRIVER \
 			  -DUSE_FULL_LL_DRIVER \
