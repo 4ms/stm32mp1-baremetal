@@ -1,6 +1,6 @@
 #pragma once
 #include "drivers/i2c_conf.hh"
-#include "drivers/pin.hh"
+#include "drivers/pinconf.hh"
 #include "drivers/rcc.hh"
 #include "stm32mp1xx.h"
 #include <optional>

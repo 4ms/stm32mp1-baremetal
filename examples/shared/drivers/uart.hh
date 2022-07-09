@@ -1,5 +1,5 @@
 #pragma once
-#include "drivers/pin.hh"
+#include "drivers/pinconf.hh"
 #include "stm32mp1xx.h"
 #include "stm32mp1xx_ll_usart.h"
 #include <cstdint>

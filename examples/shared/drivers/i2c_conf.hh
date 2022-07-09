@@ -1,5 +1,5 @@
 #pragma once
-#include "drivers/pin.hh"
+#include "drivers/pinconf.hh"
 
 enum class I2C_Periph {
 	I2C1_ = I2C1_BASE,

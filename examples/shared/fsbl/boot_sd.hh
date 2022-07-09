@@ -1,7 +1,7 @@
 #pragma once
 #include "boot_image_def.hh"
 #include "boot_loader.hh"
-#include "drivers/pin.hh"
+#include "drivers/pinconf.hh"
 #include "gpt/gpt.hh"
 #include "stm32mp1xx_hal_sd.h"
 #include <array>
