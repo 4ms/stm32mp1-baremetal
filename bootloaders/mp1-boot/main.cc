@@ -10,14 +10,12 @@
 #include "stm32mp157cxx_ca7.h"
 #include "systeminit.h"
 
-#include "mmp9_conf.hh"
 #include "osd32brk_conf.hh"
 #include "stm32disco_conf.hh"
 
 // Uncomment one of these to select your board:
-// namespace Board = OSD32BRK;
+namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
-namespace Board = MMp9;
 
 void main()
 {
