@@ -37,7 +37,7 @@ void main()
 	if (init_ok != USBD_OK) {
 		uart.write("USB Device failed to initialize!\r\n");
 		uart.write("Error code: ");
-		uart.write(static_cast<int>(init_ok));
+		uart.write(static_cast<uint32_t>(init_ok));
 	}
 	InterruptControl::disable_irq(OTG_IRQn);
 	InterruptManager::registerISR(OTG_IRQn, [] { HAL_PCD_IRQHandler(&hpcd); });
