@@ -3,9 +3,9 @@ BUILDDIR = build
 
 OPTFLAG = -O3
 
-EXTLIBDIR = ../../../third-party
-SHAREDDIR = ..
-SCRIPTDIR = ../../../scripts
+EXTLIBDIR = ../../third-party
+SHAREDDIR = ../../examples/shared
+SCRIPTDIR = ../../scripts
 
 SOURCES = startup.s \
 		  main.cc \
@@ -36,7 +36,7 @@ INCLUDES = -I. \
 		   -Iuboot-port/include \
 		   -Iuboot-port/arch/arm/include \
 
-include ../makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk
 
 SD_DISK_DEV ?= /dev/disk4
 
