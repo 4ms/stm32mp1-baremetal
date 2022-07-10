@@ -192,10 +192,10 @@ Then run the script to copy the bootloader (u-boot and spl) to the first three p
 
 ```
 # To use pre-built images for OSD32MP1 board:
-scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/images/osd32mp1-brk/
+scripts/copy-bootloader.sh /dev/diskX bootloaders/u-boot-images/osd32mp1-brk/
 
 # To use pre-built images for STM32MP157A-DK1 Discovery board:
-scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/images/stm32mp157a-dk1-disco/
+scripts/copy-bootloader.sh /dev/diskX bootloaders/u-boot-images/stm32mp157a-dk1-disco/
 
 # To use images that you built yourself:
 scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/build/
