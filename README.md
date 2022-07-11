@@ -27,7 +27,7 @@ see something, please ask! (open a github issue)
 
 Here's a list of the example projects:
 
-  * **[Minimal Boot](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/minimal_boot)**: Hello World project to prove the bootloader and your hardware is working.
+  * **[Minimal Boot](4ms/stm32mp1-baremetal/tree/master/examples/minimal_boot)**: Hello World project to prove the bootloader and your hardware is working.
   * **[Ctest](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/ctest)**: Demonstrates the startup code for a C/C++ project: setting up the stack, initializing globals, etc.
   * **[Basic IRQ](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/basic_irq)**: Basic interrupt handling with the A7's Generic Interrupt Controller.
   * **[Nested IRQ](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/nested_irq)**: More sophisticed interrupt handling: interrupts interrupting interrupts! (and using lambdas as handlers!)
@@ -38,6 +38,18 @@ Here's a list of the example projects:
 	several audio synths to play. Requires STM32MP1 Discovery board. Uses
 	STM32-HAL, some DaisySP example projects, and some Faust algorithms. TODO: use multi-core A7.
   * **[USB MSC Device](https://github.com/4ms/stm32mp1-baremetal/tree/master/examples/usb_msc_device)**: Simple example that creates a USB Mass Storage Class device (aka "USB thumb drive").
+
+To run an application on the STM32MP1, a bootloader must load it. There are two bootloaders to choose from:
+
+  * [U-Boot](4ms/stm32mp1-baremetal/tree/master/third-party/u-boot/u-boot-stm32mp1-baremetal): the standard bootloader, officially supported by ST. Lots of
+	features and support for many platforms. The C code is stylistically
+	similar to Linux. We provide pre-compiled images in this repository, or you
+	can compile it yourself if you need to re-configure
+	something.
+
+  * [MP1-Boot](4ms/stm32mp1-baremetal/tree/master/bootloaders/mp1-boot): a lightweight, fast and minimal featured bootloader. Supports only
+	the MP15x chips, and only booting from NOR Flash or SD Card (so far). The
+	C++ code is similar to other projects in this repository.
 
 ## Overview
 
