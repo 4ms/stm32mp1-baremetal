@@ -1,8 +1,8 @@
 # STM32MP1 Cortex-A7 bare-metal example projects
 
-This is a set of example and template projects for bare-metal applications
-on the STM32MP15x Cortex-A7 microprocessor. I use "bare-metal" to mean no OS,
-so unlike most STM32MP1 or Cortex-A tutorials, there is no Linux or RTOS. Basic
+This is a set of example and template projects for bare-metal applications on
+the STM32MP15x Cortex-A7 microprocessor. I use "bare-metal" to mean no OS, so
+unlike most STM32MP1 or Cortex-A tutorials, there is no Linux or RTOS. Basic
 systems such as handling interrupts, setting up a stack, memory management,
 etc. are handled in these projects, as well as more advanced featues like
 parallel processing (multiple cores) and coprocessor control.
@@ -27,37 +27,46 @@ see something, please ask! (open a github issue)
 
 Here's a list of the example projects:
 
-  * **[Minimal Boot](examples/minimal_boot)**: Hello World project to prove the bootloader and your hardware is working.
-  * **[Ctest](examples/ctest)**: Demonstrates the startup code for a C/C++ project: setting up the stack, initializing globals, etc.
-  * **[Basic IRQ](examples/basic_irq)**: Basic interrupt handling with the A7's Generic Interrupt Controller.
-  * **[Nested IRQ](examples/nested_irq)**: More sophisticed interrupt handling: interrupts interrupting interrupts! (and using lambdas as handlers!)
-  * **[Multicore_a7](examples/multicore_a7)**: Demonstrates running both A7 cores in parallel.
-  * **[Copro_rproc](examples/copro_rproc)**: Using the rproc feature of U-Boot to load and run firmware on the M4 core in parallel with the A7 core.
-  * **[Copro_embedded](examples/copro_embedded)**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
-  * **[Audio Processor](examples/audio_processor)**: A fun practical project that lets you select one of
-	several audio synths to play. Requires STM32MP1 Discovery board. Uses
-	STM32-HAL, some DaisySP example projects, and some Faust algorithms. TODO: use multi-core A7.
-  * **[USB MSC Device](https://github.com/4ms/stm32mp1-baremetal/tree/master/examples/usb_msc_device)**: Simple example that creates a USB Mass Storage Class device (aka "USB thumb drive").
+  * **[Minimal Boot](examples/minimal_boot)**: Hello World project to prove the
+	bootloader and your hardware is working.
+  * **[Ctest](examples/ctest)**: Demonstrates the startup code for a C/C++
+	project: setting up the stack, initializing globals, etc.
+  * **[Basic IRQ](examples/basic_irq)**: Basic interrupt handling with the A7's
+	Generic Interrupt Controller.
+  * **[Nested IRQ](examples/nested_irq)**: More sophisticed interrupt handling:
+	interrupts interrupting interrupts! (and using lambdas as handlers!)
+  * **[Multicore_a7](examples/multicore_a7)**: Demonstrates running both A7
+	cores in parallel.
+  * **[Copro_rproc](examples/copro_rproc)**: Using the rproc feature of U-Boot
+	to load and run firmware on the M4 core in parallel with the A7 core.
+  * **[Copro_embedded](examples/copro_embedded)**: Embedding the M4 firmware
+	binary into the A7's firmware binary, and loading it on demand. Wacky, but
+	cool.
+  * **[Audio Processor](examples/audio_processor)**: A fun practical project
+	that lets you select one of several audio synths to play. Requires STM32MP1
+	Discovery board. Uses STM32-HAL, some DaisySP example projects, and some
+	Faust algorithms. TODO: use multi-core A7.
+  * **[USB MSC Device](examples/usb_msc_device)**:
+	Simple example that creates a USB Mass Storage Class device (aka "USB thumb
+	drive").
 
-To run an application on the STM32MP1, a bootloader must load it. There are two bootloaders to choose from:
+To run an application on the STM32MP1, a bootloader must load it. There are two
+bootloaders to choose from:
 
-  * [U-Boot](third-party/u-boot/u-boot-stm32mp1-baremetal): the standard bootloader, officially supported by ST. Lots of
-	features and support for many platforms. The C code is stylistically
-	similar to Linux. We provide pre-compiled images in this repository, or you
-	can compile it yourself if you need to re-configure
-	something.
+  * **[U-Boot](third-party/u-boot/u-boot-stm32mp1-baremetal)**: the standard
+	bootloader, officially supported by ST. Lots of features and support for
+	many platforms. 
 
-  * [MP1-Boot](bootloaders/mp1-boot): a lightweight, fast and minimal featured bootloader. Supports only
-	the MP15x chips, and only booting from NOR Flash or SD Card (so far). The
-	C++ code is similar to other projects in this repository.
+  * **[MP1-Boot](bootloaders/mp1-boot)**: a lightweight, fast and minimal
+	featured bootloader. 
 
 ## Overview
 
-The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz or
-800MHz, L1 and L2 caches, up to 1GB of external 533MHz RAM, a Cortex-M4 core
+The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz
+or 800MHz, L1 and L2 caches, up to 1GB of external 533MHz RAM, a Cortex-M4 core
 and a suite of peripherals. The peripherals are familiar to anyone having used
-the STM32F7 or STM32H7 series (and sometimes STM32 HAL-based F7/H7 code
-can be used as-is in the MP1 A7).
+the STM32F7 or STM32H7 series (and sometimes STM32 HAL-based F7/H7 code can be
+used as-is in the MP1 A7).
 
 Each project in the `examples/` directory is meant to demonstrate a simple idea
 with as few dependencies as possible. The CMSIS device header for the
@@ -68,14 +77,34 @@ such as setting up the MMU and the caches. For the most part you can use these
 as-is, although you will need to modify the MMU setup if your project needs
 areas of RAM to be non-cacheable in order to use a DMA, for example. 
 
-U-Boot is a third-party tool that we use for the bootloader. Pre-built U-Boot
-images are included in this repo, so all you have to do is load them onto an SD
-card and never think about it again unless you start using custom hardware or
-need to change the boot command (as is optionally done in the `corpo_rproc`
-example project).
+## Bootloaders
+
+The bootloader is responsible for initializing the system and loading the
+application from the SD Card (or other boot medium) into RAM, and then running
+the application. Unlike a Cortex-M, where there is internal Flash memory to
+store your application, the Cortex-A series typically runs the application on
+an external RAM chip. The STM32MP1 has an internal ROM bootloader (called
+BOOTROM) which automatically copies your bootloader from the SD Card into
+internal RAM, and then executes it. The bootloader is then responsible to
+enable the external RAM, and load and start the application.
+
+There are two bootloader choices in this repo: U-Boot and MP1-Boot.
+
+**U-Boot** is a third-party tool that is the standard bootloader supported by ST.
+It's quite common to see an embedded Linux project using U-Boot. Pre-built
+U-Boot images are included in this repo, so all you have to do is load them
+onto an SD card and never think about it again unless you start using custom
+hardware or need to change the boot command (as is optionally done in
+the `corpo_rproc` example project).
 
 I've also provided a script to build U-Boot, too. If you're familiar with Linux
 kernel and device driver code, you'll notice some similarities.
+
+U-Boot has lots of features and is quite powerful. With great power, however,
+comes great complexity. A more simple bootloader is also included in this repo:
+
+**MP1-Boot** is a lightweight bootloader written by me. It only supports the MP1
+
 
 The application ultimately needs to live on the SD card as well, but it can be
 flashed into RAM using an SWD/JTAG flasher, making debugging much easier than

@@ -59,8 +59,8 @@ Also there is one step that is not strictly necessary, but useful:
 
 ### Dependencies, attribution, and inspriation
 
-The python script that adds the stm32 header is from
-[here](https://github.com/WerWolv/STM32MP1OS).
+The python script that adds the stm32 header is taken from
+[here](https://github.com/WerWolv/STM32MP1OS/blob/master/fsbl/fix_header.py).
 
 The DDR init code ported from U-Boot [ram
 drivers](https://github.com/u-boot/u-boot/tree/master/drivers/ram/stm32mp1). I
@@ -105,9 +105,7 @@ transfer. Since we are no longer dependent on BOOTROM's hard-coded speeds and bu
 widths, we can set our own transfer protocol rates. NOR Flash at 100MHz clock,
 4-bit wide data path would take about 20ms to transfer a 1MB application image.
 
-All-in-all, a decent sized application can be running in under 100ms. This is vast
-improvement on default U-Boot settings, which takes about 7 seconds (this can be
-improved, using Falcon boot and other techniques).
+All-in-all, a decent sized application can be running in under 100ms. 
 
 ### Project status
 
