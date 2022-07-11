@@ -77,7 +77,7 @@ such as setting up the MMU and the caches. For the most part you can use these
 as-is, although you will need to modify the MMU setup if your project needs
 areas of RAM to be non-cacheable in order to use a DMA, for example. 
 
-## Bootloaders
+## Bootloader Overview
 
 The bootloader is responsible for initializing the system and loading the
 application from the SD Card (or other boot medium) into RAM, and then running
@@ -547,3 +547,5 @@ anyone else finds this interesting too!
  [ ] Try latest U-Boot from STM32MP1 Ecosystem v4.0
 
  [ ] MMU tutorial
+
+ [ ] Split this README into logical sections. Use github wiki? github pages?
