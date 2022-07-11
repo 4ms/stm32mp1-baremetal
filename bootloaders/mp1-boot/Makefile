@@ -36,6 +36,8 @@ INCLUDES = -I. \
 		   -Iuboot-port/include \
 		   -Iuboot-port/arch/arm/include \
 
+all: image
+
 include $(SHAREDDIR)/makefile-common.mk
 
 SD_DISK_DEV ?= /dev/disk4
