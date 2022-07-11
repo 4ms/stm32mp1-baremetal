@@ -27,7 +27,7 @@ see something, please ask! (open a github issue)
 
 Here's a list of the example projects:
 
-  * **[Minimal Boot](4ms/stm32mp1-baremetal/tree/master/examples/minimal_boot)**: Hello World project to prove the bootloader and your hardware is working.
+  * **[Minimal Boot](examples/minimal_boot)**: Hello World project to prove the bootloader and your hardware is working.
   * **[Ctest](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/ctest)**: Demonstrates the startup code for a C/C++ project: setting up the stack, initializing globals, etc.
   * **[Basic IRQ](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/basic_irq)**: Basic interrupt handling with the A7's Generic Interrupt Controller.
   * **[Nested IRQ](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/nested_irq)**: More sophisticed interrupt handling: interrupts interrupting interrupts! (and using lambdas as handlers!)
