@@ -226,7 +226,7 @@ From the mp1-boot directory, edit main.cc and uncomment the line for your board 
 
 ```
 cd bootloaders/mp1-boot
-vi main.cc # uncomment to correct line to select your board
+vi main.cc # uncomment the correct line to select your board
 make
 ```
 
@@ -262,7 +262,7 @@ scripts/partition-sdcard.sh /dev/XXX
 ...where /dev/XXX is the SD card device name such as /dev/sdc or /dev/disk2
 This script will create four partitions, and format the fourth to FAT32.
 
-Then run the script to copy the bootloader (u-boot and spl) to the first three partitions:
+Then run the script to copy the bootloader to the first two or three partitions:
 
 ```
 # To use pre-built U-Boot images for OSD32MP1 board:
@@ -297,7 +297,7 @@ minicom -D /dev/cu.usbmodemXXXXX
 ```
 
 Insert the card into the board and power it on. You should see boot
-messages, and then finally an error when it can't find `a7-main.uimg`. Now it's
+messages, and then finally an error when it can't find the application. Now it's
 time to build that file. 
 
 ## 5) Build the application
@@ -313,8 +313,10 @@ You should see the elf and the uimg files. Each of these is the compiled
 application, and either one must be loaded into DDR RAM at 0xC2000040. There
 are two ways to load the application to RAM. One way is to load the elf
 file by using a debugger/programmer (ST-LINK or J-Link). The other way is to
-copy the uimg file to the SD card's fourth partition the same way you would
-copy any file with your OS, and let U-Boot load the application to RAM.
+copy the uimg file to the SD card. With U-Boot, it gets copied to the fourth
+partition the same way you would copy any file with your OS. With MP1-Boot,
+it gets copied to the third paritition the same way we copied to bootloaders
+to the SD Card (using `dd`).
 
 The direct loading with a debugger method requires a debugger to be attached,
 and the code will not persist after power down. However, it's much more
@@ -332,13 +334,9 @@ more robust and has fewer moving parts (no debugger or host computer software).
 
 ## 6) Copy the application to the SD card
 
-If you've never loaded the app onto the SD card, you have to do this before you
-can use a debugger on the application (step #6).  Or, if you want to have the
-application load even without a debugger attached, use this method.
+There are two ways to do this if you have U-Boot, and one way if you have MP1-Boot:
 
-There are two ways to do this:
-
-##### The Simple Way:
+##### The Simple Way (when U-Boot is the bootloader):
 
 Physically remove the SD card from the OSD32 or Discovery board and insert it into your computer. Then do:
 
@@ -349,7 +347,7 @@ cp build/a7-main.uimg /Volumes/BAREAPP/
 Of course, adjust the command above to use the actual path to the mounted SD
 card. Or you can use drag-and-drop within your OS's GUI.
 
-##### The Convenient (but possibly won't work) Way:
+##### The Convenient Way (when U-Boot is the bootloader):
 
 The more convenient way (if it works) is to use the USB gadget function. If you
 have the UART and USB cable connected (and your particular OS happens to be
@@ -394,6 +392,24 @@ The path to the SD card is hard-coded into the Makefile, so you can either edit
 ```
 SDCARD_MOUNT_PATH=/path/to/SDCARD make install
 ```
+
+##### The MP1-Boot Way:
+
+For MP1-Boot, insert the SD Card into your computer and run this command:
+
+```
+sudo dd if=path/to/app/a7-main.uimg of=/dev/diskX3
+```
+
+where `/dev/diskX3` is the 3rd partition, like `/dev/disk4s3` or `/dev/sdb3`
+
+Or from the project directory, you can use the `make install-mp1-boot` target:
+
+```
+SD_DISK_DEV=/dev/diskX3 make install-mp1-boot
+```
+
+
 
 ## 7) Debug application
 
