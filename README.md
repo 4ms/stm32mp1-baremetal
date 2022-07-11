@@ -92,7 +92,8 @@ The application ultimately needs to live on the SD card as well, but it can be
 flashed into RAM using an SWD/JTAG flasher, making debugging much easier than
 having to copy files to an SD card each time the code is changed.
 
-There are two bootloader choices in this repo: U-Boot and MP1-Boot.
+There are two bootloader choices in this repo: U-Boot and MP1-Boot. Either one
+is complelely optional, however you must use one.
 
 **U-Boot** is a third-party tool that is the standard bootloader supported by ST.
 It's quite common to see an embedded Linux project using U-Boot. Pre-built
@@ -113,6 +114,7 @@ comes great complexity. A more simple bootloader is also included in this repo:
 **MP1-Boot** is a lightweight bootloader written by me. It does the minimum tasks
 necessary to boot an application, with no extra features. MP1-Boot is a single-stage
 bootloader.
+
 
 
 ## Requirements
@@ -181,12 +183,12 @@ Clone the repo:
 git clone https://github.com/4ms/stm32mp1-baremetal
 ```
 
-On macOS, you may need to install gsed and set your PATH to use it instead of
-sed. This is needed for building U-Boot. See Caveats section in `brew info
-gnu-sed` for details.  
+On macOS, if you intend to compile U-Boot, you may need to install gsed and set
+your PATH to use it instead of sed. This is only needed for building U-Boot.
+See Caveats section in `brew info gnu-sed` for details.  
 
 ```
-# MacOS only:
+# MacOS only, if you intend to build U-Boot:
 brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`  ##or add it to your .zshrc/.bashrc
 ```
