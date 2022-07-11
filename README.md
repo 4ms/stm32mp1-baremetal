@@ -410,7 +410,6 @@ SD_DISK_DEV=/dev/diskX3 make install-mp1-boot
 ```
 
 
-
 ## 7) Debug application
 
 This is completely optional, but is very convenient when developing. You must
@@ -510,6 +509,10 @@ If you just need raw processing power and fast RAM and caches, then
 hopefully these example projects can be a good foundation for your first
 Cortex-A bare-metal project.
 
+Or, if you're writing your own OS or RTOS, or porting an existing framework such
+as Zephyr or FreeRTOS to the STM32MP1, then hopefully this project will be of
+some assistance (please let me know about it, if you do port a RTOS or custom OS!).
+
 The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz or
 800MHz, L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite
 of peripherals. There's a large gap between this and the next chip down in ST's
@@ -541,8 +544,6 @@ anyone else finds this interesting too!
 
  [ ] Try TFA (trusted firmware), make sure we start app in secure mode
 
- [ ] Try latest U-Boot from STM32MP1 Ecosystem v3.0
-
- [ ] Faster Boot mode (either skip U-Boot proper and load app from SPL, or use U-Boot's "Fast Boot" Falcon mode)
+ [ ] Try latest U-Boot from STM32MP1 Ecosystem v4.0
 
  [ ] MMU tutorial
