@@ -85,8 +85,12 @@ the application. Unlike a Cortex-M, where there is internal Flash memory to
 store your application, the Cortex-A series typically runs the application on
 an external RAM chip. The STM32MP1 has an internal ROM bootloader (called
 BOOTROM) which automatically copies your bootloader from the SD Card into
-internal RAM, and then executes it. The bootloader is then responsible to
+internal SYSRAM, and then executes it. The bootloader is then responsible to
 enable the external RAM, and load and start the application.
+
+The application ultimately needs to live on the SD card as well, but it can be
+flashed into RAM using an SWD/JTAG flasher, making debugging much easier than
+having to copy files to an SD card each time the code is changed.
 
 There are two bootloader choices in this repo: U-Boot and MP1-Boot.
 
@@ -97,28 +101,33 @@ onto an SD card and never think about it again unless you start using custom
 hardware or need to change the boot command (as is optionally done in
 the `corpo_rproc` example project).
 
+U-Boot is a two-stage bootloader: the first stage loads the second stage, which 
+then loads the application.
+
 I've also provided a script to build U-Boot, too. If you're familiar with Linux
 kernel and device driver code, you'll notice some similarities.
 
 U-Boot has lots of features and is quite powerful. With great power, however,
 comes great complexity. A more simple bootloader is also included in this repo:
 
-**MP1-Boot** is a lightweight bootloader written by me. It only supports the MP1
+**MP1-Boot** is a lightweight bootloader written by me. It does the minimum tasks
+necessary to boot an application, with no extra features. MP1-Boot is a single-stage
+bootloader.
 
-
-The application ultimately needs to live on the SD card as well, but it can be
-flashed into RAM using an SWD/JTAG flasher, making debugging much easier than
-having to copy files to an SD card each time the code is changed.
 
 ## Requirements
 
 You need:
-  - Any [STM32MP15x Discovery board](https://www.st.com/en/evaluation-tools/stm32mp157d-dk1.html), or an [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board
-  - A computer with the [arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads) toolchain installed (v8 or later)
+  - Any [STM32MP15x Discovery board](https://www.st.com/en/evaluation-tools/stm32mp157d-dk1.html), or an
+	[OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/)
+	board
+  - A computer with the
+	[arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)
+	toolchain installed (v8 or later)
   - Various common USB cables, depending on which board you select
   - A micro SD card
   - A USB-to-serial cable (only if you use the OSD32 board) such as the [FTDI cable](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/TTL-232R-3V3/1836393)
-  - Optionally, a J-Link or ST-LINK debugger (only if you use the OSD32 board. The Discovery board has an ST-LINK on-board)
+  - Optionally, a J-Link or ST-LINK debugger (only if you use the OSD32 board -- the Discovery board has an ST-LINK on-board)
 
 ![Image of STM32MP157A-DK1 board](https://www.st.com/bin/ecommerce/api/image.PF268547.en.feature-description-include-personalized-no-cpn-large.jpg)
 *STM32MP157A-DK1 Discovery board*
@@ -132,14 +141,14 @@ You need:
 These projects will build and run on any of the [STM32MP15x Discovery boards](https://www.st.com/en/evaluation-tools/stm32mp157d-dk1.html),
 or the [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board.
 The OSD32MP1-BRK is simply a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/),
-which is an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
+which is an [STM32MP157 chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
 plus DDR3 RAM and PMIC and other stuff in a BGA package. 
-These example projects work the same on either board (you only need to build
-the bootloader slightly differently).
+These example projects work the same on either board (you may need to select your board
+type at the top of main.cc). Each board requires a bootloader compiled for it. 
 
 The Discovery boards have a built-in USB/UART and a built-in ST-LINK, so you
 just need a USB cable to debug and view UART output on the console. However,
-AFAIK you can only use gdb to debug (not Ozone or TRACE32) since there is no
+AFAIK you can only use gdb to debug (not JLinkGdbServer/Ozone or TRACE32) since there is no
 direct access to the SWD or JTAG pins (not even a good place to solder some
 on). These boards also have a lot more external hardware on the PCB (codec,
 buttons, ethernet jack, HDMI, an option for a DSI screen,...), but have far
@@ -147,7 +156,7 @@ fewer pins brought out to headers than the OSD32MP1 board.
 
 The OSD32MP1-BRK board has an SWD/JTAG header so you can use a programmer like
 the SEGGER J-Link or an ST-LINK to debug with a variety of tools (gdb/OpenOCD,
-Segger Ozone, TRACE32). The board has a 10 exposed pads designed to fit a 
+Ozone, TRACE32). The board has a 10 exposed pads designed to fit a 
 10-pin pogo adaptor, such as [this one](https://www.tag-connect.com/product/tc2050-idc-nl-10-pin-no-legs-cable-with-ribbon-connector)
 from Tag-Connect [or Digikey](https://www.digikey.com/en/products/detail/tag-connect-llc/TC2050-IDC-NL/2605367).
 While you're shopping, pick up these helpful accessories too: [retaining clip](https://www.tag-connect.com/product/tc2050-clip-3pack-retaining-clip)
@@ -161,6 +170,8 @@ TTL-232R-3V3, available from
 or there are other options like a host adaptor such as the [Binho
 Nova](https://binho.io/#shopify-section-1550985341560).
 
+You also can use custom hardware, it will be as easy as creating a board configuration header file to define things like
+which pins the UART uses, etc. See examples of these files [here](examples/shared/osd32brk_conf.hh) and [here](stm32disco_conf.hh).
 
 ## 1) Setup:
 
@@ -175,16 +186,21 @@ sed. This is needed for building U-Boot. See Caveats section in `brew info
 gnu-sed` for details.  
 
 ```
+# MacOS only:
 brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`  ##or add it to your .zshrc/.bashrc
 ```
 
-## 2) Build and load U-Boot:
+## 2) Build a bootloader:
 
-I've added some pre-built images for U-Boot, so you can up and running more quickly.
-If you want to use the pre-built images, skip the next step.
+I've added some pre-built images for U-Boot, so you can get up and running more quickly.
+If you want to use the pre-built images, skip to step 3).
 
-### Building U-Boot (optional)
+If you want to compile U-Boot yourself, see the next step 2a).
+
+If you want to use MP1-Boot, go to step 2b).
+
+### 2a) Building U-Boot (optional)
 
 Build U-Boot using the script. The output will be in `third-party/u-boot/build/`:
 ```
@@ -202,7 +218,22 @@ ls -l third-party/u-boot/build/u-boot-spl.stm32
 ls -l third-party/u-boot/build/u-boot.img
 ```
 
-### Loading U-Boot onto your SD card
+### 2b) Build MP1-Boot (optional)
+
+From the mp1-boot directory, edit main.cc and uncomment the line for your board (OSD32 or STM32Disco). Then run make:
+
+```
+cd bootloaders/mp1-boot
+vi main.cc # uncomment to correct line to select your board
+make
+```
+
+Verify the output file:
+```
+ls -l build/fsbl.stm32
+```
+
+## 3) Loading the bootloader onto your SD card
 
 Now you need to format and partition an SD card.  Insert a card and do:
 ```
@@ -232,19 +263,23 @@ This script will create four partitions, and format the fourth to FAT32.
 Then run the script to copy the bootloader (u-boot and spl) to the first three partitions:
 
 ```
-# To use pre-built images for OSD32MP1 board:
+# To use pre-built U-Boot images for OSD32MP1 board:
 scripts/copy-bootloader.sh /dev/diskX bootloaders/u-boot-images/osd32mp1-brk/
 
-# To use pre-built images for STM32MP157A-DK1 Discovery board:
+# To use pre-built U-Boot images for STM32MP157A-DK1 Discovery board:
 scripts/copy-bootloader.sh /dev/diskX bootloaders/u-boot-images/stm32mp157a-dk1-disco/
 
-# To use images that you built yourself:
+# To use U-Boot images that you built yourself:
 scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/build/
+
+# To use MP1-Boot:
+cd bootloaders/mp1-boot
+make load SD_DISK_DEV=/dev/diskX
 
 # Where /dev/diskX is something like /dev/disk2 or /dev/sdc1
 ```
 
-## 3) Power up the board
+## 4) Power up the board
 
 This is a good moment to test your hardware setup. You can skip this step if
 you've done this before.  Remove the SD card from the computer and insert into
@@ -263,7 +298,7 @@ Insert the card into the board and power it on. You should see boot
 messages, and then finally an error when it can't find `a7-main.uimg`. Now it's
 time to build that file. 
 
-## 4) Build the application
+## 5) Build the application
 
 ```
 cd examples/minimal_boot
@@ -293,7 +328,7 @@ on boot.
 I recommend using the copy-to-SD-card method for your first try, since it's
 more robust and has fewer moving parts (no debugger or host computer software).
 
-## 5) Copy the application to the SD card
+## 6) Copy the application to the SD card
 
 If you've never loaded the app onto the SD card, you have to do this before you
 can use a debugger on the application (step #6).  Or, if you want to have the
@@ -358,7 +393,7 @@ The path to the SD card is hard-coded into the Makefile, so you can either edit
 SDCARD_MOUNT_PATH=/path/to/SDCARD make install
 ```
 
-## 6) Debug application
+## 7) Debug application
 
 This is completely optional, but is very convenient when developing. You must
 have a working bootloader (at least SPL) which is responsible for initializing
