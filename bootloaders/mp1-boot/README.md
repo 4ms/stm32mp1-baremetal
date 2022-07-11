@@ -73,31 +73,36 @@ the partition number), is also ported from U-Boot
 The vast majority of code was removed, but the basic GPT structure and how to
 read it remains.
 
+The SDMCC driver is the STM32 HAL driver. The other drivers (QSPI NOR Flash,
+I2C, RCC, GPIO, UART) are mine. Some leverage the register access macros ST
+provides in the LL drivers.
 
 ### Boot time
 
 Boot time varies widely depending on the board and the boot medium (SD Card or
-NOR Flash).
+NOR Flash), and even the particular brand/speed of SD Card.
 
-With an SD Card on the OSD32-BRK, it takes about 500ms from power-on to loading
-the application binary.
+With an SD Card on the OSD32-BRK, it takes about 380ms from power-on to loading
+the application binary, using a cheap no-name SD Card.
 
-With NOR Flash on a custom board of mine, it takes about 70ms from power-on to
+With NOR Flash on a custom board of mine, it takes about 36ms from power-on to
 app loading. 
 
-The main reason for the large difference in boot time is that the BOOTROM uses
-a clock speed of 21MHz for the NOR Flash, and 175kHz for SDMMC.
-The MP1-Boot image is about 29kB. It takes the BOOTROM about 150-200ms to load it from
-the SD Card. When using NOR Flash it takes about 18ms.
+The main reason for the large difference in boot time is that when using an SD Card,
+there is a ~300-350ms pause shortly after boot. Probing the SDMMC data/cmd/clk lines, 
+you can see that the BOOTROM makes contact with the SD Card at about 11ms after power-on.
+It communicates with a clock speed of 175kHz using only the CMD and CLK lines. Then
+after a long pause (300-350ms) communication is resumed at 16MHz, using the D0-D3 lines
+as well. I presume this pause is due the SD Card preparing itself, though I'm not certain.
+In any case, with NOR Flash, this pause is not present. Also, when booting from NOR Flash,
+the BOOTROM uses a clock speed of 32MHz, according to ST's site, but I measure
+21MHz.
 
-There also seems to be a board-specific difference in timing before BOOTROM
-begins loading from the boot medium. From the Reset pulse on the OSD32-BRK
-board, it takes about 120ms - 150ms for the BOOTROM to begin reading from the
-SD Card. On a custom board of mine, it takes only 11ms. I don't know the reason
-for this.
+The MP1-Boot image is about 30kB. It takes the BOOTROM about 20-30ms to load it from
+the SD Card. When using NOR Flash it takes about 11ms.
 
-Once loaded, MP1-Boot takes about 33ms to run. If there is no PMIC, it's 2.5ms
-less. If UART output is disabled, it's another 2ms faster.
+Once loaded, MP1-Boot takes about 13ms to run. If there is no PMIC or if the UART
+is disabled, then it's a few ms faster.
 
 The remaining boot time is spent reading the app image from the boot media. The
 duration of that depends on the size of the image and the speed of the
@@ -105,12 +110,15 @@ transfer. Since we are no longer dependent on BOOTROM's hard-coded speeds and bu
 widths, we can set our own transfer protocol rates. NOR Flash at 100MHz clock,
 4-bit wide data path would take about 20ms to transfer a 1MB application image.
 
-All-in-all, a decent sized application can be running in under 100ms. 
+All-in-all, a decent sized 1MB application can be running in well under 100ms if using NOR Flash.
+With an SD Card, figure around 500ms.
 
 ### Project status
 
-This currently works with SD Card or NOR Flash booting. It also works with
+MP1-Boot works with booting from an SD Card or NOR Flash (QSPI). It will work with
 a PMIC system or a discrete LDO system. 
+
+TODO:
 
   * Faster NOR loading (use Quad mode)
   * Faster SDMMC loading (Debug OSD32-BRK speed limit of 16MHz)
@@ -124,25 +132,30 @@ a PMIC system or a discrete LDO system.
 
 A simple config header defines such things as the console UART pins, whether or not the
 board has a PMIC, etc. These are the same config files for OSD32-BRK and
-Discovery boards used in other projects. Make sure you select the right
-board namespace at the top of main.cc.
+Discovery boards used in other projects. See examples of these files
+[here](examples/shared/osd32brk_conf.hh) and [here](stm32disco_conf.hh). Make
+sure you select the right board namespace at the top of main.cc.
 
 Unlike the other projects in this repository, you do not need to have U-boot
 installed on the SD Card or NOR flash.
 
-In this directory run:
+In this directory run one of these commands:
 
 ```
-make load
+make load                           # To be prompted for the SD card device
+
+make load SD_DISK_DEV=/dev/diskX    # To use /dev/diskX
 ```
 
-After building, it will prompt you for the disk device name of the SD Card.
-Make sure a partitioned SD Card is inserted into your computer, and enter the
-device name (such as `/dev/disk4`). The card must be partitioned the same way
-it's done in the other example projects. Use the `scripts/partition-sdcard.sh`
-script to do this. (Alternatively, you can load the image yourself by running
-`make image` followed by `dd` commands to load `build/fsbl.stm32` onto
-partitions 1 and 2 of the SD Card.)
+If you don't specify `SD_DISK_DEV`, it will prompt you for the disk device name
+of the SD Card. Make sure a partitioned SD Card is inserted into your computer,
+and enter the device name (such as `/dev/disk4`). 
+(Alternatively, you can load the image yourself by running `make` followed by
+`dd` commands to load `build/fsbl.stm32` onto partitions 1 and 2 of the SD
+Card.)
+
+The card must be partitioned the same way it's done in the other example
+projects. Use the `scripts/partition-sdcard.sh` script to do this. 
 
 Finally, copy the application uimg file to the 3rd partition like this:
 
@@ -158,11 +171,12 @@ You should see:
 ```
 MP1-Boot
 
+MPU clock: 800000000 Hz
 Initializing RAM
-Testing RAM
-Booted from SD Card
+Testing RAM.
+Booted from NOR
 Loading app image...
-Jumping to app 
+Jumping to app
 ```
 
 ...followed by the application running.
