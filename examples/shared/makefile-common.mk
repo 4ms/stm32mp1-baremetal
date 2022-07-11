@@ -88,6 +88,10 @@ install:
 	cp $(UIMAGENAME) $(SDCARD_MOUNT_PATH)
 	diskutil unmount $(SDCARD_MOUNT_PATH)
 
+install-mp1-boot:
+	sudo dd if=$(UIMAGENAME) $(SD_DISK_DEV)
+	diskutil unmount $(SD_DISK_DEV)
+
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
