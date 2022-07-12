@@ -14,7 +14,12 @@ struct BootNorLoader : BootLoader {
 	{
 		BootImageDef::image_header header;
 
-		auto ok = QSPI_read_SIO((uint8_t *)(&header), BootImageDef::NorFlashSSBLAddr, BootImageDef::HeaderSize);
+		// Debug breakpoint
+		volatile int i = 1;
+		while (1)
+			;
+
+		auto ok = QSPI_read_quad((uint8_t *)(&header), BootImageDef::NorFlashSSBLAddr, BootImageDef::HeaderSize);
 		if (!ok) {
 			// pr_err("Failed reading NOR Flash\n");
 			return {};
@@ -26,6 +31,6 @@ struct BootNorLoader : BootLoader {
 	bool load_image(uint32_t load_addr, uint32_t size) override
 	{
 		auto load_dst = reinterpret_cast<uint8_t *>(load_addr);
-		return QSPI_read_SIO(load_dst, BootImageDef::NorFlashSSBLAddr, size);
+		return QSPI_read_quad(load_dst, BootImageDef::NorFlashSSBLAddr, size);
 	}
 };
