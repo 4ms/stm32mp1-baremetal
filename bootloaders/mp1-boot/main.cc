@@ -10,12 +10,14 @@
 #include "stm32mp157cxx_ca7.h"
 #include "systeminit.h"
 
+#include "mmp9_conf.hh"
 #include "osd32brk_conf.hh"
 #include "stm32disco_conf.hh"
 
 // Uncomment one of these to select your board:
-namespace Board = OSD32BRK;
+// namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
+namespace Board = MMp9;
 
 void main()
 {
@@ -50,7 +52,20 @@ void main()
 	print("Loading app image...\n");
 
 	BootMediaLoader loader{boot_method};
+
+	// Debug breakpoint
+	// {
+	// 	volatile int i = 1;
+	// 	while (i)
+	// 		;
+	// }
 	bool image_ok = loader.load_image();
+	// Debug breakpoint
+	{
+		volatile int i = 1;
+		while (i)
+			;
+	}
 
 	if (image_ok) {
 		print("Jumping to app\n");
