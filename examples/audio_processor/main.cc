@@ -1,9 +1,7 @@
 #include "audio_stream.hh"
 #include "drivers/stm32xx.h"
-#include "shared/drivers/leds.hh"
-#include "shared/drivers/uart.hh"
-#include "shared/stm32disco_conf.hh"
 #include "shared/stm32disco_buttons_conf.hh"
+#include "uart.hh"
 
 #include "synth_list.hh"
 
@@ -16,7 +14,6 @@ void main()
 	uart.write("\r\n\r\nStarting Audio Processor\r\n");
 	uart.write("Press User1 button to select a synth\r\n");
 
-	// BlueLED blue_led;
 	User1Button button1;
 	User2Button button2;
 
