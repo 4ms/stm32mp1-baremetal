@@ -79,14 +79,22 @@ provides in the LL drivers.
 
 ### Boot time
 
+**Summary**
+
 Boot time varies widely depending on the board and the boot medium (SD Card or
 NOR Flash), and even the particular brand/speed of SD Card.
 
-With an SD Card on the OSD32-BRK, it takes about 380ms from power-on to loading
-the application binary, using a cheap no-name SD Card.
+With NOR Flash (requires a custom board), it takes about 65ms from power-on
+until a 1MByte program is loaded and running. This breaks down to about 36ms
+from power-on to app loading. Then the app is loaded at about 44MBytes/sec, so
+a 1MB program loads in about 24ms.
 
-With NOR Flash on a custom board of mine, it takes about 36ms from power-on to
-app loading. 
+With an SD Card on the OSD32-BRK, it takes about 500ms from power-on until a
+1MB program is running. The times vary depending the brand/type of SD Card. It
+takes around 380ms to until the the start of copying the app from the SD Card,
+and another 100ms or so to load a 1MByte program.
+
+**Details**
 
 The main reason for the large difference in boot time is that when using an SD Card,
 there is a ~300-350ms pause shortly after boot. Probing the SDMMC data/cmd/clk lines, 
@@ -104,14 +112,14 @@ the SD Card. When using NOR Flash it takes about 11ms.
 Once loaded, MP1-Boot takes about 13ms to run. If there is no PMIC or if the UART
 is disabled, then it's a few ms faster.
 
-The remaining boot time is spent reading the app image from the boot media. The
-duration of that depends on the size of the image and the speed of the
-transfer. Since we are no longer dependent on BOOTROM's hard-coded speeds and bus
-widths, we can set our own transfer protocol rates. NOR Flash at 100MHz clock,
-4-bit wide data path would take about 20ms to transfer a 1MB application image.
+The remaining boot time is spent copying the app image from the boot media into
+DDR RAM. The duration of that depends on the size of the image and the speed of
+the transfer. Since we are no longer dependent on BOOTROM's hard-coded speeds
+and bus widths, we can set our own transfer protocol rates. NOR Flash can run
+with an 88MHz clock, 4-bit wide data (Quad mode) takes about 25ms to transfer a
+1MB application image. It probably could be pushed further, depending on the limits
+of the Flash chip, but I've found this value to be reliable and fast enough.
 
-All-in-all, a decent sized 1MB application can be running in well under 100ms if using NOR Flash.
-With an SD Card, figure around 500ms.
 
 ### Project status
 
