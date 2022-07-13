@@ -1,6 +1,8 @@
 #include "qspi_ll.h"
 #include "stm32mp1xx.h"
 
+// TODO: To C++, use register_access.hh
+
 void LL_QPSI_SetAltBytes(uint32_t AlternateBytes)
 {
 	QUADSPI->ABR = AlternateBytes;
@@ -18,7 +20,7 @@ void LL_QSPI_SetAddress(uint32_t address)
 
 void LL_QSPI_WaitNotBusy(void)
 {
-	while (READ_BIT(QUADSPI->SR, QSPI_FLAG_BUSY) != 0) {
+	while ((QUADSPI->SR & QSPI_FLAG_BUSY) != 0) {
 		;
 	}
 }
@@ -27,7 +29,7 @@ uint32_t LL_QSPI_WaitFlagTimeout(uint32_t flag)
 {
 	// wait for flag to go high
 	uint32_t timeout = 0x00FFFFFF;
-	while (--timeout && (READ_BIT(QUADSPI->SR, flag) == 0)) {
+	while (--timeout && ((QUADSPI->SR & flag) == 0)) {
 		;
 	}
 	return timeout;
@@ -36,7 +38,7 @@ uint32_t LL_QSPI_WaitFlagTimeout(uint32_t flag)
 void LL_QSPI_WaitFlag(uint32_t flag)
 {
 	// wait for flag to go high
-	while (!(READ_BIT(QUADSPI->SR, flag))) {
+	while (!((QUADSPI->SR & flag))) {
 		;
 	}
 }
@@ -67,7 +69,7 @@ uint32_t LL_QSPI_SendInstructionNoDataNoAddress(uint32_t instruction)
 uint32_t LL_QSPI_Transmit(uint8_t *pData)
 {
 	__IO uint32_t *data_reg = &(QUADSPI->DR);
-	uint32_t cnt = READ_REG(QUADSPI->DLR) + 1;
+	uint32_t cnt = QUADSPI->DLR + 1;
 	uint32_t ok = 1;
 
 	MODIFY_REG(QUADSPI->CCR, QUADSPI_CCR_FMODE, QSPI_FUNCTIONAL_MODE_INDIRECT_WRITE);
@@ -92,30 +94,30 @@ uint32_t LL_QSPI_Transmit(uint8_t *pData)
 
 uint32_t LL_QSPI_Receive(uint8_t *pData)
 {
-	uint32_t addr_reg = READ_REG(QUADSPI->AR);
-	__IO uint32_t *data_reg = &QUADSPI->DR;
-	uint32_t cnt = READ_REG(QUADSPI->DLR) + 1;
+	uint32_t addr_reg = QUADSPI->AR;
+	volatile uint32_t *data_reg = &QUADSPI->DR;
+	uint32_t cnt = QUADSPI->DLR + 1;
 	uint32_t ok = 1;
 
 	MODIFY_REG(QUADSPI->CCR, QUADSPI_CCR_FMODE, QSPI_FUNCTIONAL_MODE_INDIRECT_READ);
 
 	// Start the transfer by re-writing the address in AR register
-	WRITE_REG(QUADSPI->AR, addr_reg);
+	QUADSPI->AR = addr_reg;
 
 	while (cnt > 0) {
-		// Wait until FT or TC flag is set to read data
-		ok = LL_QSPI_WaitFlagTimeout(QSPI_FLAG_FT | QSPI_FLAG_TC);
-		// LL_QSPI_ClearFlag(QSPI_FLAG_FT);
+		ok = LL_QSPI_WaitFlagTimeout(QUADSPI_SR_FTF | QUADSPI_SR_TCF);
+
 		if (!ok)
 			break;
 
 		// byte-mode read from DR
-		*pData++ = *(__IO uint8_t *)data_reg;
+		*pData = *(volatile uint8_t *)data_reg;
+		pData++;
 		cnt--;
 	}
 	if (ok) {
-		ok = LL_QSPI_WaitFlagTimeout(QSPI_FLAG_TC);
-		LL_QSPI_ClearFlag(QSPI_FLAG_TC);
+		ok = LL_QSPI_WaitFlagTimeout(QUADSPI_SR_TCF);
+		LL_QSPI_ClearFlag(QUADSPI_FCR_CTCF);
 	}
 	return ok;
 }

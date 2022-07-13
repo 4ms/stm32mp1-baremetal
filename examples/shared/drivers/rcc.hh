@@ -247,12 +247,12 @@ using DIVPEnable = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1
 using DIVQEnable = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CR), RCC_PLL1CR_DIVQEN>;
 using DIVREnable = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CR), RCC_PLL1CR_DIVREN>;
 
-using DIVM1 = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR1), RCC_PLL1CFGR1_DIVM1_Pos ,6 >;
-using DIVN = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR1), RCC_PLL1CFGR1_DIVN_Pos, 9>;
-using DIVP = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR2), RCC_PLL1CFGR2_DIVP_Pos, 7>;
-using DIVQ = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR2), RCC_PLL1CFGR2_DIVQ_Pos, 7>;
-using DIVR = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR2), RCC_PLL1CFGR2_DIVR_Pos, 7>;
-using FRACValue = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1FRACR), RCC_PLL1FRACR_FRACV_Pos, 13>;
+using DIVM1 = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR1), RCC_PLL1CFGR1_DIVM1>;
+using DIVN = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR1), RCC_PLL1CFGR1_DIVN>;
+using DIVP = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR2), RCC_PLL1CFGR2_DIVP>;
+using DIVQ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR2), RCC_PLL1CFGR2_DIVQ>;
+using DIVR = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1CFGR2), RCC_PLL1CFGR2_DIVR>;
+using FRACValue = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1FRACR), RCC_PLL1FRACR_FRACV>;
 using FRACLatch = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL1FRACR), RCC_PLL1FRACR_FRACLE>;
 
 namespace SpreadSpectrumClockGen {
@@ -272,12 +272,12 @@ using DIVPEnable = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2
 using DIVQEnable = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CR), RCC_PLL2CR_DIVQEN>;
 using DIVREnable = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CR), RCC_PLL2CR_DIVREN>;
 
-using DIVM2 = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR1), RCC_PLL2CFGR1_DIVM2_Pos ,6 >;
-using DIVN = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR1), RCC_PLL2CFGR1_DIVN_Pos, 9>;
-using DIVP = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR2), RCC_PLL2CFGR2_DIVP_Pos, 7>;
-using DIVQ = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR2), RCC_PLL2CFGR2_DIVQ_Pos, 7>;
-using DIVR = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR2), RCC_PLL2CFGR2_DIVR_Pos, 7>;
-using FRACValue = RegisterSection<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2FRACR), RCC_PLL2FRACR_FRACV_Pos, 13>;
+using DIVM2 = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR1), RCC_PLL2CFGR1_DIVM2>;
+using DIVN = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR1), RCC_PLL2CFGR1_DIVN>;
+using DIVP = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR2), RCC_PLL2CFGR2_DIVP>;
+using DIVQ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR2), RCC_PLL2CFGR2_DIVQ>;
+using DIVR = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2CFGR2), RCC_PLL2CFGR2_DIVR>;
+using FRACValue = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2FRACR), RCC_PLL2FRACR_FRACV>;
 using FRACLatch = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, PLL2FRACR), RCC_PLL2FRACR_FRACLE>;
 
 namespace SpreadSpectrumClockGen {
