@@ -54,11 +54,11 @@ void main()
 	BootMediaLoader loader{boot_method};
 
 	// Debug breakpoint
-	// {
-	// 	volatile int i = 1;
-	// 	while (i)
-	// 		;
-	// }
+	{
+		volatile int i = 1;
+		while (i)
+			;
+	}
 	bool image_ok = loader.load_image();
 	// Debug breakpoint
 	{

@@ -17,31 +17,38 @@ void QSPI_init()
 	RCC->AHB2RSTCLRR = RCC_AHB6RSTCLRR_QSPIRST;
 	(void)RCC->AHB2RSTCLRR;
 	QUADSPI->CR =
-		(0b11 << QUADSPI_CR_PRESCALER_Pos) | (2 << QUADSPI_CR_FTHRES_Pos) | (QUADSPI_CR_SSHIFT) | QUADSPI_CR_EN;
+		(0b100 << QUADSPI_CR_PRESCALER_Pos) | (2 << QUADSPI_CR_FTHRES_Pos) | (QUADSPI_CR_SSHIFT) | QUADSPI_CR_EN;
 
 	QUADSPI->DCR = (23 << QUADSPI_DCR_FSIZE_Pos) | (2 << QUADSPI_DCR_CSHT_Pos);
 
-	LL_QSPI_SendInstructionNoDataNoAddress(RESET_ENABLE_CMD);
-	LL_QSPI_SendInstructionNoDataNoAddress(RESET_CMD);
+	// LL_QSPI_SendInstructionNoDataNoAddress(RESET_ENABLE_CMD);
+	// LL_QSPI_SendInstructionNoDataNoAddress(RESET_CMD);
 
 	udelay(30);
 
 	// Statis register 2; Quad Enable bit
-	LL_QSPI_WaitNotBusy();
-	LL_QPSI_SetDataLength(1);
-	LL_QSPI_SetCommConfig(QSPI_DDR_MODE_DISABLE | QSPI_DDR_HHC_ANALOG_DELAY | QSPI_SIOO_INST_EVERY_CMD |
-						  QSPI_INSTRUCTION_1_LINE | QSPI_DATA_1_LINE | (0 << 18) | QSPI_ALTERNATE_BYTES_8_BITS |
-						  QSPI_ALTERNATE_BYTES_NONE | QSPI_ADDRESS_24_BITS | QSPI_ADDRESS_NONE | 0x35 |
-						  QSPI_FUNCTIONAL_MODE_INDIRECT_READ);
-	LL_QPSI_SetAltBytes(0);
-	LL_QSPI_SetAddress(0x35);
+	// LL_QSPI_WaitNotBusy();
+	// LL_QPSI_SetDataLength(1);
+	// LL_QSPI_SetCommConfig(QSPI_DDR_MODE_DISABLE | QSPI_DDR_HHC_ANALOG_DELAY | QSPI_SIOO_INST_EVERY_CMD |
+	// 					  QSPI_INSTRUCTION_1_LINE | QSPI_DATA_1_LINE | (0 << 18) | QSPI_ALTERNATE_BYTES_8_BITS |
+	// 					  QSPI_ALTERNATE_BYTES_NONE | QSPI_ADDRESS_24_BITS | QSPI_ADDRESS_NONE | 0x35 |
+	// 					  QSPI_FUNCTIONAL_MODE_INDIRECT_READ);
+	// LL_QPSI_SetAltBytes(0);
+	// LL_QSPI_SetAddress(0x35);
 
-	uint8_t statusreg;
-	uint8_t ok = LL_QSPI_Receive(&statusreg);
-	if (!(statusreg & (1 << 1))) {
-		// Debug breakpoint: QE is not set on the chip
-		__BKPT();
-	}
+	// uint8_t statusreg;
+	// uint8_t ok = LL_QSPI_Receive(&statusreg);
+	// if (!(statusreg & (1 << 1))) {
+	// 	// Debug breakpoint: QE is not set on the chip
+	// 	__BKPT();
+	// }
+
+	// Enable MM mode:
+	LL_QSPI_SetCommConfig(QSPI_DDR_MODE_DISABLE | QSPI_DDR_HHC_ANALOG_DELAY | QSPI_SIOO_INST_EVERY_CMD |
+						  QSPI_INSTRUCTION_1_LINE | QSPI_DATA_4_LINES | (6 << 18) | QSPI_ALTERNATE_BYTES_NONE |
+						  QSPI_ALTERNATE_BYTES_4_LINES | QSPI_ADDRESS_24_BITS | QSPI_ADDRESS_1_LINE |
+						  QUAD_OUT_FAST_READ_CMD | QSPI_FUNCTIONAL_MODE_MEMORY_MAPPED);
+	LL_QPSI_SetAltBytes(0x00);
 
 	// Prescale 0b11 = /4 --> 67MHz
 	// FIFO Threshold = 8 of 16
@@ -52,6 +59,15 @@ void QSPI_init()
 	// no DMA
 	// No sample shift
 	// Polling Mode = AND
+}
+
+uint32_t QSPI_read_MM(uint8_t *pData, uint32_t read_addr, uint32_t num_bytes)
+{
+	uint8_t *src = (uint8_t *)(0x70000000U + read_addr);
+	while (num_bytes--)
+		*pData++ = *src++;
+
+	return 1;
 }
 
 uint32_t QSPI_read_SIO(uint8_t *pData, uint32_t read_addr, uint32_t num_bytes)
