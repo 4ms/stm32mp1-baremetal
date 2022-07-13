@@ -13,6 +13,7 @@ struct BootNorLoader : BootLoader {
 		PinConf d3{GPIO::A, PinNum::_1, PinAF::AF_9};
 		d2.init(PinMode::Alt);
 		d3.init(PinMode::Alt);
+
 		QSPI_init();
 	}
 
