@@ -14,7 +14,7 @@ namespace Board = OSD32BRK;
 
 namespace BasicIRQ
 {
-Uart<UART4_BASE> uart;
+Uart<Board::ConsoleUART> uart;
 
 PinChangeISR<Board::RedLED2::gpio, Board::RedLED2::pin_num> red_led_pinchange;
 const auto red_led_irqnum = red_led_pinchange.get_IRQ_num();
