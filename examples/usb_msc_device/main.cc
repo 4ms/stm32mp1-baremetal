@@ -9,24 +9,23 @@
 #include "usbd_msc_storage.h"
 #include <cstdint>
 
-// Uncomment these to use the OSD32BRK board:
-// #include "osd32brk_conf.hh"
-// using namespace OSD32BRK;
-
-// Uncomment these to use the STM32MP1Disco board:
+#include "osd32brk_conf.hh"
 #include "stm32disco_conf.hh"
-using namespace STM32MP1Disco;
+
+// Uncomment one of these to select your board:
+namespace Board = OSD32BRK;
+// namespace Board = STM32MP1Disco;
 
 extern PCD_HandleTypeDef hpcd;
 
 void main()
 {
-	Uart<ConsoleUART> uart;
+	Uart<Board::ConsoleUART> uart;
 	uart.write("\r\n\r\nSimple USB MSC Device test\r\n");
 	uart.write("Connect a USB cable to a computer\r\n");
 	uart.write("You should see a 128MB unformatted drive appear.\r\n");
 
-	GreenLED green1;
+	Board::GreenLED green1;
 	green1.off();
 
 	SystemClocks::init();

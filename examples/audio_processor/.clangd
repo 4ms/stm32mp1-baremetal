@@ -6,4 +6,6 @@ CompileFlags:
 	]
 	Remove: [
 		"-D__arm__",
+		"-mvectorize*",
+		"-mthumb*",
 	]

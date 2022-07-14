@@ -1,13 +1,12 @@
-#include "drivers/i2c_config_struct.hh"
-#include "drivers/sai_config_struct.hh"
+#include "drv/i2c_config_struct.hh"
+#include "drv/sai_config_struct.hh"
 
-using mdrivlib::GPIO;
 using mdrivlib::I2CConfig;
 
 const I2CConfig i2c_conf = {
 	.I2Cx = I2C1,
-	.SCL = {GPIO::D, 12, LL_GPIO_AF_5},
-	.SDA = {GPIO::F, 15, LL_GPIO_AF_5},
+	.SCL = {mdrivlib::GPIO::D, 12, LL_GPIO_AF_5},
+	.SDA = {mdrivlib::GPIO::F, 15, LL_GPIO_AF_5},
 	.timing =
 		{
 			.PRESC = 0x20,
@@ -49,12 +48,12 @@ const SaiConfig sai_conf = {
 	.framesize = 32,
 	.samplerate = 48000,
 
-	.MCLK = {GPIO::E, 0, LL_GPIO_AF_10},
-	.SCLK = {GPIO::I, 5, LL_GPIO_AF_10},
-	.LRCLK = {GPIO::I, 7, LL_GPIO_AF_10},
-	.SD_DAC = {GPIO::I, 6, LL_GPIO_AF_10},	// PI6 = SAI2_SD_A
-	.SD_ADC = {GPIO::F, 11, LL_GPIO_AF_10}, // PF11 = SAI2_SD_B
-	.reset_pin = {GPIO::G, 9},
+	.MCLK = {mdrivlib::GPIO::E, 0, LL_GPIO_AF_10},
+	.SCLK = {mdrivlib::GPIO::I, 5, LL_GPIO_AF_10},
+	.LRCLK = {mdrivlib::GPIO::I, 7, LL_GPIO_AF_10},
+	.SD_DAC = {mdrivlib::GPIO::I, 6, LL_GPIO_AF_10},  // PI6 = SAI2_SD_A
+	.SD_ADC = {mdrivlib::GPIO::F, 11, LL_GPIO_AF_10}, // PF11 = SAI2_SD_B
+	.reset_pin = {mdrivlib::GPIO::G, 9},
 
 	.bus_address = 0,
 

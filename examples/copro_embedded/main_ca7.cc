@@ -3,7 +3,7 @@
 #include "drivers/uart.hh"
 #include "firmware_m4.h"
 #include "firmware_m4_vectors.h"
-#include "stm32mp157cxx_ca7.h"
+#include "stm32mp1xx.h"
 #include <stdint.h>
 
 #include "osd32brk_conf.hh"
@@ -13,12 +13,7 @@
 namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
 
-void cpy(uint32_t *dst, uint32_t *src, uint32_t length)
-{
-	for (uint32_t i = 0; i < length; i++) {
-		*dst++ = *src++;
-	}
-}
+void cpy(uint32_t *dst, uint32_t *src, uint32_t length);
 
 void main()
 {
@@ -70,4 +65,11 @@ void main()
 		Delay::cycles(10000000);
 		green_led1.off();
 	};
+}
+
+void cpy(uint32_t *dst, uint32_t *src, uint32_t length)
+{
+	for (uint32_t i = 0; i < length; i++) {
+		*dst++ = *src++;
+	}
 }
