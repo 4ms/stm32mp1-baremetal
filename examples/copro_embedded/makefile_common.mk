@@ -58,6 +58,12 @@ DEPFLAGS = -MMD -MP -MF $(OBJDIR)/$(basename $<).d
 
 all: Makefile $(BIN) $(HEX)
 
+install-mp1-boot:
+	@if [ "$${SD_DISK_DEVPART}" = "" ]; then echo "Please specify the disk and partition like this: make install-mp1-boot SD_DISK_DEVPART=/dev/diskXs3"; \
+	else \
+	echo "sudo dd if=${UIMAGENAME} of=$${SD_DISK_DEVPART}" && \
+	sudo dd if=${UIMAGENAME} of=$${SD_DISK_DEVPART};  fi
+
 $(BIN): $(ELF)
 	@$(OBJCPY) -O binary $< $@
 	@$(OBJDMP) -x --syms $< > $(addsuffix .dmp, $(basename $<))
@@ -102,5 +108,11 @@ ifneq "$(MAKECMDGOALS)" "clean"
 endif
 
 .PRECIOUS: $(DEPS) $(OBJECTS) $(ELF) $(PRECHDRS)
+.PHONY: all clean install install-mp1-boot
 
-.PHONY: all
+.PHONY: compile_commands
+compile_commands:
+	compiledb make
+	compdb -p ./ list > compile_commands.tmp 2>/dev/null
+	rm compile_commands.json
+	mv compile_commands.tmp compile_commands.json
