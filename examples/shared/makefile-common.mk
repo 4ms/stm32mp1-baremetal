@@ -88,6 +88,12 @@ install:
 	cp $(UIMAGENAME) $(SDCARD_MOUNT_PATH)
 	diskutil unmount $(SDCARD_MOUNT_PATH)
 
+install-mp1-boot:
+	@if [ "$${SD_DISK_DEVPART}" = "" ]; then echo "Please specify the disk and partition like this: make install-mp1-boot SD_DISK_DEVPART=/dev/diskXs3"; \
+	else \
+	echo "sudo dd if=${UIMAGENAME} of=$${SD_DISK_DEVPART}" && \
+	sudo dd if=${UIMAGENAME} of=$${SD_DISK_DEVPART};  fi
+
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))

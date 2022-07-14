@@ -1,8 +1,8 @@
 # STM32MP1 Cortex-A7 bare-metal example projects
 
-This is a set of example and template projects for bare-metal applications
-on the STM32MP15x Cortex-A7 microprocessor. I use "bare-metal" to mean no OS,
-so unlike most STM32MP1 or Cortex-A tutorials, there is no Linux or RTOS. Basic
+This is a set of example and template projects for bare-metal applications on
+the STM32MP15x Cortex-A7 microprocessor. I use "bare-metal" to mean no OS, so
+unlike most STM32MP1 or Cortex-A tutorials, there is no Linux or RTOS. Basic
 systems such as handling interrupts, setting up a stack, memory management,
 etc. are handled in these projects, as well as more advanced featues like
 parallel processing (multiple cores) and coprocessor control.
@@ -27,25 +27,46 @@ see something, please ask! (open a github issue)
 
 Here's a list of the example projects:
 
-  * **[Minimal Boot](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/minimal_boot)**: Hello World project to prove the bootloader and your hardware is working.
-  * **[Ctest](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/ctest)**: Demonstrates the startup code for a C/C++ project: setting up the stack, initializing globals, etc.
-  * **[Basic IRQ](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/basic_irq)**: Basic interrupt handling with the A7's Generic Interrupt Controller.
-  * **[Nested IRQ](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/nested_irq)**: More sophisticed interrupt handling: interrupts interrupting interrupts! (and using lambdas as handlers!)
-  * **[Multicore_a7](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/multicore_a7)**: Demonstrates running both A7 cores in parallel.
-  * **[Copro_rproc](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/copro_rproc)**: Using the rproc feature of U-Boot to load and run firmware on the M4 core in parallel with the A7 core.
-  * **[Copro_embedded](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/copro_embedded)**: Embedding the M4 firmware binary into the A7's firmware binary, and loading it on demand. Wacky, but cool.
-  * **[Audio Processor](https:github.com/4ms/stm32mp1-baremetal/tree/master/examples/audio_processor)**: A fun practical project that lets you select one of
-	several audio synths to play. Requires STM32MP1 Discovery board. Uses
-	STM32-HAL, some DaisySP example projects, and some Faust algorithms. TODO: use multi-core A7.
-  * **[USB MSC Device](https://github.com/4ms/stm32mp1-baremetal/tree/master/examples/usb_msc_device)**: Simple example that creates a USB Mass Storage Class device (aka "USB thumb drive").
+  * **[Minimal Boot](examples/minimal_boot)**: Hello World project to prove the
+	bootloader and your hardware is working.
+  * **[Ctest](examples/ctest)**: Demonstrates the startup code for a C/C++
+	project: setting up the stack, initializing globals, etc.
+  * **[Basic IRQ](examples/basic_irq)**: Basic interrupt handling with the A7's
+	Generic Interrupt Controller.
+  * **[Nested IRQ](examples/nested_irq)**: More sophisticed interrupt handling:
+	interrupts interrupting interrupts! (and using lambdas as handlers!)
+  * **[Multicore_a7](examples/multicore_a7)**: Demonstrates running both A7
+	cores in parallel.
+  * **[Copro_rproc](examples/copro_rproc)**: Using the rproc feature of U-Boot
+	to load and run firmware on the M4 core in parallel with the A7 core.
+  * **[Copro_embedded](examples/copro_embedded)**: Embedding the M4 firmware
+	binary into the A7's firmware binary, and loading it on demand. Wacky, but
+	cool.
+  * **[Audio Processor](examples/audio_processor)**: A fun practical project
+	that lets you select one of several audio synths to play. Requires STM32MP1
+	Discovery board. Uses STM32-HAL, some DaisySP example projects, and some
+	Faust algorithms. TODO: use multi-core A7.
+  * **[USB MSC Device](examples/usb_msc_device)**:
+	Simple example that creates a USB Mass Storage Class device (aka "USB thumb
+	drive").
+
+To run an application on the STM32MP1, a bootloader must load it. There are two
+bootloaders to choose from:
+
+  * **[U-Boot](third-party/u-boot/u-boot-stm32mp1-baremetal)**: the standard
+	bootloader, officially supported by ST. Lots of features and support for
+	many platforms. 
+
+  * **[MP1-Boot](bootloaders/mp1-boot)**: a lightweight, fast and minimal
+	featured bootloader. 
 
 ## Overview
 
-The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz or
-800MHz, L1 and L2 caches, up to 1GB of external 533MHz RAM, a Cortex-M4 core
+The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz
+or 800MHz, L1 and L2 caches, up to 1GB of external 533MHz RAM, a Cortex-M4 core
 and a suite of peripherals. The peripherals are familiar to anyone having used
-the STM32F7 or STM32H7 series (and sometimes STM32 HAL-based F7/H7 code
-can be used as-is in the MP1 A7).
+the STM32F7 or STM32H7 series (and sometimes STM32 HAL-based F7/H7 code can be
+used as-is in the MP1 A7).
 
 Each project in the `examples/` directory is meant to demonstrate a simple idea
 with as few dependencies as possible. The CMSIS device header for the
@@ -56,28 +77,59 @@ such as setting up the MMU and the caches. For the most part you can use these
 as-is, although you will need to modify the MMU setup if your project needs
 areas of RAM to be non-cacheable in order to use a DMA, for example. 
 
-U-Boot is a third-party tool that we use for the bootloader. Pre-built U-Boot
-images are included in this repo, so all you have to do is load them onto an SD
-card and never think about it again unless you start using custom hardware or
-need to change the boot command (as is optionally done in the `corpo_rproc`
-example project).
+## Bootloader Overview
 
-I've also provided a script to build U-Boot, too. If you're familiar with Linux
-kernel and device driver code, you'll notice some similarities.
+The bootloader is responsible for initializing the system and loading the
+application from the SD Card (or other boot medium) into RAM, and then running
+the application. Unlike a Cortex-M, where there is internal Flash memory to
+store your application, the Cortex-A series typically runs the application on
+an external RAM chip. The STM32MP1 has an internal ROM bootloader (called
+BOOTROM) which automatically copies your bootloader from the SD Card into
+internal SYSRAM, and then executes it. The bootloader is then responsible to
+enable the external RAM, and load and start the application.
 
 The application ultimately needs to live on the SD card as well, but it can be
 flashed into RAM using an SWD/JTAG flasher, making debugging much easier than
 having to copy files to an SD card each time the code is changed.
 
+There are two bootloader choices in this repo: U-Boot and MP1-Boot. Either one
+is complelely optional, however you must use one.
+
+**U-Boot** is a third-party tool that is the standard bootloader supported by ST.
+It's quite common to see an embedded Linux project using U-Boot. Pre-built
+U-Boot images are included in this repo, so all you have to do is load them
+onto an SD card and never think about it again unless you start using custom
+hardware or need to change the boot command (as is optionally done in
+the `corpo_rproc` example project).
+
+U-Boot is a two-stage bootloader: the first stage loads the second stage, which 
+then loads the application.
+
+I've also provided a script to build U-Boot, too. If you're familiar with Linux
+kernel and device driver code, you'll notice some similarities.
+
+U-Boot has lots of features and is quite powerful. With great power, however,
+comes great complexity. A more simple bootloader is also included in this repo:
+
+**MP1-Boot** is a lightweight bootloader written by me. It does the minimum tasks
+necessary to boot an application, with no extra features. MP1-Boot is a single-stage
+bootloader.
+
+
+
 ## Requirements
 
 You need:
-  - Any [STM32MP15x Discovery board](https://www.st.com/en/evaluation-tools/stm32mp157d-dk1.html), or an [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board
-  - A computer with the [arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads) toolchain installed (v8 or later)
+  - Any [STM32MP15x Discovery board](https://www.st.com/en/evaluation-tools/stm32mp157d-dk1.html), or an
+	[OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/)
+	board
+  - A computer with the
+	[arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)
+	toolchain installed (v8 or later)
   - Various common USB cables, depending on which board you select
   - A micro SD card
   - A USB-to-serial cable (only if you use the OSD32 board) such as the [FTDI cable](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/TTL-232R-3V3/1836393)
-  - Optionally, a J-Link or ST-LINK debugger (only if you use the OSD32 board. The Discovery board has an ST-LINK on-board)
+  - Optionally, a J-Link or ST-LINK debugger (only if you use the OSD32 board -- the Discovery board has an ST-LINK on-board)
 
 ![Image of STM32MP157A-DK1 board](https://www.st.com/bin/ecommerce/api/image.PF268547.en.feature-description-include-personalized-no-cpn-large.jpg)
 *STM32MP157A-DK1 Discovery board*
@@ -91,14 +143,14 @@ You need:
 These projects will build and run on any of the [STM32MP15x Discovery boards](https://www.st.com/en/evaluation-tools/stm32mp157d-dk1.html),
 or the [OSD32MP1-BRK](https://octavosystems.com/octavo_products/osd32mp1-brk/) board.
 The OSD32MP1-BRK is simply a breakout board for the [OSD32MP15x SiP](https://octavosystems.com/octavo_products/osd32mp15x/),
-which is an [STM32MP15x chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
+which is an [STM32MP157 chip](https://www.st.com/en/microcontrollers-microprocessors/stm32mp1-series.html)
 plus DDR3 RAM and PMIC and other stuff in a BGA package. 
-These example projects work the same on either board (you only need to build
-the bootloader slightly differently).
+These example projects work the same on either board (you may need to select your board
+type at the top of main.cc). Each board requires a bootloader compiled for it. 
 
 The Discovery boards have a built-in USB/UART and a built-in ST-LINK, so you
 just need a USB cable to debug and view UART output on the console. However,
-AFAIK you can only use gdb to debug (not Ozone or TRACE32) since there is no
+AFAIK you can only use gdb to debug (not JLinkGdbServer/Ozone or TRACE32) since there is no
 direct access to the SWD or JTAG pins (not even a good place to solder some
 on). These boards also have a lot more external hardware on the PCB (codec,
 buttons, ethernet jack, HDMI, an option for a DSI screen,...), but have far
@@ -106,7 +158,7 @@ fewer pins brought out to headers than the OSD32MP1 board.
 
 The OSD32MP1-BRK board has an SWD/JTAG header so you can use a programmer like
 the SEGGER J-Link or an ST-LINK to debug with a variety of tools (gdb/OpenOCD,
-Segger Ozone, TRACE32). The board has a 10 exposed pads designed to fit a 
+Ozone, TRACE32). The board has a 10 exposed pads designed to fit a 
 10-pin pogo adaptor, such as [this one](https://www.tag-connect.com/product/tc2050-idc-nl-10-pin-no-legs-cable-with-ribbon-connector)
 from Tag-Connect [or Digikey](https://www.digikey.com/en/products/detail/tag-connect-llc/TC2050-IDC-NL/2605367).
 While you're shopping, pick up these helpful accessories too: [retaining clip](https://www.tag-connect.com/product/tc2050-clip-3pack-retaining-clip)
@@ -120,6 +172,8 @@ TTL-232R-3V3, available from
 or there are other options like a host adaptor such as the [Binho
 Nova](https://binho.io/#shopify-section-1550985341560).
 
+You also can use custom hardware, it will be as easy as creating a board configuration header file to define things like
+which pins the UART uses, etc. See examples of these files [here](examples/shared/osd32brk_conf.hh) and [here](stm32disco_conf.hh).
 
 ## 1) Setup:
 
@@ -129,21 +183,26 @@ Clone the repo:
 git clone https://github.com/4ms/stm32mp1-baremetal
 ```
 
-On macOS, you may need to install gsed and set your PATH to use it instead of
-sed. This is needed for building U-Boot. See Caveats section in `brew info
-gnu-sed` for details.  
+On macOS, if you intend to compile U-Boot, you may need to install gsed and set
+your PATH to use it instead of sed. This is only needed for building U-Boot.
+See Caveats section in `brew info gnu-sed` for details.  
 
 ```
+# MacOS only, if you intend to build U-Boot:
 brew install gnu-sed
 export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"`  ##or add it to your .zshrc/.bashrc
 ```
 
-## 2) Build and load U-Boot:
+## 2) Build a bootloader:
 
-I've added some pre-built images for U-Boot, so you can up and running more quickly.
-If you want to use the pre-built images, skip the next step.
+I've added some pre-built images for U-Boot, so you can get up and running more quickly.
+If you want to use the pre-built images, skip to step 3).
 
-### Building U-Boot (optional)
+If you want to compile U-Boot yourself, see the next step 2a).
+
+If you want to use MP1-Boot, go to step 2b).
+
+### 2a) Building U-Boot (optional)
 
 Build U-Boot using the script. The output will be in `third-party/u-boot/build/`:
 ```
@@ -161,7 +220,22 @@ ls -l third-party/u-boot/build/u-boot-spl.stm32
 ls -l third-party/u-boot/build/u-boot.img
 ```
 
-### Loading U-Boot onto your SD card
+### 2b) Build MP1-Boot (optional)
+
+From the mp1-boot directory, edit main.cc and uncomment the line for your board (OSD32 or STM32Disco). Then run make:
+
+```
+cd bootloaders/mp1-boot
+vi main.cc # uncomment the correct line to select your board
+make
+```
+
+Verify the output file:
+```
+ls -l build/fsbl.stm32
+```
+
+## 3) Loading the bootloader onto your SD card
 
 Now you need to format and partition an SD card.  Insert a card and do:
 ```
@@ -188,22 +262,26 @@ scripts/partition-sdcard.sh /dev/XXX
 ...where /dev/XXX is the SD card device name such as /dev/sdc or /dev/disk2
 This script will create four partitions, and format the fourth to FAT32.
 
-Then run the script to copy the bootloader (u-boot and spl) to the first three partitions:
+Then run the script to copy the bootloader to the first two or three partitions:
 
 ```
-# To use pre-built images for OSD32MP1 board:
+# To use pre-built U-Boot images for OSD32MP1 board:
 scripts/copy-bootloader.sh /dev/diskX bootloaders/u-boot-images/osd32mp1-brk/
 
-# To use pre-built images for STM32MP157A-DK1 Discovery board:
+# To use pre-built U-Boot images for STM32MP157A-DK1 Discovery board:
 scripts/copy-bootloader.sh /dev/diskX bootloaders/u-boot-images/stm32mp157a-dk1-disco/
 
-# To use images that you built yourself:
+# To use U-Boot images that you built yourself:
 scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/build/
+
+# To use MP1-Boot:
+cd bootloaders/mp1-boot
+make load SD_DISK_DEV=/dev/diskX
 
 # Where /dev/diskX is something like /dev/disk2 or /dev/sdc1
 ```
 
-## 3) Power up the board
+## 4) Power up the board
 
 This is a good moment to test your hardware setup. You can skip this step if
 you've done this before.  Remove the SD card from the computer and insert into
@@ -219,10 +297,10 @@ minicom -D /dev/cu.usbmodemXXXXX
 ```
 
 Insert the card into the board and power it on. You should see boot
-messages, and then finally an error when it can't find `a7-main.uimg`. Now it's
+messages, and then finally an error when it can't find the application. Now it's
 time to build that file. 
 
-## 4) Build the application
+## 5) Build the application
 
 ```
 cd examples/minimal_boot
@@ -235,8 +313,10 @@ You should see the elf and the uimg files. Each of these is the compiled
 application, and either one must be loaded into DDR RAM at 0xC2000040. There
 are two ways to load the application to RAM. One way is to load the elf
 file by using a debugger/programmer (ST-LINK or J-Link). The other way is to
-copy the uimg file to the SD card's fourth partition the same way you would
-copy any file with your OS, and let U-Boot load the application to RAM.
+copy the uimg file to the SD card. With U-Boot, it gets copied to the fourth
+partition the same way you would copy any file with your OS. With MP1-Boot,
+it gets copied to the third paritition the same way we copied to bootloaders
+to the SD Card (using `dd`).
 
 The direct loading with a debugger method requires a debugger to be attached,
 and the code will not persist after power down. However, it's much more
@@ -252,15 +332,11 @@ on boot.
 I recommend using the copy-to-SD-card method for your first try, since it's
 more robust and has fewer moving parts (no debugger or host computer software).
 
-## 5) Copy the application to the SD card
+## 6) Copy the application to the SD card
 
-If you've never loaded the app onto the SD card, you have to do this before you
-can use a debugger on the application (step #6).  Or, if you want to have the
-application load even without a debugger attached, use this method.
+There are two ways to do this if you have U-Boot, and one way if you have MP1-Boot:
 
-There are two ways to do this:
-
-##### The Simple Way:
+##### The Simple Way (when U-Boot is the bootloader):
 
 Physically remove the SD card from the OSD32 or Discovery board and insert it into your computer. Then do:
 
@@ -271,7 +347,7 @@ cp build/a7-main.uimg /Volumes/BAREAPP/
 Of course, adjust the command above to use the actual path to the mounted SD
 card. Or you can use drag-and-drop within your OS's GUI.
 
-##### The Convenient (but possibly won't work) Way:
+##### The Convenient Way (when U-Boot is the bootloader):
 
 The more convenient way (if it works) is to use the USB gadget function. If you
 have the UART and USB cable connected (and your particular OS happens to be
@@ -317,7 +393,24 @@ The path to the SD card is hard-coded into the Makefile, so you can either edit
 SDCARD_MOUNT_PATH=/path/to/SDCARD make install
 ```
 
-## 6) Debug application
+##### The MP1-Boot Way:
+
+For MP1-Boot, insert the SD Card into your computer and run this command:
+
+```
+sudo dd if=path/to/app/a7-main.uimg of=/dev/diskX3
+```
+
+where `/dev/diskX3` is the 3rd partition, like `/dev/disk4s3` or `/dev/sdb3`
+
+Or from the project directory, you can use the `make install-mp1-boot` target:
+
+```
+SD_DISK_DEV=/dev/diskX3 make install-mp1-boot
+```
+
+
+## 7) Debug application
 
 This is completely optional, but is very convenient when developing. You must
 have a working bootloader (at least SPL) which is responsible for initializing
@@ -416,6 +509,10 @@ If you just need raw processing power and fast RAM and caches, then
 hopefully these example projects can be a good foundation for your first
 Cortex-A bare-metal project.
 
+Or, if you're writing your own OS or RTOS, or porting an existing framework such
+as Zephyr or FreeRTOS to the STM32MP1, then hopefully this project will be of
+some assistance (please let me know about it, if you do port a RTOS or custom OS!).
+
 The STM32MP157 is a powerful chip, with two Cortex-A7 cores running at 650MHz or
 800MHz, L1 and L2 caches, up to 1GB of 533MHz RAM, a Cortex-M4 core and a suite
 of peripherals. There's a large gap between this and the next chip down in ST's
@@ -447,8 +544,8 @@ anyone else finds this interesting too!
 
  [ ] Try TFA (trusted firmware), make sure we start app in secure mode
 
- [ ] Try latest U-Boot from STM32MP1 Ecosystem v3.0
-
- [ ] Faster Boot mode (either skip U-Boot proper and load app from SPL, or use U-Boot's "Fast Boot" Falcon mode)
+ [ ] Try latest U-Boot from STM32MP1 Ecosystem v4.0
 
  [ ] MMU tutorial
+
+ [ ] Split this README into logical sections. Use github wiki? github pages?

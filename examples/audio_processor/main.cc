@@ -10,12 +10,15 @@ using namespace STM32MP1Disco;
 
 void main()
 {
+	// Codec is powered by LDO1 on the Disco board
+	STPMIC1 pmic{I2C4};
+	pmic.setup_ldo1();
+
 	// UI
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nStarting Audio Processor\r\n");
 	uart.write("Press User1 button to select a synth\r\n");
 
-	// BlueLED blue_led;
 	User1Button button1;
 	User2Button button2;
 
