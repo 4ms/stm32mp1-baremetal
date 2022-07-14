@@ -1,4 +1,5 @@
-#include "delay.hh"
+#include "drivers/delay.hh"
+#include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "firmware_m4.h"
 #include "firmware_m4_vectors.h"

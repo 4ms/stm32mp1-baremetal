@@ -1,4 +1,5 @@
-#include "delay.hh"
+#include "drivers/delay.hh"
+#include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "stm32mp157cxx_cm4.h"
 #include <stdint.h>

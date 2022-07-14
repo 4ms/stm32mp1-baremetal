@@ -38,14 +38,6 @@ SOURCES = main.cc \
 		  $(EXTLIBDIR)/DaisySP/Source/Synthesis/oscillator.cpp \
 		  $(EXTLIBDIR)/DaisySP/Source/Utility/metro.cpp \
 
-		  # $(mdrivlibdir)/drivers/i2c.cc \
-		  # $(mdrivlibdir)/drivers/pin.cc \
-		  # $(mdrivlibdir)/drivers/codec_CS42L51.cc \
-		  # $(mdrivlibdir)/target/stm32mp1/drivers/sai_tdm.cc \
-		  # $(mdrivlibdir)/target/stm32mp1_ca7/drivers/cycle_counter.cc \
-		  # $(mdrivlibdir)/target/stm32mp1_ca7/drivers/hal_handlers.cc \
-		  # $(mdrivlibdir)/target/stm32mp1_ca7/drivers/interrupt_handler.cc \
-		  # $(mdrivlibdir)/target/stm32mp1_ca7/boot/irq_ctrl.c \
 
 INCLUDES = -I. \
 		   -I.. \
@@ -60,6 +52,9 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(EXTLIBDIR)/DaisySP/Source \
 		   -I$(EXTLIBDIR)/DaisySP/Source/Utility \
+		   
+# Do not include ../shared for this project, because of conflict between ../shared/drivers/ and lib/mdrivlib/drivers/
+		   # -I$(SHAREDDIR) \
 
 		   # -I$(mdrivlibdir) \
 		   # -I$(mdrivlibdir)/drivers \

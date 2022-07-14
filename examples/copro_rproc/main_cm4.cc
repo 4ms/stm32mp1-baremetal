@@ -14,7 +14,7 @@ namespace Board = OSD32BRK;
 void main()
 {
 	Uart<Board::ConsoleUART> uart;
-	uart.write("Hello from M4!\r\n");
+	uart.write("M4: * yawn * \r\nM4: Hello from Cortex-M4!\r\n");
 
 	Board::RedLED2 red_led2;
 	Board::GreenLED2 green_led2;
