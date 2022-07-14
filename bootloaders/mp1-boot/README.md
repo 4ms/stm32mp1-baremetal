@@ -80,7 +80,7 @@ provides in the LL drivers.
 ### Boot time
 
 **Summary**
-
+	
 Boot time varies widely depending on the board and the boot medium (SD Card or
 NOR Flash), and even the particular brand/speed of SD Card.
 
@@ -128,7 +128,6 @@ a PMIC system or a discrete LDO system.
 
 TODO:
 
-  * Faster NOR loading (use Quad mode)
   * Faster SDMMC loading (Debug OSD32-BRK speed limit of 16MHz)
   * Add extensive RAM tests (run optionally)
   * Add a driver for EMMC (SDMMC2)
