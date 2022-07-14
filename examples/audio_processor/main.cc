@@ -1,5 +1,6 @@
 #include "audio_stream.hh"
 #include "drivers/stm32xx.h"
+#include "pmic.hh"
 #include "shared/stm32disco_buttons_conf.hh"
 #include "uart.hh"
 
@@ -9,6 +10,10 @@ using namespace STM32MP1Disco;
 
 void main()
 {
+	// Codec is powered by LDO1 on the Disco board
+	STPMIC1 pmic{I2C4};
+	pmic.setup_ldo1();
+
 	// UI
 	Uart<UART4_BASE> uart;
 	uart.write("\r\n\r\nStarting Audio Processor\r\n");
