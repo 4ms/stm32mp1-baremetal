@@ -1,4 +1,4 @@
-#include "stm32mp157cxx_ca7.h"
+#include "stm32mp1xx.h"
 #include "stm32mp1xx_ll_gpio.h"
 #include "stm32mp1xx_ll_usart.h"
 #include <stdint.h>
