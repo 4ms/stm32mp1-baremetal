@@ -134,7 +134,7 @@ ifneq "$(MAKECMDGOALS)" "clean"
 endif
 
 .PRECIOUS: $(DEPS) $(OBJECTS) $(ELF)
-.PHONY: all clean install
+.PHONY: all clean install install-mp1-boot
 
 .PHONY: compile_commands
 compile_commands:
