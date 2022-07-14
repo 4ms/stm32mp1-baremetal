@@ -6,6 +6,8 @@
 
 #include "synth_list.hh"
 
+using namespace STM32MP1Disco;
+
 void main()
 {
 	// UI
@@ -14,8 +16,8 @@ void main()
 	uart.write("Press User1 button to select a synth\r\n");
 
 	// BlueLED blue_led;
-	STM32MP1Disco::User1Button button1;
-	STM32MP1Disco::User2Button button2;
+	User1Button button1;
+	User2Button button2;
 
 	SynthList synths;
 	int current_synth = SynthList::Synths::DualFMOscillators;
