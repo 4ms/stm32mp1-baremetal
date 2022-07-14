@@ -1,5 +1,5 @@
-#include "drivers/i2c_config_struct.hh"
-#include "drivers/sai_config_struct.hh"
+#include "drv/i2c_config_struct.hh"
+#include "drv/sai_config_struct.hh"
 
 using mdrivlib::GPIO;
 using mdrivlib::I2CConfig;

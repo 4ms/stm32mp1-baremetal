@@ -1,8 +1,8 @@
 #include "audio_stream.hh"
-#include "drivers/stm32xx.h"
-#include "pmic.hh"
-#include "shared/stm32disco_buttons_conf.hh"
-#include "uart.hh"
+#include "drv/pmic.hh"
+#include "drv/uart.hh"
+#include "stm32disco_buttons_conf.hh"
+#include "stm32mp1xx.h"
 
 #include "synth_list.hh"
 
