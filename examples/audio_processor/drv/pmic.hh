@@ -7,9 +7,7 @@ class STPMIC1 {
 public:
 	STPMIC1(I2C_TypeDef *i2cperiph)
 		: i2c{i2cperiph, PMIC_I2C_Address}
-	{
-		verify_chip_id();
-	}
+	{}
 
 	bool setup_vddcore_pwr()
 	{
@@ -106,10 +104,6 @@ private:
 		LDO2_CR = 0x26,
 		LDO3_CR = 0x27,
 		LDO4_CR = 0x28,
-	};
-
-	enum RegisterAlt : uint8_t {
-
 	};
 
 	union BUCKx_CR {

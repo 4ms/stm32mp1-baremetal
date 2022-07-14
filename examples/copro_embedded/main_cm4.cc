@@ -1,7 +1,7 @@
 #include "delay.hh"
+#include "drivers/uart.hh"
 #include "leds.hh"
 #include "stm32mp157cxx_cm4.h"
-#include "uart.hh"
 #include <stdint.h>
 
 void main()

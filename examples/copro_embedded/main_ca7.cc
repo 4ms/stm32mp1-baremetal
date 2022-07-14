@@ -1,11 +1,9 @@
 #include "delay.hh"
-#include "leds.hh"
-/* #include "mdrivlib/interrupt.hh" */
-/* #include "mdrivlib/interrupt_control.hh" */
+#include "drivers/uart.hh"
 #include "firmware_m4.h"
 #include "firmware_m4_vectors.h"
+#include "leds.hh"
 #include "stm32mp157cxx_ca7.h"
-#include "uart.hh"
 #include <stdint.h>
 
 void cpy(uint32_t *dst, uint32_t *src, uint32_t length)
