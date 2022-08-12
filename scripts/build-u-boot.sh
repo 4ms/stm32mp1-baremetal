@@ -40,17 +40,10 @@ case $boardnum in
 		exit 0
 esac
 
-cd third-party/u-boot/u-boot-stm32mp1-baremetal
+cd third-party/u-boot
 
-echo ""
-echo "Building with these commands:"
-echo "make O=../build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- stm32mp15x_baremetal_defconfig"
-echo "make -j16 O=../build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- all"
-echo ""
+set -ex
 
-rm -rf ../build
-make O=../build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- stm32mp15x_baremetal_defconfig
-make -j16 O=../build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- all
-
-cd ../..
-
+rm -rf build
+make O=build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- stm32mp15_basic_defconfig
+make -j16 O=build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- all
