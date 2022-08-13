@@ -13,7 +13,7 @@ using AudioOutBuffer = AudioStreamConf::AudioOutBuffer;
 using AudioProcessFunction = std::function<void(AudioInBuffer &, AudioOutBuffer &)>;
 
 struct SynthList {
-	enum Synths : int {
+	enum Synths : size_t {
 		Passthrough,
 		DualFMOscillators,
 		MonoTriOsc,
@@ -23,9 +23,8 @@ struct SynthList {
 
 		NumSynths,
 	};
-	Synths current_synth = DualFMOscillators;
 
-	std::array<const char[20], NumSynths> name{
+	const std::array<const char[20], NumSynths> name{
 		"Passthrough",
 		"Dual FM Osc",
 		"Sine and Tri Osc",
@@ -34,20 +33,9 @@ struct SynthList {
 		"Eight Djembes",
 	};
 
-	DualFMOsc<AudioStreamConf> dual_fm_osc;
-
-	TriangleOscillator<AudioStreamConf::SampleRate> tri_osc{400}; // 400Hz
-	SineOscillator<AudioStreamConf::SampleRate> sine_osc{600};	  // 600Hz
-
-	DaisyHarmonicExample<AudioStreamConf> harmonic_sequencer;
-
-	DaisyReverbExample<AudioStreamConf> *reverb_example;
-
-	DjembeExample<AudioStreamConf, 8> djembes;
-
-	std::array<AudioProcessFunction, NumSynths> process_func;
-
-	SynthList()
+	SynthList(Synths init_synth = DualFMOscillators) : current_synth(init_synth),
+	tri_osc{400},
+	sine_osc{600}
 	{
 		process_func[Passthrough] = [this](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
 			for (auto [in, out] : zip(in_buffer, out_buffer)) {
@@ -84,15 +72,35 @@ struct SynthList {
 
 	void next_synth()
 	{
-		int cur = static_cast<int>(current_synth);
-		int next = cur + 1;
-		if (next >= static_cast<int>(NumSynths))
-			next = 0;
-		current_synth = static_cast<Synths>(next);
+		size_t next_synth = (current_synth + 1) % NumSynths;
+		current_synth = static_cast<Synths>(next_synth);
 	}
 
-	int current()
+	const char *current_synth_name()
 	{
-		return static_cast<int>(current_synth);
+		return name[current_synth];
 	}
+
+	AudioProcessFunction &get_current_process() {
+		return process_func[current_synth];
+	}
+
+	private:
+
+	Synths current_synth;
+
+	DualFMOsc<AudioStreamConf> dual_fm_osc;
+
+	TriangleOscillator<AudioStreamConf::SampleRate> tri_osc;
+
+	SineOscillator<AudioStreamConf::SampleRate> sine_osc;
+
+	DaisyHarmonicExample<AudioStreamConf> harmonic_sequencer;
+
+	DaisyReverbExample<AudioStreamConf> *reverb_example;
+
+	DjembeExample<AudioStreamConf, 8> djembes;
+
+	std::array<AudioProcessFunction, NumSynths> process_func;
+
 };

@@ -35,15 +35,14 @@ void main()
 	User1Button button1;
 	User2Button button2;
 
-	SynthList synths;
-	int current_synth = SynthList::Synths::DualFMOscillators;
+	SynthList synths(SynthList::Synths::HarmonicOsc);
 
 	uart.write("Using Synth: ");
-	uart.write(synths.name[current_synth]);
+	uart.write(synths.current_synth_name());
 	uart.write("\r\n");
 
 	AudioStream audio;
-	audio.start(synths.process_func[current_synth]);
+	audio.start(synths.get_current_process());
 
 	constexpr uint32_t LoadTimerStartingValue = 5000000;
 	uint32_t display_load_timer = LoadTimerStartingValue;
@@ -57,14 +56,13 @@ void main()
 
 		// Select synth
 		if (button1.is_just_pressed()) {
-			current_synth++;
-			if (current_synth == SynthList::NumSynths)
-				current_synth = 0;
+			// Loop through our synths.
+			synths.next_synth();
 
-			audio.set_process_function(synths.process_func[current_synth]);
+			audio.set_process_function(synths.get_current_process());
 
 			uart.write("Using Synth: ");
-			uart.write(synths.name[current_synth]);
+			uart.write(synths.current_synth_name());
 			uart.write("\r\n");
 
 			// Let the new synth run for a bit, so we get an accurate load measurement
@@ -80,8 +78,9 @@ void main()
 			uart.write(audio.get_load_measurement());
 			uart.write("%\r\n\r\n");
 		}
-		if (display_load_timer)
+		if (display_load_timer != 0) {
 			display_load_timer--;
+		}
 	}
 }
 
