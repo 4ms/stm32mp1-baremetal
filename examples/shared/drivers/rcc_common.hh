@@ -109,6 +109,7 @@ using VREF_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, APB3RSTSE
 
 namespace RCC_Reset_Release
 {
+// AKA: Reset clear.
 // Auto-generated:
 // clang-format off
 using ADC12_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, AHB2RSTCLRR), RCC_AHB2RSTCLRR_ADC12RST>;
@@ -545,4 +546,8 @@ using WWDG1LP_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MC_APB
 using WWDG1_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MC_APB1ENSETR), RCC_MC_APB1ENSETR_WWDG1EN>;
 // clang-format on
 } // namespace core_m4::RCC_Enable
+
+namespace core_a7::RCC_Enable_Release {
+    using IWDG2APB_ = RegisterBits<ReadWrite, RCC_BASE + offsetof(RCC_TypeDef, MP_APB4ENCLRR), RCC_MP_APB4ENCLRR_IWDG2APBEN>;
+} // namespace core_a7::RCC_Enable_Release
 } // namespace mdrivlib
