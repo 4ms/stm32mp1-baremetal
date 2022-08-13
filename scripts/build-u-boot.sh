@@ -44,6 +44,7 @@ cd third-party/u-boot
 
 set -ex
 
-make O=build mrproper
-make O=build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- stm32mp15_basic_defconfig
+# make O=build mrproper
+# make O=build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- stm32mp15_basic_defconfig
+# make O=build menuconfig
 make -j16 O=build DEVICE_TREE=$DT CROSS_COMPILE=arm-none-eabi- all

@@ -31,7 +31,7 @@ with open(sys.argv[1], "rb") as bin_file:
 #TODO: these should be cmdline args:
 loadaddr = 0xC2000040
 entryaddr = 0xC2000040
-os = os_linux
+os = os_uboot
 image_type = image_type_kernel
 compress = compress_none
 image_name = bytes("stm32mp1-baremetal image", "ascii")

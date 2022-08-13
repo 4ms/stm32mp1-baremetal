@@ -216,7 +216,14 @@ The script will prompt you to enter the board you selected. Depending on your
 selection, the script will set a value for DEVICE_TREE when building U-Boot.
 *Note: Ignore warnings about "format string is not a string literal", it happens with some arm-none-eabi-gcc versions*
 
-Verify the output files were created:
+### Menuconfig Settings
+
+Edit: `Boot options -> bootcmd value`
+```
+mmc dev 0; fatload mmc 0:4 0xC2000040 a7-main.uimg; bootm 0xC2000040;
+```
+
+### Verify the output files were created:
 ```
 ls -l third-party/u-boot/build/u-boot-spl.stm32
 ls -l third-party/u-boot/build/u-boot.img
