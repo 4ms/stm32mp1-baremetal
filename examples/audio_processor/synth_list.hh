@@ -33,9 +33,10 @@ struct SynthList {
 		"Eight Djembes",
 	};
 
-	SynthList(Synths init_synth = DualFMOscillators) : current_synth(init_synth),
-	tri_osc{400},
-	sine_osc{600}
+	SynthList(Synths init_synth = DualFMOscillators)
+		: current_synth(init_synth)
+		, tri_osc{400}
+		, sine_osc{600}
 	{
 		process_func[Passthrough] = [this](AudioInBuffer &in_buffer, AudioOutBuffer &out_buffer) {
 			for (auto [in, out] : zip(in_buffer, out_buffer)) {
@@ -76,17 +77,11 @@ struct SynthList {
 		current_synth = static_cast<Synths>(next_synth);
 	}
 
-	const char *current_synth_name()
-	{
-		return name[current_synth];
-	}
+	const char *current_synth_name() { return name[current_synth]; }
 
-	AudioProcessFunction &get_current_process() {
-		return process_func[current_synth];
-	}
+	AudioProcessFunction &get_current_process() { return process_func[current_synth]; }
 
-	private:
-
+private:
 	Synths current_synth;
 
 	DualFMOsc<AudioStreamConf> dual_fm_osc;
@@ -102,5 +97,4 @@ struct SynthList {
 	DjembeExample<AudioStreamConf, 8> djembes;
 
 	std::array<AudioProcessFunction, NumSynths> process_func;
-
 };

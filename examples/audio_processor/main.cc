@@ -9,16 +9,15 @@
 
 using namespace STM32MP1Disco;
 
-namespace mdrivlib {
-    /**
-     * Independent watchdog (IWDG) key register.
-     * 0xAAAA: refreshes the watchdog (reloads the RL[11:0] value into the IWDCNT down-counter).
-     * This value must be written by software at regular intervals, or the watchdog will generate
-     * a reset when the counter reaches 0.
-     */
-    using IWDG2_KR = RegisterBits<ReadWrite,
-                                IWDG2_BASE + offsetof(IWDG_TypeDef, KR),
-                                0xAAAA>;
+namespace mdrivlib
+{
+/**
+ * Independent watchdog (IWDG) key register.
+ * 0xAAAA: refreshes the watchdog (reloads the RL[11:0] value into the IWDCNT down-counter).
+ * This value must be written by software at regular intervals, or the watchdog will generate
+ * a reset when the counter reaches 0.
+ */
+using IWDG2_KR = RegisterBits<ReadWrite, IWDG2_BASE + offsetof(IWDG_TypeDef, KR), 0xAAAA>;
 } // namespace mdrivlib
 
 void main()
