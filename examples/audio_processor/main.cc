@@ -29,8 +29,8 @@ void main()
 
 	// UI
 	Uart<UART4_BASE> uart;
-	uart.write("\r\n\r\nStarting Audio Processor\r\n");
-	uart.write("Press User1 button to select a synth\r\n");
+	uart.writeln("\r\n\r\nStarting Audio Processor");
+	uart.writeln("Press User1 button to select a synth");
 
 	User1Button button1;
 	User2Button button2;
@@ -38,8 +38,7 @@ void main()
 	SynthList synths(SynthList::Synths::HarmonicOsc);
 
 	uart.write("Using Synth: ");
-	uart.write(synths.current_synth_name());
-	uart.write("\r\n");
+	uart.writeln(synths.current_synth_name());
 
 	AudioStream audio;
 	audio.start(synths.get_current_process());
@@ -62,8 +61,7 @@ void main()
 			audio.set_process_function(synths.get_current_process());
 
 			uart.write("Using Synth: ");
-			uart.write(synths.current_synth_name());
-			uart.write("\r\n");
+			uart.writeln(synths.current_synth_name());
 
 			// Let the new synth run for a bit, so we get an accurate load measurement
 			display_load_timer = LoadTimerStartingValue;
@@ -76,7 +74,7 @@ void main()
 		if (display_load_timer == 1) {
 			uart.write("Current load: ");
 			uart.write(audio.get_load_measurement());
-			uart.write("%\r\n\r\n");
+			uart.writeln("%\r\n");
 		}
 		if (display_load_timer != 0) {
 			display_load_timer--;
