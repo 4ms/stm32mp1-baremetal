@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 [ "$#" -eq 1 ] || { 
 	echo ""
 	echo "Usage: "
@@ -19,14 +21,16 @@ echo ""
 echo "Device $1 found."
 echo "Formatting..."
 
-echo ""
-case "$(uname -s)" in
+set -x
+
+KERNEL_NAME=$(uname -s)
+case "${KERNEL_NAME}" in
 	Darwin)
 		echo "diskutil eraseDisk FAT32 BAREMETA $1"
 		diskutil eraseDisk FAT32 BAREMETA $1
 		;;
 	Linux)
-		echo "mkfs.fat -F 32 $1"
+		wipefs --all --backup $1
 		mkfs.fat -F 32 $1
 		;;
 	*)

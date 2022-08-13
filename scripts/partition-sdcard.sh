@@ -25,34 +25,32 @@ fi
 
 echo ""
 echo "Device $1 found, removing partitions"
+
 set -x
-sudo sgdisk --mbrtogpt -o $1
-sudo sgdisk --resize-table=128 \
+
+sgdisk --mbrtogpt -o $1
+sgdisk --resize-table=128 \
     -a 1 \
 	-n 1:34:545 -c 1:fsbl1 \
 	-n 2:546:1057 -c 2:fsbl2 \
 	-n 3:1058:5153 -c 3:ssbl \
 	-N 4 -c 4:prog \
 	-p $1
-set +x
 
-echo ""
 echo "Formatting partition 4 as FAT32"
 
-echo ""
-case "$(uname -s)" in
+KERNEL_NAME=$(uname -s)
+case "${KERNEL_NAME}" in
 	Darwin)
-		echo "diskutil eraseVolume FAT32 BAREAPP ${1}s4"
 		diskutil eraseVolume FAT32 BAREAPP ${1}s4
-		echo "diskutil unmountDisk $1"
 		sleep 3
-		diskutil unmountDisk $1
+		diskutil unmountDisk $1 || true
 		;;
 	Linux)
-		echo "mkfs.fat -F 32 ${1}4"
 		mkfs.fat -F 32 ${1}4
 		sleep 3
-		sudo umount $1
+		# Unmount disk (if already mounted).
+		sudo umount $1 || true
 		;;
 	*)
 		echo 'OS not supported: please format $1 partition 4 as FAT32'

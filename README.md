@@ -204,6 +204,8 @@ If you want to use MP1-Boot, go to step 2b).
 
 ### 2a) Building U-Boot (optional)
 
+See: https://wiki.st.com/stm32mpu/wiki/STM32MP15_U-Boot
+
 Build U-Boot using the script. The output will be in `third-party/u-boot/build/`:
 ```
 cd stm32mp1-baremetal
@@ -239,6 +241,9 @@ ls -l build/fsbl.stm32
 
 Now you need to format and partition an SD card.  Insert a card and do:
 ```
+## Remove existing partitions or virtual mappings on device.
+wipefs --all --backup /dev/sdX
+
 ## Linux:
 mkfs.fat -F 32 /dev/sdX
 
@@ -266,19 +271,17 @@ Then run the script to copy the bootloader to the first two or three partitions:
 
 ```
 # To use pre-built U-Boot images for OSD32MP1 board:
-scripts/copy-bootloader.sh /dev/diskX bootloaders/u-boot-images/osd32mp1-brk/
+scripts/copy-bootloader.sh /dev/sda bootloaders/u-boot-images/osd32mp1-brk/
 
 # To use pre-built U-Boot images for STM32MP157A-DK1 Discovery board:
-scripts/copy-bootloader.sh /dev/diskX bootloaders/u-boot-images/stm32mp157a-dk1-disco/
+scripts/copy-bootloader.sh /dev/sda bootloaders/u-boot-images/stm32mp157a-dk1-disco/
 
 # To use U-Boot images that you built yourself:
-scripts/copy-bootloader.sh /dev/diskX third-party/u-boot/build/
+scripts/copy-bootloader.sh /dev/sda third-party/u-boot/build/
 
 # To use MP1-Boot:
 cd bootloaders/mp1-boot
-make load SD_DISK_DEV=/dev/diskX
-
-# Where /dev/diskX is something like /dev/disk2 or /dev/sdc1
+make load SD_DISK_DEV=/dev/sda
 ```
 
 ## 4) Power up the board
@@ -287,13 +290,13 @@ This is a good moment to test your hardware setup. You can skip this step if
 you've done this before.  Remove the SD card from the computer and insert into
 the OSD32 or STM32MP1 Discovery board.  Attach a USB-to-UART device to the UART
 pins on the OSD32 board, or a micro-USB cable to the Discovery board's ST-LINK
-jack.  Start a terminal session that connects to the USB driver (I use minicom;
+jack.  Start a terminal session that connects to the USB driver (I use picocom;
 there are many fine alternatives). The baud rate is 115200, 8N1 (which you
-might have to set up, so read the minicom help file if you don't know how).
+might have to set up, so read the picocom help file if you don't know how).
 
 Example:
 ```
-minicom -D /dev/cu.usbmodemXXXXX
+picocom --baud 115200 /dev/ttyACM0
 ```
 
 Insert the card into the board and power it on. You should see boot
