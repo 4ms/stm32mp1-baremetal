@@ -26,7 +26,6 @@ set -x
 KERNEL_NAME=$(uname -s)
 case "${KERNEL_NAME}" in
 	Darwin)
-		echo "diskutil eraseDisk FAT32 BAREMETA $1"
 		diskutil eraseDisk FAT32 BAREMETA $1
 		;;
 	Linux)
