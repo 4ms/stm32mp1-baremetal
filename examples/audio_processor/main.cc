@@ -1,12 +1,25 @@
 #include "audio_stream.hh"
 #include "drivers/uart.hh"
 #include "drv/pmic.hh"
+#include "register_access.hh"
 #include "stm32disco_buttons_conf.hh"
 #include "stm32mp1xx.h"
 
 #include "synth_list.hh"
 
 using namespace STM32MP1Disco;
+
+namespace mdrivlib {
+    /**
+     * Independent watchdog (IWDG) key register.
+     * 0xAAAA: refreshes the watchdog (reloads the RL[11:0] value into the IWDCNT down-counter).
+     * This value must be written by software at regular intervals, or the watchdog will generate
+     * a reset when the counter reaches 0.
+     */
+    using IWDG2_KR = RegisterBits<ReadWrite,
+                                IWDG2_BASE + offsetof(IWDG_TypeDef, KR),
+                                0xAAAA>;
+} // namespace mdrivlib
 
 void main()
 {
@@ -36,6 +49,9 @@ void main()
 	uint32_t display_load_timer = LoadTimerStartingValue;
 
 	while (true) {
+		// IWDG2 is set to timeout every 32 seconds by u-boot.
+		mdrivlib::IWDG2_KR::set();
+
 		button1.update();
 		button2.update();
 
