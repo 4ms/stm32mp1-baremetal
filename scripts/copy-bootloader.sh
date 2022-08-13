@@ -38,7 +38,8 @@ echo "Copying bootloader files..."
 
 set -x
 
-case "$(uname -s)" in
+KERNEL_NAME=$(uname -s)
+case "${KERNEL_NAME}" in
 	Darwin)
 		dd if=$path/u-boot-spl.stm32 of=${1}s1
 		dd if=$path/u-boot-spl.stm32 of=${1}s2
