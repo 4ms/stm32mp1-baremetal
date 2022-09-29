@@ -19,7 +19,7 @@ Uart<Board::ConsoleUART> uart;
 PinChangeISR<Board::RedLED2::gpio, Board::RedLED2::pin_num> red_led_pinchange;
 const auto red_led_irqnum = red_led_pinchange.get_IRQ_num();
 
-PinChangeISR<Board::GreenLED2::gpio, Board::RedLED2::pin_num> green_led_pinchange;
+PinChangeISR<Board::GreenLED2::gpio, Board::GreenLED2::pin_num> green_led_pinchange;
 const auto green_led_irqnum = green_led_pinchange.get_IRQ_num();
 
 uint32_t num_times_red_led_irq_called = 0;
@@ -124,20 +124,24 @@ void main()
 	};
 }
 
-// The vector table says to jump here when the processor receives an IRQ from the GIC
-// GCC 11 and above emits a warning about clobbering VFP registers, which we can ignore.
-// All function calls within this IRQ Handler are inlined, and there is no use of VFP registers.
+// The vector table says to jump here when the processor receives an IRQ from the GIC.
+//
+// The interrupt("IRQ") attribute triggers GCC 11 and above to emit a warning about
+// clobbering VFP registers. We can safely ignore this (using some #pragmas)
+// since we also are using the general_regs_only attribute, and are careful to only
+// call functions that do not clobber any VFP registers.
 // See: https://github.com/zephyrproject-rtos/zephyr/pull/49704
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
-extern "C" void __attribute__((interrupt("IRQ"))) IRQ_Handler()
+extern "C" void __attribute__((general_regs_only, interrupt("IRQ"))) IRQ_Handler()
 {
 	using namespace BasicIRQ;
 
 	// Read from the GIC IAR register to get the interrupt number
+	// IAR means "Interrupt Acknowledge Register".
 	// By reading this register, we signal to the GIC that we're
 	// about to handle the interrupt.
-	auto irqnum = GIC_AcknowledgePending();
+	auto irqnum = (IRQn_Type)(GICInterface->IAR);
 
 	if (irqnum == red_led_irqnum) {
 		red_led_pinchange.clear_rising_isr_flag();
@@ -154,7 +158,8 @@ extern "C" void __attribute__((interrupt("IRQ"))) IRQ_Handler()
 	}
 
 	// Write back the interrupt number into the GIC's EOIR register.
+	// EOIR means "End of Interrupt Register"
 	// This tells the GIC we're done handling the interrupt.
-	GIC_EndInterrupt(irqnum);
+	GICInterface->EOIR = irqnum;
 }
 #pragma GCC diagnostic pop
