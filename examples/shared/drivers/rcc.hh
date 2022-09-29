@@ -2,6 +2,7 @@
 #include "rcc_common.hh"
 #include "register_access.hh"
 #include "stm32mp1xx.h"
+#include <cstddef>
 #include <variant>
 
 namespace mdrivlib
@@ -145,10 +146,7 @@ using TIM11_ = NonexistantRegister;
 struct GPIO {
 	static inline volatile RegisterDataT *const _reg = &(RCC->MP_AHB4ENSETR);
 
-	static uint32_t get_gpio_bit(RegisterDataT periph)
-	{
-		return 1 << (((periph >> 12) - 2) & 0b1111);
-	}
+	static uint32_t get_gpio_bit(RegisterDataT periph) { return 1 << (((periph >> 12) - 2) & 0b1111); }
 	static void enable(GPIO_TypeDef *periph)
 	{
 		if (periph == GPIOZ)
