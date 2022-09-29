@@ -125,6 +125,11 @@ void main()
 }
 
 // The vector table says to jump here when the processor receives an IRQ from the GIC
+// GCC 11 and above emits a warning about clobbering VFP registers, which we can ignore.
+// All function calls within this IRQ Handler are inlined, and there is no use of VFP registers.
+// See: https://github.com/zephyrproject-rtos/zephyr/pull/49704
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
 extern "C" void __attribute__((interrupt("IRQ"))) IRQ_Handler()
 {
 	using namespace BasicIRQ;
@@ -152,3 +157,4 @@ extern "C" void __attribute__((interrupt("IRQ"))) IRQ_Handler()
 	// This tells the GIC we're done handling the interrupt.
 	GIC_EndInterrupt(irqnum);
 }
+#pragma GCC diagnostic pop
