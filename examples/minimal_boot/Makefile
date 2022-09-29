@@ -1,9 +1,10 @@
 BINARYNAME = main
 BUILDDIR = build
+SHAREDDIR = ../../shared
 
 SOURCES = startup.s
 
 INCLUDES = -I.
 
-include ../shared/makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk
 

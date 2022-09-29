@@ -4,7 +4,7 @@ BUILDDIR = build
 OPTFLAG = -O0
 
 EXTLIBDIR = ../../third-party
-SHAREDDIR = ../shared
+SHAREDDIR = ../../shared
 STM32HALDIR = $(EXTLIBDIR)/STM32MP1xx_HAL_Driver
 
 SOURCES = startup.s \
@@ -31,5 +31,5 @@ INCLUDES = -I. \
 
 LINK_STDLIB =
 
-include ../shared/makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk
 
