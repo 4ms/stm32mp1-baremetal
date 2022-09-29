@@ -2,7 +2,7 @@ export BINARYNAME = main
 export BUILDDIR_A7 = build/corea7
 export BUILDDIR_M4 = build/corem4
 export EXTLIBDIR = ../../third-party
-export SHAREDDIR = ../shared
+export SHAREDDIR = ../../shared
 
 all: a7 m4
 

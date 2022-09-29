@@ -4,8 +4,7 @@ BUILDDIR = build
 OPTFLAG = -O3
 
 EXTLIBDIR = ../../third-party
-SHAREDDIR = ../../examples/shared
-SCRIPTDIR = ../../scripts
+SHAREDDIR = ../../shared
 
 SOURCES = startup.s \
 		  main.cc \

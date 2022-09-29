@@ -38,6 +38,7 @@ CFLAGS = -g2 \
 		 -nostartfiles \
 		 -ffreestanding \
 		 $(EXTRACFLAGS)\
+		 -Wfatal-errors
 
 CXXFLAGS = $(CFLAGS) \
 		-std=c++2a \

@@ -23,4 +23,4 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(SHAREDDIR) \
 
-include ../shared/makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk

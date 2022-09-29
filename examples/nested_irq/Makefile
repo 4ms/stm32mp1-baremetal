@@ -4,7 +4,7 @@ BUILDDIR = build
 OPTFLAG = -O1
 
 EXTLIBDIR = ../../third-party
-SHAREDDIR = ../shared
+SHAREDDIR = ../../shared
 
 SOURCES = startup.s \
 		  main.cc \
@@ -22,5 +22,5 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(SHAREDDIR)\
 
-include ../shared/makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk
 

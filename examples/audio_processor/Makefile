@@ -4,7 +4,7 @@ BUILDDIR = build
 OPTFLAG = -O3
 
 EXTLIBDIR = ../../third-party
-SHAREDDIR = ../shared
+SHAREDDIR = ../../shared
 STM32HALDIR = $(EXTLIBDIR)/STM32MP1xx_HAL_Driver
 mdrivlibdir = lib/mdrivlib
 
@@ -52,17 +52,6 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(EXTLIBDIR)/DaisySP/Source \
 		   -I$(EXTLIBDIR)/DaisySP/Source/Utility \
-		   
-# Do not include ../shared for this project, because of conflict between ../shared/drivers/ and lib/mdrivlib/drivers/
-		   # -I$(SHAREDDIR) \
-
-		   # -I$(mdrivlibdir) \
-		   # -I$(mdrivlibdir)/drivers \
-		   # -I$(mdrivlibdir)/target/stm32mp1 \
-		   # -I$(mdrivlibdir)/target/stm32mp1_ca7 \
-		   # -I$(mdrivlibdir)/target/stm32mp1/drivers \
-		   # -I$(mdrivlibdir)/target/stm32mp1_ca7/boot \
-		   # -I$(mdrivlibdir)/target/stm32mp1_ca7/drivers \
 
 EXTRACFLAGS = -DUSE_HAL_DRIVER \
 			  -DUSE_FULL_LL_DRIVER \
@@ -80,5 +69,5 @@ EXTRACFLAGS = -DUSE_HAL_DRIVER \
 EXTRACXXFLAGS =  \
 
 
-include ../shared/makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk
 

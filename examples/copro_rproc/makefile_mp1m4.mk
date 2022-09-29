@@ -27,5 +27,5 @@ ARCH_CFLAGS = -DUSE_FULL_LL_DRIVER \
 			  -DCORE_CM4 \
 			  -DARM_MATH_CM4 \
 
-include ../shared/makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk
 

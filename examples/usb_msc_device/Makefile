@@ -4,7 +4,7 @@ BUILDDIR = build
 OPTFLAG = -O3
 
 EXTLIBDIR = ../../third-party
-SHAREDDIR = ../shared
+SHAREDDIR = ../../shared
 STM32HALDIR = $(EXTLIBDIR)/STM32MP1xx_HAL_Driver
 PATCHEDSTM32HALDIR = $(SHAREDDIR)/stm32hal_patched
 USBLIBDIR = $(EXTLIBDIR)/STM32_USB_Device_Library
@@ -50,5 +50,5 @@ EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER
 
 LINK_STDLIB = --specs=nosys.specs
 
-include ../shared/makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk
 
