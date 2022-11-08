@@ -1,5 +1,4 @@
-#ifndef MAIN_H_
-#define MAIN_H_
+#pragma once
 
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 
@@ -13,5 +12,3 @@
 #define I2C1_SCL_PORT GPIOD
 #define I2C1_SDA_PIN GPIO_PIN_15
 #define I2C1_SDA_PORT GPIOF
-
-#endif /* MAIN_H_ */

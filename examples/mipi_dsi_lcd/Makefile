@@ -44,6 +44,7 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(SHAREDDIR)\
+		   -I$(SHAREDDIR)/drivers \
 
 LINK_STDLIB =
 
