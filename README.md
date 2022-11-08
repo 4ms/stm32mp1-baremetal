@@ -58,7 +58,11 @@ bootloaders to choose from:
 	many platforms. 
 
   * **[MP1-Boot](bootloaders/mp1-boot)**: a lightweight, fast and minimal
-	featured bootloader. 
+	featured bootloader.
+
+## Resources
+- https://wiki.st.com/stm32mpu/wiki/STM32MP15_resources
+
 
 ## Overview
 

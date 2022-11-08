@@ -1,3 +1,6 @@
 [submodule "third-party/u-boot"]
 	path = third-party/u-boot
 	url = https://github.com/STMicroelectronics/u-boot.git
+[submodule "examples/mipi_dsi_lcd/lvgl"]
+	path = examples/mipi_dsi_lcd/lvgl
+	url = https://github.com/lvgl/lvgl.git
