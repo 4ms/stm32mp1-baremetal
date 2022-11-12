@@ -14,7 +14,10 @@
 namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
 
+// defined in usbh_conf.c
 extern HCD_HandleTypeDef hhcd;
+
+static void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id);
 
 void main()
 {
@@ -29,17 +32,17 @@ void main()
 
 	USBH_HandleTypeDef USBH_Host;
 
-	// auto init_ok = USBH_Init(&USBH_Host, state_change_callback, 0);
-	// if (init_ok != USBH_OK) {
-	// 	printf("USB Host failed to initialize! Error code: %d\n", static_cast<uint32_t>(init_ok));
-	// }
+	auto init_ok = USBH_Init(&USBH_Host, usbh_state_change_callback, 0);
+	if (init_ok != USBH_OK) {
+		printf("USB Host failed to initialize! Error code: %d\n", static_cast<uint32_t>(init_ok));
+	}
 	InterruptControl::disable_irq(OTG_IRQn);
 	InterruptManager::registerISR(OTG_IRQn, [] { HAL_HCD_IRQHandler(&hhcd); });
 	InterruptControl::set_irq_priority(OTG_IRQn, 0, 0);
 	InterruptControl::enable_irq(OTG_IRQn);
 
 	// USBH_RegisterClass(&USBH_Host, HOST_MIDI_CLASS);
-	// USBH_Start(&USBH_Host);
+	USBH_Start(&USBH_Host);
 
 	// Blink green1 light at 1Hz
 	uint32_t last_tm = 0;
@@ -55,6 +58,35 @@ void main()
 			}
 			led_state = !led_state;
 		}
+	}
+}
+
+void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id)
+{
+	switch (id) {
+		case HOST_USER_SELECT_CONFIGURATION:
+			printf("Select config\n");
+			break;
+
+		case HOST_USER_CONNECTION:
+			printf("Connected\n");
+			break;
+
+		case HOST_USER_CLASS_SELECTED:
+			printf("Class selected\n");
+			break;
+
+		case HOST_USER_CLASS_ACTIVE:
+			printf("Class active\n");
+			break;
+
+		case HOST_USER_DISCONNECTION:
+			printf("Disconnected\n");
+			break;
+
+		case HOST_USER_UNRECOVERED_ERROR:
+			printf("Error\n");
+			break;
 	}
 }
 
