@@ -53,7 +53,7 @@ extern "C" {
 #define DATA_INTERFACE_CLASS_CODE 0x0AU
 
 /*Communication sub class codes*/
-#define RESERVED 0x00U
+#define CDC_RESERVED 0x00U
 #define DIRECT_LINE_CONTROL_MODEL 0x01U
 #define ABSTRACT_CONTROL_MODEL 0x02U
 #define TELEPHONE_CONTROL_MODEL 0x03U
