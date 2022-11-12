@@ -4,8 +4,8 @@
 #include "drivers/uart.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
-#include "usbh_cdc.h"
 #include "usbh_core.h"
+#include "usbh_midi.hh"
 #include <cstdint>
 
 #include "osd32brk_conf.hh"

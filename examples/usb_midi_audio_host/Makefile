@@ -31,7 +31,7 @@ SOURCES = startup.s \
 		  $(USBLIBDIR)/Core/Src/usbh_ctlreq.c \
 		  $(USBLIBDIR)/Core/Src/usbh_ioreq.c \
 		  $(USBLIBDIR)/Core/Src/usbh_pipes.c \
-		  usbh_cdc.c \
+		  usbh_midi.cc \
 
 
 INCLUDES = -I. \

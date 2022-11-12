@@ -1,8 +1,8 @@
 /**
  ******************************************************************************
- * @file    usbh_cdc.c
+ * @file    usbh_midi.cc
  * @author  MCD Application Team
- * @brief   This file is the CDC Layer Handlers for USB Host CDC class.
+ * @brief   This file is the for USB Host MIDI subclass of Audio Class.
  *
  *  @verbatim
  *
@@ -37,7 +37,7 @@
  ******************************************************************************
  */
 
-#include "usbh_cdc.h"
+#include "usbh_midi.hh"
 
 #define USBH_MIDI_BUFFER_SIZE 1024
 
@@ -50,18 +50,32 @@ static USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost);
 static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost);
 static void MIDI_ProcessReception(USBH_HandleTypeDef *phost);
 
+constexpr uint8_t AudioClassCode = 0x02;
+constexpr uint8_t MIDISubclassCode = 0x02;
+constexpr uint8_t AnyProtocol = 0xFF;
 
 USBH_ClassTypeDef MIDI_Class = {
 	"MIDI",
-	USB_CDC_CLASS,
+	AudioClassCode,
 	USBH_MIDI_InterfaceInit,
 	USBH_MIDI_InterfaceDeInit,
 	USBH_MIDI_ClassRequest,
 	USBH_MIDI_Process,
 	USBH_MIDI_SOFProcess,
-	NULL,
+	nullptr,
 };
 
+class MIDIHost {
+public:
+	static CDC_HandleTypeDef *new_handle()
+	{
+		auto handle = static_cast<CDC_HandleTypeDef *>(USBH_malloc(sizeof(CDC_HandleTypeDef)));
+		if (handle)
+			USBH_memset(handle, 0, sizeof(CDC_HandleTypeDef));
+
+		return handle;
+	}
+};
 
 /**
  * @brief  USBH_MIDI_InterfaceInit
@@ -74,10 +88,8 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 
 	USBH_StatusTypeDef status;
 	uint8_t interface;
-	CDC_HandleTypeDef *CDC_Handle;
 
-	interface =
-		USBH_FindInterface(phost, COMMUNICATION_INTERFACE_CLASS_CODE, ABSTRACT_CONTROL_MODEL, COMMON_AT_COMMAND);
+	interface = USBH_FindInterface(phost, AudioClassCode, MIDISubclassCode, AnyProtocol);
 
 	if ((interface == 0xFFU) || (interface >= USBH_MAX_NUM_INTERFACES)) /* No Valid Interface */ {
 		USBH_DbgLog("Cannot Find the interface for Communication Interface Class. %s", phost->pActiveClass->Name);
@@ -85,21 +97,16 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 	}
 
 	status = USBH_SelectInterface(phost, interface);
-
-	if (status != USBH_OK) {
+	if (status != USBH_OK)
 		return USBH_FAIL;
-	}
 
-	phost->pActiveClass->pData = (CDC_HandleTypeDef *)USBH_malloc(sizeof(CDC_HandleTypeDef));
-	CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	auto CDC_Handle = MIDIHost::new_handle();
+	phost->pActiveClass->pData = CDC_Handle;
 
-	if (CDC_Handle == NULL) {
+	if (CDC_Handle == nullptr) {
 		USBH_DbgLog("Cannot allocate memory for CDC Handle");
 		return USBH_FAIL;
 	}
-
-	/* Initialize cdc handler */
-	USBH_memset(CDC_Handle, 0, sizeof(CDC_HandleTypeDef));
 
 	/*Collect the notification endpoint address and length*/
 	if (phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress & 0x80U) {
@@ -129,12 +136,16 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 	}
 
 	/*Collect the class specific endpoint address and length*/
-	if (phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress & 0x80U) {
-		CDC_Handle->DataItf.InEp = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress;
-		CDC_Handle->DataItf.InEpSize = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].wMaxPacketSize;
-	} else {
-		CDC_Handle->DataItf.OutEp = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress;
-		CDC_Handle->DataItf.OutEpSize = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].wMaxPacketSize;
+	{
+		auto ep_addr = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress;
+		auto mps = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].wMaxPacketSize;
+		if (ep_addr & 0x80U) {
+			CDC_Handle->DataItf.InEp = ep_addr;
+			CDC_Handle->DataItf.InEpSize = mps;
+		} else {
+			CDC_Handle->DataItf.OutEp = ep_addr;
+			CDC_Handle->DataItf.OutEpSize = mps;
+		}
 	}
 
 	if (phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[1].bEndpointAddress & 0x80U) {
@@ -533,4 +544,3 @@ __weak void USBH_MIDI_ReceiveCallback(USBH_HandleTypeDef *phost)
 	/* Prevent unused argument(s) compilation warning */
 	UNUSED(phost);
 }
-

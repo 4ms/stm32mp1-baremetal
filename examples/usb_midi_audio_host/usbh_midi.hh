@@ -360,7 +360,6 @@ extern USBH_ClassTypeDef MIDI_Class;
  * @{
  */
 
-
 USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
 USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
 uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost);

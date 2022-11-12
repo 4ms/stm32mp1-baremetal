@@ -19,7 +19,7 @@
  */
 
 #include "usbh_core.h"
-#include "usbh_cdc.h"
+#include "usbh_midi.hh"
 
 HCD_HandleTypeDef hhcd;
 
