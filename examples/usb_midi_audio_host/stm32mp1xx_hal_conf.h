@@ -70,7 +70,8 @@ extern "C" {
 //#define HAL_WWDG_MODULE_ENABLED
 
 // Modules ported from H7:
-#define HAL_PCD_MODULE_ENABLED
+// #define HAL_PCD_MODULE_ENABLED
+#define HAL_HCD_MODULE_ENABLED
 
 /* ########################## Register Callbacks selection ############################## */
 /**
@@ -342,6 +343,10 @@ extern "C" {
 #include "stm32mp1xx_hal_pcd.h"
 #include "stm32mp1xx_hal_pcd_ex.h"
 #endif /* HAL_PCD_MODULE_ENABLED */
+
+#ifdef HAL_HCD_MODULE_ENABLED
+#include "stm32mp1xx_hal_hcd.h"
+#endif /* HPL_HCD_MODULE_ENABLED */
 
 /* Exported macro ------------------------------------------------------------*/
 #ifdef USE_FULL_ASSERT
