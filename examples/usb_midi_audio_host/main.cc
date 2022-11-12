@@ -58,5 +58,9 @@ void main()
 	}
 }
 
-// required for print()
-void putchar_s(const char c) { Uart<Board::ConsoleUART>::putchar(c); }
+// required for printf()
+extern "C" int __io_putchar(int ch)
+{
+	Uart<Board::ConsoleUART>::putchar(ch);
+	return ch;
+}
