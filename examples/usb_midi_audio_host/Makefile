@@ -11,6 +11,7 @@ USBLIBDIR = $(EXTLIBDIR)/STM32_USB_Host_Library
 
 SOURCES = startup.s \
 		  main.cc \
+		  syscalls.c \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/system/system_ca7.c \
@@ -38,12 +39,12 @@ INCLUDES = -I. \
 		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
 		   -I$(EXTLIBDIR)/CMSIS/Device/ST/STM32MP1xx/Include \
 		   -I$(SHAREDDIR) \
-		   -I$(USBLIBDIR)/Class/MSC/Inc \
 		   -I$(USBLIBDIR)/Core/Inc \
 
 EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER
 
-LINK_STDLIB = --specs=nosys.specs
+# LINK_STDLIB = --specs=nosys.specs
+LINK_STDLIB = 
 
 include $(SHAREDDIR)/makefile-common.mk
 
