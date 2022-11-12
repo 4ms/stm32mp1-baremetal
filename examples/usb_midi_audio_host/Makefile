@@ -26,11 +26,11 @@ SOURCES = startup.s \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_ll_rcc.c \
-		  usbh_conf.c \
 		  $(USBLIBDIR)/Core/Src/usbh_core.c \
 		  $(USBLIBDIR)/Core/Src/usbh_ctlreq.c \
 		  $(USBLIBDIR)/Core/Src/usbh_ioreq.c \
 		  $(USBLIBDIR)/Core/Src/usbh_pipes.c \
+		  usbh_conf.cc \
 		  usbh_midi.cc \
 
 
