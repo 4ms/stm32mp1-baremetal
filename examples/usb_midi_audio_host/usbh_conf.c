@@ -19,6 +19,7 @@
  */
 
 #include "usbh_core.h"
+#include "usbh_cdc.h"
 
 HCD_HandleTypeDef hhcd;
 
@@ -62,7 +63,11 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef *hpcd)
 
 void *USBH_malloc(size_t sz)
 {
-	// Fail always for now
+	static CDC_HandleTypeDef _mem;
+
+	if (sz == sizeof(CDC_HandleTypeDef))
+		return &_mem;
+
 	return NULL;
 }
 
