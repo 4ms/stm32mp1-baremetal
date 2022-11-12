@@ -4,6 +4,7 @@
 #include "drivers/uart.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
+#include "usbh_cdc.h"
 #include "usbh_core.h"
 #include <cstdint>
 
@@ -30,9 +31,9 @@ void main()
 
 	SystemClocks::init();
 
-	USBH_HandleTypeDef USBH_Host;
+	USBH_HandleTypeDef usbhost;
 
-	auto init_ok = USBH_Init(&USBH_Host, usbh_state_change_callback, 0);
+	auto init_ok = USBH_Init(&usbhost, usbh_state_change_callback, 0);
 	if (init_ok != USBH_OK) {
 		printf("USB Host failed to initialize! Error code: %d\n", static_cast<uint32_t>(init_ok));
 	}
@@ -41,13 +42,19 @@ void main()
 	InterruptControl::set_irq_priority(OTG_IRQn, 0, 0);
 	InterruptControl::enable_irq(OTG_IRQn);
 
-	// USBH_RegisterClass(&USBH_Host, HOST_MIDI_CLASS);
-	USBH_Start(&USBH_Host);
+	USBH_RegisterClass(&usbhost, USBH_CDC_CLASS);
+	auto start_ok = USBH_Start(&usbhost);
+	if (start_ok != USBH_OK) {
+		printf("USB Host failed to start! Error code: %d\n", static_cast<uint32_t>(start_ok));
+	}
 
 	// Blink green1 light at 1Hz
 	uint32_t last_tm = 0;
 	bool led_state = false;
 	while (1) {
+
+		USBH_Process(&usbhost);
+
 		uint32_t tm = HAL_GetTick();
 		if (tm > (last_tm + 500)) {
 			last_tm = tm;
