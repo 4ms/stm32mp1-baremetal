@@ -42,7 +42,7 @@ void main()
 	InterruptControl::set_irq_priority(OTG_IRQn, 0, 0);
 	InterruptControl::enable_irq(OTG_IRQn);
 
-	USBH_RegisterClass(&usbhost, USBH_CDC_CLASS);
+	USBH_RegisterClass(&usbhost, USBH_MIDI_CLASS);
 	auto start_ok = USBH_Start(&usbhost);
 	if (start_ok != USBH_OK) {
 		printf("USB Host failed to start! Error code: %d\n", static_cast<uint32_t>(start_ok));

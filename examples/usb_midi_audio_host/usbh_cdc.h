@@ -349,8 +349,8 @@ typedef struct _CDC_Process {
 /** @defgroup USBH_CDC_CORE_Exported_Variables
  * @{
  */
-extern USBH_ClassTypeDef CDC_Class;
-#define USBH_CDC_CLASS &CDC_Class
+extern USBH_ClassTypeDef MIDI_Class;
+#define USBH_MIDI_CLASS &MIDI_Class
 
 /**
  * @}
@@ -360,23 +360,13 @@ extern USBH_ClassTypeDef CDC_Class;
  * @{
  */
 
-USBH_StatusTypeDef USBH_CDC_SetLineCoding(USBH_HandleTypeDef *phost, CDC_LineCodingTypeDef *linecoding);
 
-USBH_StatusTypeDef USBH_CDC_GetLineCoding(USBH_HandleTypeDef *phost, CDC_LineCodingTypeDef *linecoding);
-
-USBH_StatusTypeDef USBH_CDC_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
-
-USBH_StatusTypeDef USBH_CDC_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
-
-uint16_t USBH_CDC_GetLastReceivedDataSize(USBH_HandleTypeDef *phost);
-
-USBH_StatusTypeDef USBH_CDC_Stop(USBH_HandleTypeDef *phost);
-
-void USBH_CDC_LineCodingChanged(USBH_HandleTypeDef *phost);
-
-void USBH_CDC_TransmitCallback(USBH_HandleTypeDef *phost);
-
-void USBH_CDC_ReceiveCallback(USBH_HandleTypeDef *phost);
+USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
+USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
+uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost);
+USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost);
+void USBH_MIDI_TransmitCallback(USBH_HandleTypeDef *phost);
+void USBH_MIDI_ReceiveCallback(USBH_HandleTypeDef *phost);
 
 /**
  * @}

@@ -37,103 +37,39 @@
  ******************************************************************************
  */
 
-/* BSPDependencies
-- "stm32xxxxx_{eval}{discovery}{nucleo_144}.c"
-- "stm32xxxxx_{eval}{discovery}_io.c"
-- "stm32xxxxx_{eval}{discovery}{adafruit}_sd.c"
-- "stm32xxxxx_{eval}{discovery}{adafruit}_lcd.c"
-- "stm32xxxxx_{eval}{discovery}_sdram.c"
-EndBSPDependencies */
-
-/* Includes ------------------------------------------------------------------*/
 #include "usbh_cdc.h"
 
-/** @addtogroup USBH_LIB
- * @{
- */
+#define USBH_MIDI_BUFFER_SIZE 1024
 
-/** @addtogroup USBH_CLASS
- * @{
- */
+static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost);
 
-/** @addtogroup USBH_CDC_CLASS
- * @{
- */
+static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost);
+static void MIDI_ProcessReception(USBH_HandleTypeDef *phost);
 
-/** @defgroup USBH_CDC_CORE
- * @brief    This file includes CDC Layer Handlers for USB Host CDC class.
- * @{
- */
 
-/** @defgroup USBH_CDC_CORE_Private_TypesDefinitions
- * @{
- */
-/**
- * @}
- */
-
-/** @defgroup USBH_CDC_CORE_Private_Defines
- * @{
- */
-#define USBH_CDC_BUFFER_SIZE 1024
-/**
- * @}
- */
-
-/** @defgroup USBH_CDC_CORE_Private_Macros
- * @{
- */
-/**
- * @}
- */
-
-/** @defgroup USBH_CDC_CORE_Private_Variables
- * @{
- */
-/**
- * @}
- */
-
-/** @defgroup USBH_CDC_CORE_Private_FunctionPrototypes
- * @{
- */
-
-static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost);
-static USBH_StatusTypeDef USBH_CDC_InterfaceDeInit(USBH_HandleTypeDef *phost);
-static USBH_StatusTypeDef USBH_CDC_Process(USBH_HandleTypeDef *phost);
-static USBH_StatusTypeDef USBH_CDC_SOFProcess(USBH_HandleTypeDef *phost);
-static USBH_StatusTypeDef USBH_CDC_ClassRequest(USBH_HandleTypeDef *phost);
-
-static USBH_StatusTypeDef GetLineCoding(USBH_HandleTypeDef *phost, CDC_LineCodingTypeDef *linecoding);
-static USBH_StatusTypeDef SetLineCoding(USBH_HandleTypeDef *phost, CDC_LineCodingTypeDef *linecoding);
-static void CDC_ProcessTransmission(USBH_HandleTypeDef *phost);
-static void CDC_ProcessReception(USBH_HandleTypeDef *phost);
-
-USBH_ClassTypeDef CDC_Class = {
-	"CDC",
+USBH_ClassTypeDef MIDI_Class = {
+	"MIDI",
 	USB_CDC_CLASS,
-	USBH_CDC_InterfaceInit,
-	USBH_CDC_InterfaceDeInit,
-	USBH_CDC_ClassRequest,
-	USBH_CDC_Process,
-	USBH_CDC_SOFProcess,
+	USBH_MIDI_InterfaceInit,
+	USBH_MIDI_InterfaceDeInit,
+	USBH_MIDI_ClassRequest,
+	USBH_MIDI_Process,
+	USBH_MIDI_SOFProcess,
 	NULL,
 };
-/**
- * @}
- */
 
-/** @defgroup USBH_CDC_CORE_Private_Functions
- * @{
- */
 
 /**
- * @brief  USBH_CDC_InterfaceInit
- *         The function init the CDC class.
+ * @brief  USBH_MIDI_InterfaceInit
+ *         The function init the MIDI class.
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 {
 
 	USBH_StatusTypeDef status;
@@ -144,7 +80,7 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
 		USBH_FindInterface(phost, COMMUNICATION_INTERFACE_CLASS_CODE, ABSTRACT_CONTROL_MODEL, COMMON_AT_COMMAND);
 
 	if ((interface == 0xFFU) || (interface >= USBH_MAX_NUM_INTERFACES)) /* No Valid Interface */ {
-		USBH_DbgLog("Cannot Find the interface for Communication Interface Class.", phost->pActiveClass->Name);
+		USBH_DbgLog("Cannot Find the interface for Communication Interface Class. %s", phost->pActiveClass->Name);
 		return USBH_FAIL;
 	}
 
@@ -188,7 +124,7 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
 	interface = USBH_FindInterface(phost, DATA_INTERFACE_CLASS_CODE, CDC_RESERVED, NO_CLASS_SPECIFIC_PROTOCOL_CODE);
 
 	if ((interface == 0xFFU) || (interface >= USBH_MAX_NUM_INTERFACES)) /* No Valid Interface */ {
-		USBH_DbgLog("Cannot Find the interface for Data Interface Class.", phost->pActiveClass->Name);
+		USBH_DbgLog("Cannot Find the interface for Data Interface Class: %s.", phost->pActiveClass->Name);
 		return USBH_FAIL;
 	}
 
@@ -242,12 +178,12 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
 }
 
 /**
- * @brief  USBH_CDC_InterfaceDeInit
- *         The function DeInit the Pipes used for the CDC class.
+ * @brief  USBH_MIDI_InterfaceDeInit
+ *         The function DeInit the Pipes used for the MIDI class.
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_CDC_InterfaceDeInit(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
 {
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
 
@@ -278,19 +214,17 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceDeInit(USBH_HandleTypeDef *phost)
 }
 
 /**
- * @brief  USBH_CDC_ClassRequest
+ * @brief  USBH_MIDI_ClassRequest
  *         The function is responsible for handling Standard requests
- *         for CDC class.
+ *         for MIDI class.
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_CDC_ClassRequest(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status;
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
 
-	/* Issue the get line coding request */
-	status = GetLineCoding(phost, &CDC_Handle->LineCoding);
 	if (status == USBH_OK) {
 		phost->pUser(phost, HOST_USER_CLASS_ACTIVE);
 	} else if (status == USBH_NOT_SUPPORTED) {
@@ -303,12 +237,12 @@ static USBH_StatusTypeDef USBH_CDC_ClassRequest(USBH_HandleTypeDef *phost)
 }
 
 /**
- * @brief  USBH_CDC_Process
- *         The function is for managing state machine for CDC data transfers
+ * @brief  USBH_MIDI_Process
+ *         The function is for managing state machine for MIDI data transfers
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_CDC_Process(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;
 	USBH_StatusTypeDef req_status = USBH_OK;
@@ -320,44 +254,9 @@ static USBH_StatusTypeDef USBH_CDC_Process(USBH_HandleTypeDef *phost)
 			status = USBH_OK;
 			break;
 
-		case CDC_SET_LINE_CODING_STATE:
-			req_status = SetLineCoding(phost, CDC_Handle->pUserLineCoding);
-
-			if (req_status == USBH_OK) {
-				CDC_Handle->state = CDC_GET_LAST_LINE_CODING_STATE;
-			}
-
-			else
-			{
-				if (req_status != USBH_BUSY) {
-					CDC_Handle->state = CDC_ERROR_STATE;
-				}
-			}
-			break;
-
-		case CDC_GET_LAST_LINE_CODING_STATE:
-			req_status = GetLineCoding(phost, &(CDC_Handle->LineCoding));
-
-			if (req_status == USBH_OK) {
-				CDC_Handle->state = CDC_IDLE_STATE;
-
-				if ((CDC_Handle->LineCoding.b.bCharFormat == CDC_Handle->pUserLineCoding->b.bCharFormat) &&
-					(CDC_Handle->LineCoding.b.bDataBits == CDC_Handle->pUserLineCoding->b.bDataBits) &&
-					(CDC_Handle->LineCoding.b.bParityType == CDC_Handle->pUserLineCoding->b.bParityType) &&
-					(CDC_Handle->LineCoding.b.dwDTERate == CDC_Handle->pUserLineCoding->b.dwDTERate))
-				{
-					USBH_CDC_LineCodingChanged(phost);
-				}
-			} else {
-				if (req_status != USBH_BUSY) {
-					CDC_Handle->state = CDC_ERROR_STATE;
-				}
-			}
-			break;
-
 		case CDC_TRANSFER_DATA:
-			CDC_ProcessTransmission(phost);
-			CDC_ProcessReception(phost);
+			MIDI_ProcessTransmission(phost);
+			MIDI_ProcessReception(phost);
 			break;
 
 		case CDC_ERROR_STATE:
@@ -377,12 +276,12 @@ static USBH_StatusTypeDef USBH_CDC_Process(USBH_HandleTypeDef *phost)
 }
 
 /**
- * @brief  USBH_CDC_SOFProcess
+ * @brief  USBH_MIDI_SOFProcess
  *         The function is for managing SOF callback
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_CDC_SOFProcess(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost)
 {
 	/* Prevent unused argument(s) compilation warning */
 	UNUSED(phost);
@@ -391,12 +290,12 @@ static USBH_StatusTypeDef USBH_CDC_SOFProcess(USBH_HandleTypeDef *phost)
 }
 
 /**
- * @brief  USBH_CDC_Stop
- *         Stop current CDC Transmission
+ * @brief  USBH_MIDI_Stop
+ *         Stop current MIDI Transmission
  * @param  phost: Host handle
  * @retval USBH Status
  */
-USBH_StatusTypeDef USBH_CDC_Stop(USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost)
 {
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
 
@@ -409,96 +308,13 @@ USBH_StatusTypeDef USBH_CDC_Stop(USBH_HandleTypeDef *phost)
 	}
 	return USBH_OK;
 }
-/**
- * @brief  This request allows the host to find out the currently
- *         configured line coding.
- * @param  pdev: Selected device
- * @retval USBH_StatusTypeDef : USB ctl xfer status
- */
-static USBH_StatusTypeDef GetLineCoding(USBH_HandleTypeDef *phost, CDC_LineCodingTypeDef *linecoding)
-{
-
-	phost->Control.setup.b.bmRequestType = USB_D2H | USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE;
-
-	phost->Control.setup.b.bRequest = CDC_GET_LINE_CODING;
-	phost->Control.setup.b.wValue.w = 0U;
-	phost->Control.setup.b.wIndex.w = 0U;
-	phost->Control.setup.b.wLength.w = LINE_CODING_STRUCTURE_SIZE;
-
-	return USBH_CtlReq(phost, linecoding->Array, LINE_CODING_STRUCTURE_SIZE);
-}
-
-/**
- * @brief  This request allows the host to specify typical asynchronous
- * line-character formatting properties
- * This request applies to asynchronous byte stream data class interfaces
- * and endpoints
- * @param  pdev: Selected device
- * @retval USBH_StatusTypeDef : USB ctl xfer status
- */
-static USBH_StatusTypeDef SetLineCoding(USBH_HandleTypeDef *phost, CDC_LineCodingTypeDef *linecoding)
-{
-	phost->Control.setup.b.bmRequestType = USB_H2D | USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_INTERFACE;
-
-	phost->Control.setup.b.bRequest = CDC_SET_LINE_CODING;
-	phost->Control.setup.b.wValue.w = 0U;
-
-	phost->Control.setup.b.wIndex.w = 0U;
-
-	phost->Control.setup.b.wLength.w = LINE_CODING_STRUCTURE_SIZE;
-
-	return USBH_CtlReq(phost, linecoding->Array, LINE_CODING_STRUCTURE_SIZE);
-}
-
-/**
- * @brief  This function prepares the state before issuing the class specific commands
- * @param  None
- * @retval None
- */
-USBH_StatusTypeDef USBH_CDC_SetLineCoding(USBH_HandleTypeDef *phost, CDC_LineCodingTypeDef *linecoding)
-{
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
-
-	if (phost->gState == HOST_CLASS) {
-		CDC_Handle->state = CDC_SET_LINE_CODING_STATE;
-		CDC_Handle->pUserLineCoding = linecoding;
-
-#if (USBH_USE_OS == 1U)
-		phost->os_msg = (uint32_t)USBH_CLASS_EVENT;
-#if (osCMSIS < 0x20000U)
-		(void)osMessagePut(phost->os_event, phost->os_msg, 0U);
-#else
-		(void)osMessageQueuePut(phost->os_event, &phost->os_msg, 0U, NULL);
-#endif
-#endif
-	}
-
-	return USBH_OK;
-}
-
-/**
- * @brief  This function prepares the state before issuing the class specific commands
- * @param  None
- * @retval None
- */
-USBH_StatusTypeDef USBH_CDC_GetLineCoding(USBH_HandleTypeDef *phost, CDC_LineCodingTypeDef *linecoding)
-{
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
-
-	if ((phost->gState == HOST_CLASS) || (phost->gState == HOST_CLASS_REQUEST)) {
-		*linecoding = CDC_Handle->LineCoding;
-		return USBH_OK;
-	} else {
-		return USBH_FAIL;
-	}
-}
 
 /**
  * @brief  This function return last received data size
  * @param  None
  * @retval None
  */
-uint16_t USBH_CDC_GetLastReceivedDataSize(USBH_HandleTypeDef *phost)
+uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost)
 {
 	uint32_t dataSize;
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
@@ -517,7 +333,7 @@ uint16_t USBH_CDC_GetLastReceivedDataSize(USBH_HandleTypeDef *phost)
  * @param  None
  * @retval None
  */
-USBH_StatusTypeDef USBH_CDC_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
+USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
 {
 	USBH_StatusTypeDef Status = USBH_BUSY;
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
@@ -546,7 +362,7 @@ USBH_StatusTypeDef USBH_CDC_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, 
  * @param  None
  * @retval None
  */
-USBH_StatusTypeDef USBH_CDC_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
+USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
 {
 	USBH_StatusTypeDef Status = USBH_BUSY;
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
@@ -575,7 +391,7 @@ USBH_StatusTypeDef USBH_CDC_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, u
  *  @param  pdev: Selected device
  * @retval None
  */
-static void CDC_ProcessTransmission(USBH_HandleTypeDef *phost)
+static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 {
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
 	USBH_URBStateTypeDef URB_Status = USBH_URB_IDLE;
@@ -610,7 +426,7 @@ static void CDC_ProcessTransmission(USBH_HandleTypeDef *phost)
 					CDC_Handle->data_tx_state = CDC_SEND_DATA;
 				} else {
 					CDC_Handle->data_tx_state = CDC_IDLE;
-					USBH_CDC_TransmitCallback(phost);
+					USBH_MIDI_TransmitCallback(phost);
 				}
 
 #if (USBH_USE_OS == 1U)
@@ -647,7 +463,7 @@ static void CDC_ProcessTransmission(USBH_HandleTypeDef *phost)
  * @retval None
  */
 
-static void CDC_ProcessReception(USBH_HandleTypeDef *phost)
+static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 {
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
 	USBH_URBStateTypeDef URB_Status = USBH_URB_IDLE;
@@ -677,7 +493,7 @@ static void CDC_ProcessReception(USBH_HandleTypeDef *phost)
 					CDC_Handle->data_rx_state = CDC_RECEIVE_DATA;
 				} else {
 					CDC_Handle->data_rx_state = CDC_IDLE;
-					USBH_CDC_ReceiveCallback(phost);
+					USBH_MIDI_ReceiveCallback(phost);
 				}
 
 #if (USBH_USE_OS == 1U)
@@ -701,7 +517,7 @@ static void CDC_ProcessReception(USBH_HandleTypeDef *phost)
  *  @param  pdev: Selected device
  * @retval None
  */
-__weak void USBH_CDC_TransmitCallback(USBH_HandleTypeDef *phost)
+__weak void USBH_MIDI_TransmitCallback(USBH_HandleTypeDef *phost)
 {
 	/* Prevent unused argument(s) compilation warning */
 	UNUSED(phost);
@@ -712,41 +528,9 @@ __weak void USBH_CDC_TransmitCallback(USBH_HandleTypeDef *phost)
  *  @param  pdev: Selected device
  * @retval None
  */
-__weak void USBH_CDC_ReceiveCallback(USBH_HandleTypeDef *phost)
+__weak void USBH_MIDI_ReceiveCallback(USBH_HandleTypeDef *phost)
 {
 	/* Prevent unused argument(s) compilation warning */
 	UNUSED(phost);
 }
 
-/**
- * @brief  The function informs user that Settings have been changed
- *  @param  pdev: Selected device
- * @retval None
- */
-__weak void USBH_CDC_LineCodingChanged(USBH_HandleTypeDef *phost)
-{
-	/* Prevent unused argument(s) compilation warning */
-	UNUSED(phost);
-}
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
