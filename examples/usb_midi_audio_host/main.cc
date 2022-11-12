@@ -2,9 +2,9 @@
 #include "drivers/interrupt_control.hh"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
-#include "print.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
+#include "usbh_core.h"
 #include <cstdint>
 
 #include "osd32brk_conf.hh"
@@ -14,36 +14,32 @@
 namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
 
-// extern HCD_HandleTypeDef hpcd;
+extern HCD_HandleTypeDef hhcd;
 
 void main()
 {
 	Uart<Board::ConsoleUART> uart;
-	uart.write("\r\n\r\nSimple USB MSC Device test\r\n");
-	uart.write("Connect a USB cable to a computer\r\n");
-	uart.write("You should see a 128MB unformatted drive appear.\r\n");
+	uart.write("\r\n\r\nUSB MIDI Host test\r\n");
+	uart.write("Connect a USB cable to a MIDI device (keyboard, etc)\r\n");
 
 	Board::GreenLED green1;
 	green1.off();
 
 	SystemClocks::init();
 
-	// USBD_HandleTypeDef USBD_Device;
+	USBH_HandleTypeDef USBH_Host;
 
-	// auto init_ok = USBD_Init(&USBD_Device, &MSC_Desc, 0);
-	// if (init_ok != USBD_OK) {
-	// 	uart.write("USB Device failed to initialize!\r\n");
-	// 	uart.write("Error code: ");
-	// 	uart.write(static_cast<uint32_t>(init_ok));
+	// auto init_ok = USBH_Init(&USBH_Host, state_change_callback, 0);
+	// if (init_ok != USBH_OK) {
+	// 	printf("USB Host failed to initialize! Error code: %d\n", static_cast<uint32_t>(init_ok));
 	// }
 	InterruptControl::disable_irq(OTG_IRQn);
-	// InterruptManager::registerISR(OTG_IRQn, [] { HAL_HCD_IRQHandler(&hpcd); });
+	InterruptManager::registerISR(OTG_IRQn, [] { HAL_HCD_IRQHandler(&hhcd); });
 	InterruptControl::set_irq_priority(OTG_IRQn, 0, 0);
 	InterruptControl::enable_irq(OTG_IRQn);
 
-	// USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
-	// USBD_MSC_RegisterStorage(&USBD_Device, &USBD_MSC_fops);
-	// USBD_Start(&USBD_Device);
+	// USBH_RegisterClass(&USBH_Host, HOST_MIDI_CLASS);
+	// USBH_Start(&USBH_Host);
 
 	// Blink green1 light at 1Hz
 	uint32_t last_tm = 0;
