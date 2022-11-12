@@ -7,11 +7,10 @@
  *  @verbatim
  *
  *          ===================================================================
- *                                CDC Class Driver Description
+ *                        Audio Class MIDI Subclass Driver Description
  *          ===================================================================
- *           This driver manages the "Universal Serial Bus Class Definitions for Communications Devices
- *           Revision 1.2 November 16, 2007" and the sub-protocol specification of "Universal Serial Bus
- *           Communications Class Subclass Specification for PSTN Devices Revision 1.2 February 9, 2007"
+ *           This driver manages the "Universal Serial Bus Device Class Definition for MIDI Devices"
+ *           Revision 1.0 November 1, 1999".
  *           This driver implements the following aspects of the specification:
  *             - Device descriptor management
  *             - Configuration descriptor management
@@ -39,8 +38,6 @@
 
 #include "usbh_midi.hh"
 
-#define USBH_MIDI_BUFFER_SIZE 1024
-
 static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost);
@@ -50,9 +47,12 @@ static USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost);
 static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost);
 static void MIDI_ProcessReception(USBH_HandleTypeDef *phost);
 
-constexpr uint8_t AudioClassCode = 0x02;
-constexpr uint8_t MIDISubclassCode = 0x02;
+constexpr uint8_t AudioClassCode = 0x01;
+constexpr uint8_t AudioControlSubclassCode = 0x01;
+constexpr uint8_t MIDISubclassCode = 0x03;
+
 constexpr uint8_t AnyProtocol = 0xFF;
+constexpr uint8_t NoValidInterfaceFound = 0xFF;
 
 USBH_ClassTypeDef MIDI_Class = {
 	"MIDI",
@@ -65,18 +65,6 @@ USBH_ClassTypeDef MIDI_Class = {
 	nullptr,
 };
 
-class MIDIHost {
-public:
-	static CDC_HandleTypeDef *new_handle()
-	{
-		auto handle = static_cast<CDC_HandleTypeDef *>(USBH_malloc(sizeof(CDC_HandleTypeDef)));
-		if (handle)
-			USBH_memset(handle, 0, sizeof(CDC_HandleTypeDef));
-
-		return handle;
-	}
-};
-
 /**
  * @brief  USBH_MIDI_InterfaceInit
  *         The function init the MIDI class.
@@ -85,22 +73,10 @@ public:
  */
 static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 {
-
 	USBH_StatusTypeDef status;
 	uint8_t interface;
 
-	interface = USBH_FindInterface(phost, AudioClassCode, MIDISubclassCode, AnyProtocol);
-
-	if ((interface == 0xFFU) || (interface >= USBH_MAX_NUM_INTERFACES)) /* No Valid Interface */ {
-		USBH_DbgLog("Cannot Find the interface for Communication Interface Class. %s", phost->pActiveClass->Name);
-		return USBH_FAIL;
-	}
-
-	status = USBH_SelectInterface(phost, interface);
-	if (status != USBH_OK)
-		return USBH_FAIL;
-
-	auto CDC_Handle = MIDIHost::new_handle();
+	auto CDC_Handle = new_usbhost_class_handle<CDC_HandleTypeDef>();
 	phost->pActiveClass->pData = CDC_Handle;
 
 	if (CDC_Handle == nullptr) {
@@ -108,82 +84,46 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 		return USBH_FAIL;
 	}
 
-	/*Collect the notification endpoint address and length*/
-	if (phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress & 0x80U) {
-		CDC_Handle->CommItf.NotifEp = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress;
-		CDC_Handle->CommItf.NotifEpSize = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].wMaxPacketSize;
+	USBHostHandle host{phost};
+
+	// Look for an optional Audio Control interface
+	interface = USBH_FindInterface(phost, AudioClassCode, AudioControlSubclassCode, AnyProtocol);
+	if ((interface == NoValidInterfaceFound) || (interface >= USBH_MAX_NUM_INTERFACES)) {
+		USBH_DbgLog("Did not find an audio control interface, continuing\n");
+	} else {
+		USBH_DbgLog("Found Audio Control subclass\n");
+		host.link_endpoint_pipe(CDC_Handle->ControlItf.ControlEP, interface, 0);
+		host.open_pipe(CDC_Handle->ControlItf.ControlEP, EndPointType::Intr); // TODO: Is it an Intr EP type?
+		host.set_toggle(CDC_Handle->ControlItf.ControlEP, 0);
 	}
 
-	/*Allocate the length for host channel number in*/
-	CDC_Handle->CommItf.NotifPipe = USBH_AllocPipe(phost, CDC_Handle->CommItf.NotifEp);
-
-	/* Open pipe for Notification endpoint */
-	USBH_OpenPipe(phost,
-				  CDC_Handle->CommItf.NotifPipe,
-				  CDC_Handle->CommItf.NotifEp,
-				  phost->device.address,
-				  phost->device.speed,
-				  USB_EP_TYPE_INTR,
-				  CDC_Handle->CommItf.NotifEpSize);
-
-	USBH_LL_SetToggle(phost, CDC_Handle->CommItf.NotifPipe, 0U);
-
-	interface = USBH_FindInterface(phost, DATA_INTERFACE_CLASS_CODE, CDC_RESERVED, NO_CLASS_SPECIFIC_PROTOCOL_CODE);
-
-	if ((interface == 0xFFU) || (interface >= USBH_MAX_NUM_INTERFACES)) /* No Valid Interface */ {
-		USBH_DbgLog("Cannot Find the interface for Data Interface Class: %s.", phost->pActiveClass->Name);
+	interface = USBH_FindInterface(phost, AudioClassCode, MIDISubclassCode, AnyProtocol);
+	if ((interface == NoValidInterfaceFound) || (interface >= USBH_MAX_NUM_INTERFACES)) {
+		USBH_DbgLog("Cannot find the interface for MIDI subclass: %s.", phost->pActiveClass->Name);
 		return USBH_FAIL;
 	}
 
-	/*Collect the class specific endpoint address and length*/
-	{
-		auto ep_addr = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress;
-		auto mps = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].wMaxPacketSize;
-		if (ep_addr & 0x80U) {
-			CDC_Handle->DataItf.InEp = ep_addr;
-			CDC_Handle->DataItf.InEpSize = mps;
-		} else {
-			CDC_Handle->DataItf.OutEp = ep_addr;
-			CDC_Handle->DataItf.OutEpSize = mps;
-		}
-	}
+	status = USBH_SelectInterface(phost, interface);
+	if (status != USBH_OK)
+		return USBH_FAIL;
 
-	if (phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[1].bEndpointAddress & 0x80U) {
-		CDC_Handle->DataItf.InEp = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[1].bEndpointAddress;
-		CDC_Handle->DataItf.InEpSize = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[1].wMaxPacketSize;
-	} else {
-		CDC_Handle->DataItf.OutEp = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[1].bEndpointAddress;
-		CDC_Handle->DataItf.OutEpSize = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[1].wMaxPacketSize;
-	}
+	if (host.is_in_ep(interface, 0))
+		host.link_endpoint_pipe(CDC_Handle->DataItf.InEP, interface, 0);
+	else
+		host.link_endpoint_pipe(CDC_Handle->DataItf.OutEP, interface, 0);
 
-	/*Allocate the length for host channel number out*/
-	CDC_Handle->DataItf.OutPipe = USBH_AllocPipe(phost, CDC_Handle->DataItf.OutEp);
+	if (host.is_in_ep(interface, 1))
+		host.link_endpoint_pipe(CDC_Handle->DataItf.InEP, interface, 1);
+	else
+		host.link_endpoint_pipe(CDC_Handle->DataItf.OutEP, interface, 1);
 
-	/*Allocate the length for host channel number in*/
-	CDC_Handle->DataItf.InPipe = USBH_AllocPipe(phost, CDC_Handle->DataItf.InEp);
-
-	/* Open channel for OUT endpoint */
-	USBH_OpenPipe(phost,
-				  CDC_Handle->DataItf.OutPipe,
-				  CDC_Handle->DataItf.OutEp,
-				  phost->device.address,
-				  phost->device.speed,
-				  USB_EP_TYPE_BULK,
-				  CDC_Handle->DataItf.OutEpSize);
-
-	/* Open channel for IN endpoint */
-	USBH_OpenPipe(phost,
-				  CDC_Handle->DataItf.InPipe,
-				  CDC_Handle->DataItf.InEp,
-				  phost->device.address,
-				  phost->device.speed,
-				  USB_EP_TYPE_BULK,
-				  CDC_Handle->DataItf.InEpSize);
+	host.open_pipe(CDC_Handle->DataItf.OutEP, EndPointType::Bulk);
+	host.open_pipe(CDC_Handle->DataItf.InEP, EndPointType::Bulk);
 
 	CDC_Handle->state = CDC_IDLE_STATE;
 
-	USBH_LL_SetToggle(phost, CDC_Handle->DataItf.OutPipe, 0U);
-	USBH_LL_SetToggle(phost, CDC_Handle->DataItf.InPipe, 0U);
+	host.set_toggle(CDC_Handle->DataItf.OutEP, 0U);
+	host.set_toggle(CDC_Handle->DataItf.InEP, 0U);
 
 	return USBH_OK;
 }
@@ -196,24 +136,25 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
  */
 static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
 {
+	// USBHostHandle host{phost};
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
 
-	if (CDC_Handle->CommItf.NotifPipe) {
-		USBH_ClosePipe(phost, CDC_Handle->CommItf.NotifPipe);
-		USBH_FreePipe(phost, CDC_Handle->CommItf.NotifPipe);
-		CDC_Handle->CommItf.NotifPipe = 0U; /* Reset the Channel as Free */
+	if (CDC_Handle->ControlItf.ControlEP.pipe) {
+		USBH_ClosePipe(phost, CDC_Handle->ControlItf.ControlEP.pipe);
+		USBH_FreePipe(phost, CDC_Handle->ControlItf.ControlEP.pipe);
+		CDC_Handle->ControlItf.ControlEP.pipe = 0U; /* Reset the Channel as Free */
 	}
 
-	if (CDC_Handle->DataItf.InPipe) {
-		USBH_ClosePipe(phost, CDC_Handle->DataItf.InPipe);
-		USBH_FreePipe(phost, CDC_Handle->DataItf.InPipe);
-		CDC_Handle->DataItf.InPipe = 0U; /* Reset the Channel as Free */
+	if (CDC_Handle->DataItf.InEP.pipe) {
+		USBH_ClosePipe(phost, CDC_Handle->DataItf.InEP.pipe);
+		USBH_FreePipe(phost, CDC_Handle->DataItf.InEP.pipe);
+		CDC_Handle->DataItf.InEP.pipe = 0U; /* Reset the Channel as Free */
 	}
 
-	if (CDC_Handle->DataItf.OutPipe) {
-		USBH_ClosePipe(phost, CDC_Handle->DataItf.OutPipe);
-		USBH_FreePipe(phost, CDC_Handle->DataItf.OutPipe);
-		CDC_Handle->DataItf.OutPipe = 0U; /* Reset the Channel as Free */
+	if (CDC_Handle->DataItf.OutEP.pipe) {
+		USBH_ClosePipe(phost, CDC_Handle->DataItf.OutEP.pipe);
+		USBH_FreePipe(phost, CDC_Handle->DataItf.OutEP.pipe);
+		CDC_Handle->DataItf.OutEP.pipe = 0U; /* Reset the Channel as Free */
 	}
 
 	if (phost->pActiveClass->pData) {
@@ -294,9 +235,7 @@ static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost)
  */
 static USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost)
 {
-	/* Prevent unused argument(s) compilation warning */
 	UNUSED(phost);
-
 	return USBH_OK;
 }
 
@@ -313,9 +252,9 @@ USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost)
 	if (phost->gState == HOST_CLASS) {
 		CDC_Handle->state = CDC_IDLE_STATE;
 
-		USBH_ClosePipe(phost, CDC_Handle->CommItf.NotifPipe);
-		USBH_ClosePipe(phost, CDC_Handle->DataItf.InPipe);
-		USBH_ClosePipe(phost, CDC_Handle->DataItf.OutPipe);
+		USBH_ClosePipe(phost, CDC_Handle->ControlItf.ControlEP.pipe);
+		USBH_ClosePipe(phost, CDC_Handle->DataItf.InEP.pipe);
+		USBH_ClosePipe(phost, CDC_Handle->DataItf.OutEP.pipe);
 	}
 	return USBH_OK;
 }
@@ -331,7 +270,7 @@ uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost)
 	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
 
 	if (phost->gState == HOST_CLASS) {
-		dataSize = USBH_LL_GetLastXferSize(phost, CDC_Handle->DataItf.InPipe);
+		dataSize = USBH_LL_GetLastXferSize(phost, CDC_Handle->DataItf.InEP.pipe);
 	} else {
 		dataSize = 0U;
 	}
@@ -409,12 +348,12 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 
 	switch (CDC_Handle->data_tx_state) {
 		case CDC_SEND_DATA:
-			if (CDC_Handle->TxDataLength > CDC_Handle->DataItf.OutEpSize) {
+			if (CDC_Handle->TxDataLength > CDC_Handle->DataItf.OutEP.size) {
 				USBH_BulkSendData(
-					phost, CDC_Handle->pTxData, CDC_Handle->DataItf.OutEpSize, CDC_Handle->DataItf.OutPipe, 1U);
+					phost, CDC_Handle->pTxData, CDC_Handle->DataItf.OutEP.size, CDC_Handle->DataItf.OutEP.pipe, 1U);
 			} else {
 				USBH_BulkSendData(
-					phost, CDC_Handle->pTxData, (uint16_t)CDC_Handle->TxDataLength, CDC_Handle->DataItf.OutPipe, 1U);
+					phost, CDC_Handle->pTxData, (uint16_t)CDC_Handle->TxDataLength, CDC_Handle->DataItf.OutEP.pipe, 1U);
 			}
 
 			CDC_Handle->data_tx_state = CDC_SEND_DATA_WAIT;
@@ -422,13 +361,13 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 
 		case CDC_SEND_DATA_WAIT:
 
-			URB_Status = USBH_LL_GetURBState(phost, CDC_Handle->DataItf.OutPipe);
+			URB_Status = USBH_LL_GetURBState(phost, CDC_Handle->DataItf.OutEP.pipe);
 
 			/* Check the status done for transmission */
 			if (URB_Status == USBH_URB_DONE) {
-				if (CDC_Handle->TxDataLength > CDC_Handle->DataItf.OutEpSize) {
-					CDC_Handle->TxDataLength -= CDC_Handle->DataItf.OutEpSize;
-					CDC_Handle->pTxData += CDC_Handle->DataItf.OutEpSize;
+				if (CDC_Handle->TxDataLength > CDC_Handle->DataItf.OutEP.size) {
+					CDC_Handle->TxDataLength -= CDC_Handle->DataItf.OutEP.size;
+					CDC_Handle->pTxData += CDC_Handle->DataItf.OutEP.size;
 				} else {
 					CDC_Handle->TxDataLength = 0U;
 				}
@@ -484,7 +423,8 @@ static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 
 		case CDC_RECEIVE_DATA:
 
-			USBH_BulkReceiveData(phost, CDC_Handle->pRxData, CDC_Handle->DataItf.InEpSize, CDC_Handle->DataItf.InPipe);
+			USBH_BulkReceiveData(
+				phost, CDC_Handle->pRxData, CDC_Handle->DataItf.InEP.size, CDC_Handle->DataItf.InEP.pipe);
 
 			CDC_Handle->data_rx_state = CDC_RECEIVE_DATA_WAIT;
 
@@ -492,13 +432,13 @@ static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 
 		case CDC_RECEIVE_DATA_WAIT:
 
-			URB_Status = USBH_LL_GetURBState(phost, CDC_Handle->DataItf.InPipe);
+			URB_Status = USBH_LL_GetURBState(phost, CDC_Handle->DataItf.InEP.pipe);
 
 			/*Check the status done for reception*/
 			if (URB_Status == USBH_URB_DONE) {
-				length = USBH_LL_GetLastXferSize(phost, CDC_Handle->DataItf.InPipe);
+				length = USBH_LL_GetLastXferSize(phost, CDC_Handle->DataItf.InEP.pipe);
 
-				if (((CDC_Handle->RxDataLength - length) > 0U) && (length > CDC_Handle->DataItf.InEpSize)) {
+				if (((CDC_Handle->RxDataLength - length) > 0U) && (length > CDC_Handle->DataItf.InEP.size)) {
 					CDC_Handle->RxDataLength -= length;
 					CDC_Handle->pRxData += length;
 					CDC_Handle->data_rx_state = CDC_RECEIVE_DATA;
