@@ -1,7 +1,9 @@
 /**
   ******************************************************************************
   * @file    stm32mp1xx_ll_usb.c
-  * @author  Dan Green, converted from h7 version by MCD Application Team
+  * @author  MCD Application Team
+  *          with changes by Dan Green to convert from H7 driver to MP1
+  *          based on work by https://github.com/ua1arn/hftrx
   * @brief   USB Low Layer HAL module driver.
   *
   *          This file provides firmware functions to manage the following
@@ -40,8 +42,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx_hal.h"
-#include "stm32mp1xx_ll_rcc.h"
-#include <stdlib.h> //For ldiv
+#include "stm32mp1xx_ll_usb_phy.h" //for USB_HS_PHYC_Init()
 
 /** @addtogroup STM32MP1xx_LL_USB_DRIVER
  * @{
@@ -75,58 +76,6 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
   * @{
   */
 
-// Modification here: Function from hftrx
-HAL_StatusTypeDef USB_HS_PHYCDeInit(void)
-{
-	/* reset */
-	RCC->APB4RSTSETR = RCC_APB4RSTSETR_USBPHYRST;
-	RCC->APB4RSTCLRR = RCC_APB4RSTCLRR_USBPHYRST;
-	/* turn clock off */
-	RCC->MP_APB4ENCLRR = RCC_MP_APB4ENCLRR_USBPHYEN;
-	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_USBPHYLPEN;
-	return HAL_OK;
-}
-
-// Modification here: Function from hftrx
-HAL_StatusTypeDef USB_HS_PHYCInit(void)
-{
-	// Enable USBPHY
-	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN;
-	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN;
-
-	// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
-	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL; // 1.44 GHz
-	const uint_fast32_t usbphyref = LL_RCC_GetUSBPHYClockFreq(LL_RCC_USBPHY_CLKSOURCE);
-	const uint_fast32_t ODF = 0;
-	const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY / 4, usbphyref / 4);
-	const uint_fast32_t N = d.quot; // 0b0111100;
-
-	const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
-	const uint_fast32_t FRACT = d.rem * (uint_fast64_t)FRACTMAX / usbphyref;
-
-	const uint32_t validmask = USBPHYC_PLL_PLLDITHEN1_Msk | USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLFRACCTL_Msk |
-							   USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLODF_Msk | USBPHYC_PLL_PLLNDIV_Msk |
-							   USBPHYC_PLL_PLLSTRBYP_Msk | 0;
-
-	const uint32_t PLLFRACCTL_VAL = (d.rem == 0) ? 0 : USBPHYC_PLL_PLLFRACCTL_Msk;
-	const uint32_t newPLLvalue = ((N << USBPHYC_PLL_PLLNDIV_Pos) & USBPHYC_PLL_PLLNDIV_Msk) |
-								 (ODF << USBPHYC_PLL_PLLODF_Pos) |
-								 ((FRACT << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) | PLLFRACCTL_VAL |
-								 USBPHYC_PLL_PLLSTRBYP_Msk | USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk;
-
-	if ((newPLLvalue & validmask) != (USBPHYC->PLL & validmask) || (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0) {
-		USBPHYC->PLL &= ~USBPHYC_PLL_PLLEN_Msk;
-		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) != 0)
-			;
-		USBPHYC->PLL = (USBPHYC->PLL & ~(validmask)) | newPLLvalue;
-		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
-		HAL_Delay(10);
-		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
-			;
-	}
-	return HAL_OK;
-}
-
 /**
  * @brief  Initializes the USB Core
  * @param  USBx USB Instance
@@ -153,7 +102,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 		ret = USB_CoreReset(USBx);
 	}
 
-	// Note: Modification here: this else if{} block added
+	// Note: Modification to H7 LL driver here: this block added (H7 doesn't have USB_OTG_HS_EMBEDDED_PHY)
 	else if (cfg.phy_itface == USB_OTG_HS_EMBEDDED_PHY)
 	{
 		// Power down PHY
@@ -200,7 +149,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 
 	if (cfg.dma_enable == 1U) {
 		/* make sure to reserve 18 fifo Locations for DMA buffers */
-		// Modification here: GDFIFOCFG is not present on MP1, so these are commented out
+		// Modification to the H7 driver here: GDFIFOCFG is not present on MP1, so these are commented out
 		// USBx->GDFIFOCFG &= ~(0xFFFFU << 16);
 		// USBx->GDFIFOCFG |= 0x3EEU << 16;
 
@@ -372,7 +321,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
 	/* Device mode configuration */
 	USBx_DEVICE->DCFG |= DCFG_FRAME_INTERVAL_80;
 
-	// Note: Modification to LL driver here: this else if{} block added (copied from above block)
+	// Note: Modification to H7 LL driver here (added check for USB_OTG_HS_EMBEDDED_PHY)
 	if (cfg.phy_itface == USB_OTG_ULPI_PHY || cfg.phy_itface == USB_OTG_HS_EMBEDDED_PHY) {
 		if (cfg.speed == USBD_HS_SPEED) {
 			/* Set Core speed to High speed mode */
@@ -742,6 +691,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 			}
 
 			if (ep->type == EP_TYPE_ISOC) {
+				// Modification to H7 LL driver here:
 				if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U ||
 					USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH) {
 					USBx_INEP(epnum)->DIEPCTL |= USB_OTG_DIEPCTL_SODDFRM;
@@ -762,6 +712,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 					USBx_DEVICE->DIEPEMPMSK |= 1UL << (ep->num & EP_ADDR_MSK);
 				}
 			} else {
+				// Modification to H7 LL driver here:
 				if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U ||
 					USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH) {
 					USBx_INEP(epnum)->DIEPCTL |= USB_OTG_DIEPCTL_SODDFRM;
@@ -796,6 +747,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		}
 
 		if (ep->type == EP_TYPE_ISOC) {
+			// Modification to H7 LL driver here:
 			if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U ||
 				USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH) {
 				USBx_OUTEP(epnum)->DOEPCTL |= USB_OTG_DOEPCTL_SODDFRM;
@@ -1363,10 +1315,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 	/* Disable Battery chargin detector */
 	USBx->GCCFG &= ~(USB_OTG_GCCFG_BCDEN);
 
-	// CID:
-	// H7: 0x0000 2300
-	// MP1: 0x0000 4000
-	// Modification here (from hftrx)
+	// Modification to H7 LL driver here (from hftrx)
 	if (USB_Is_OTG_HS(USBx)) {
 		if (cfg.speed == USBH_FSLS_SPEED) {
 			/* Force Device Enumeration to FS/LS mode only */
@@ -1395,17 +1344,13 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 		USBx_HC(i)->HCINTMSK = 0U;
 	}
 
-	/* Modification here: Enable VBUS driving -- from hftrx */
-	// TODO: Comment this out until we test Host mode
-	// (void)USB_DriveVbus(USBx, 1U);
-	// HAL_Delay(200U);
-
 	/* Disable all interrupts. */
 	USBx->GINTMSK = 0U;
 
 	/* Clear any pending interrupts */
 	USBx->GINTSTS = 0xFFFFFFFFU;
 
+	// Modification to H7 LL driver here (from hftrx)
 	if (USB_Is_OTG_HS(USBx)) {
 		/* set Rx FIFO size */
 		USBx->GRXFSIZ = 0x200U;
@@ -1563,18 +1508,13 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
  *          This parameter can be a value from 0 to 32K
  * @retval HAL state
  */
-// Modification here:
-// Last two parameters were added, taken from hftrx (tt_hubaddr, tt_prtaddr)
 HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 							  uint8_t ch_num,
 							  uint8_t epnum,
 							  uint8_t dev_address,
 							  uint8_t speed,
 							  uint8_t ep_type,
-							  uint16_t mps,
-							  uint8_t tt_hubaddr,
-							  uint8_t tt_prtaddr)
-{
+							  uint16_t mps) {
 	HAL_StatusTypeDef ret = HAL_OK;
 	uint32_t USBx_BASE = (uint32_t)USBx;
 	uint32_t HCcharEpDir;
@@ -1583,11 +1523,6 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 
 	/* Clear old interrupt conditions for this host channel. */
 	USBx_HC((uint32_t)ch_num)->HCINT = 0xFFFFFFFFU;
-
-	// Modification here: from hftrx:
-	USBx_HC((uint32_t)ch_num)->HCSPLT =
-		(USBx_HC((uint32_t)ch_num)->HCSPLT & ~(USB_OTG_HCSPLT_HUBADDR_Msk | USB_OTG_HCSPLT_PRTADDR_Msk)) |
-		((uint32_t)tt_hubaddr < USB_OTG_HCSPLT_HUBADDR_Pos) | ((uint32_t)tt_prtaddr < USB_OTG_HCSPLT_PRTADDR_Pos) | 0;
 
 	/* Enable channel interrupts required for this transfer. */
 	switch (ep_type) {
@@ -1600,7 +1535,7 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 			if ((epnum & 0x80U) == 0x80U) {
 				USBx_HC((uint32_t)ch_num)->HCINTMSK |= USB_OTG_HCINTMSK_BBERRM;
 			} else {
-				// Modification here:
+				// Modification to H7 LL driver here (from hftrx)
 				if (USB_Is_OTG_HS(USBx)) {
 					USBx_HC((uint32_t)ch_num)->HCINTMSK |= USB_OTG_HCINTMSK_NYET | USB_OTG_HCINTMSK_ACKM;
 				}
@@ -1632,6 +1567,7 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 			break;
 	}
 
+	/* Enable host channel Halt interrupt */
 	USBx_HC((uint32_t)ch_num)->HCINTMSK |= USB_OTG_HCINTMSK_CHHM;
 
 	/* Enable the top level host channel interrupt. */
@@ -1661,7 +1597,8 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 										(((uint32_t)ep_type << 18) & USB_OTG_HCCHAR_EPTYP) |
 										((uint32_t)mps & USB_OTG_HCCHAR_MPSIZ) | HCcharEpDir | HCcharLowSpeed;
 
-	if (ep_type == EP_TYPE_INTR) {
+	// Modification to H7 LL driver here (from hftrx): added EP_TYPE_ISOC
+	if ((ep_type == EP_TYPE_INTR) || (ep_type == EP_TYPE_ISOC)) {
 		USBx_HC((uint32_t)ch_num)->HCCHAR |= USB_OTG_HCCHAR_ODDFRM;
 	}
 
@@ -1688,10 +1625,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	uint16_t num_packets;
 	uint16_t max_hc_pkt_count = 256U;
 
-	// CID:
-	// H7: 0x0000 2300
-	// MP1: 0x0000 4000
-	// Modification to LL driver here:
+	// Modification to H7 LL driver here:
 	if ((USB_Is_OTG_HS(USBx)) && (hc->speed == USBH_HS_SPEED)) {
 		/* in DMA mode host Core automatically issues ping  in case of NYET/NAK */
 		if ((dma == 1U) && ((hc->ep_type == EP_TYPE_CTRL) || (hc->ep_type == EP_TYPE_BULK))) {
@@ -1981,10 +1915,8 @@ HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx)
  * @}
  */
 
-// Modification here:
-// Function from hftrx
-uint_fast8_t USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
-{
+// Modification to H7 LL driver here:
+uint_fast8_t USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx) {
 	return 1;
 }
 
