@@ -68,6 +68,7 @@ void main()
 	}
 }
 
+uint8_t rx_buffer[128];
 void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id)
 {
 	switch (id) {
@@ -85,6 +86,7 @@ void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id)
 
 		case HOST_USER_CLASS_ACTIVE:
 			printf("Class active\n");
+			USBH_MIDI_Receive(phost, rx_buffer, 128);
 			break;
 
 		case HOST_USER_DISCONNECTION:
@@ -95,6 +97,13 @@ void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id)
 			printf("Error\n");
 			break;
 	}
+}
+
+void USBH_MIDI_ReceiveCallback(USBH_HandleTypeDef *phost)
+{
+	auto bytes_rx = USBH_MIDI_GetLastReceivedDataSize(phost);
+	printf("RX %d bytes: 0x%x 0x%x 0x%x 0x%x\n", bytes_rx, rx_buffer[0], rx_buffer[1], rx_buffer[2], rx_buffer[3]);
+	USBH_MIDI_Receive(phost, rx_buffer, 128);
 }
 
 // required for printf()
