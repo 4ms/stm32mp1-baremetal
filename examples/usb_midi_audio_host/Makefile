@@ -7,7 +7,7 @@ EXTLIBDIR = ../../third-party
 SHAREDDIR = ../../shared
 STM32HALDIR = $(EXTLIBDIR)/STM32MP1xx_HAL_Driver
 PATCHEDSTM32HALDIR = $(SHAREDDIR)/stm32hal_patched
-USBLIBDIR = $(EXTLIBDIR)/STM32_USB_Device_Library
+USBLIBDIR = $(EXTLIBDIR)/STM32_USB_Host_Library
 
 SOURCES = startup.s \
 		  main.cc \
@@ -18,24 +18,18 @@ SOURCES = startup.s \
 		  $(SHAREDDIR)/system/irq_init.c \
 		  $(SHAREDDIR)/drivers/irq_handler.cc \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal.c \
-		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd.c \
-		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd_ex.c \
+		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_hcd.c \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_ll_usb.c \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_ll_usb_phy.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_gpio.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_ll_rcc.c \
-		  usbd_conf.c \
-		  usbd_desc.c \
-		  usbd_msc_storage.c \
-		  $(USBLIBDIR)/Class/MSC/Src/usbd_msc_bot.c \
-		  $(USBLIBDIR)/Class/MSC/Src/usbd_msc_data.c \
-		  $(USBLIBDIR)/Class/MSC/Src/usbd_msc_scsi.c \
-		  $(USBLIBDIR)/Class/MSC/Src/usbd_msc.c \
-		  $(USBLIBDIR)/Core/Src/usbd_core.c \
-		  $(USBLIBDIR)/Core/Src/usbd_ctlreq.c \
-		  $(USBLIBDIR)/Core/Src/usbd_ioreq.c \
+		  usbh_conf.c \
+		  $(USBLIBDIR)/Core/Src/usbh_core.c \
+		  $(USBLIBDIR)/Core/Src/usbh_ctlreq.c \
+		  $(USBLIBDIR)/Core/Src/usbh_ioreq.c \
+		  $(USBLIBDIR)/Core/Src/usbh_pipes.c \
 
 
 INCLUDES = -I. \
