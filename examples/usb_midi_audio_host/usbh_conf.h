@@ -52,7 +52,7 @@ extern "C" {
 #define USBH_MAX_DATA_BUFFER 0x200U
 #define USBH_DEBUG_LEVEL 3U
 #define USBH_USE_OS 0U
-
+enum { MidiStreamingBufferSize = 256 };
 #define HOST_HS 0
 #define HOST_FS 1
 

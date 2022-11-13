@@ -5,8 +5,6 @@
 
 class MidiHost {
 public:
-	static inline uint8_t rx_buffer[128];
-
 	MidiStreamingHandle MSHandle;
 	USBH_HandleTypeDef usbhost;
 
@@ -47,11 +45,16 @@ public:
 	bool start() { return USBH_Start(&usbhost) == USBH_OK; }
 	bool stop() { return USBH_Stop(&usbhost) == USBH_OK; }
 	void process() { USBH_Process(&usbhost); }
-	USBH_StatusTypeDef receive() { return USBH_MIDI_Receive(&usbhost, rx_buffer, 128); }
+	USBH_StatusTypeDef receive() { return USBH_MIDI_Receive(&usbhost, MSHandle.rx_buffer, 128); }
 	USBH_StatusTypeDef transmit(uint8_t *buff, uint32_t len) { return USBH_MIDI_Transmit(&usbhost, buff, len); }
 
 	static void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id)
 	{
+		USBHostHandle host{phost};
+		auto mshandle = host.get_class_handle<MidiStreamingHandle>();
+		if (!mshandle)
+			return;
+
 		switch (id) {
 			case HOST_USER_SELECT_CONFIGURATION:
 				printf("Select config\n");
@@ -67,8 +70,7 @@ public:
 
 			case HOST_USER_CLASS_ACTIVE:
 				printf("Class active\n");
-				// TODO: Move rx_buffer to class handle, to support multiple instances
-				USBH_MIDI_Receive(phost, rx_buffer, 128);
+				USBH_MIDI_Receive(phost, mshandle->rx_buffer, MidiStreamingBufferSize);
 				break;
 
 			case HOST_USER_DISCONNECTION:

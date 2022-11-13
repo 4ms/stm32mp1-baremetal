@@ -1,8 +1,9 @@
 #pragma once
 
-#include <functional>
 #include "usbh_core.h"
 #include "usbh_host.hh"
+#include <functional>
+
 
 constexpr uint8_t AudioClassCode = 0x01;
 constexpr uint8_t AudioControlSubclassCode = 0x01;
@@ -10,7 +11,6 @@ constexpr uint8_t MidiStreamingSubClass = 0x03;
 
 constexpr uint8_t AnyProtocol = 0xFF;
 constexpr uint8_t NoValidInterfaceFound = 0xFF;
-
 
 struct MidiInterfaceHeaderDesc {
 	uint8_t bLength;			// Size of this descriptor = 7
@@ -116,6 +116,8 @@ struct MidiStreamingHandle {
 	static void _default_tx_cb() {}
 	MidiStreamRxCallbackType rx_callback = _default_rx_cb;
 	MidiStreamTxCallbackType tx_callback = _default_tx_cb;
+
+	uint8_t rx_buffer[MidiStreamingBufferSize];
 };
 
 extern USBH_ClassTypeDef MIDI_Class_Ops;
