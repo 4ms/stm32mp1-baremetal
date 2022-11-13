@@ -14,8 +14,8 @@ enum class EndPointType : uint8_t {
 	Intr = USB_EP_TYPE_INTR,
 };
 
-// Wrapper for USBH_HandleTypeDef
-// That adds helper funcs for common operations
+// Stateless wrapper for USBH_HandleTypeDef*
+// That adds helper funcs for common operations in C functions that have a phost parameter
 class USBHostHandle {
 public:
 	USBH_HandleTypeDef *phost;
@@ -24,6 +24,9 @@ public:
 		: phost{phost}
 	{}
 
+	// Returns the user data of the active class, cast to whatever type you're expecting.
+	// Checks all the pointers before dereferencing them.
+	// Returns nullptr if it fails
 	template<typename HandleType>
 	HandleType *get_class_handle()
 	{
@@ -37,11 +40,14 @@ public:
 		return nullptr;
 	}
 
+	// Returns true if the endpoint specified by the interface index and endpoint index is an IN EP
 	bool is_in_ep(uint8_t interface, uint8_t ep_index)
 	{
 		auto addr = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[ep_index].bEndpointAddress;
 		return (addr & 0x80U);
 	}
+
+	// Returns true if the endpoint specified by the interface index and endpoint index is an OUT EP
 	bool is_out_ep(uint8_t interface, uint8_t ep_index) { return !is_in_ep(interface, ep_index); }
 
 	void link_endpoint_pipe(EndPoint &ep, uint8_t interface, uint8_t ep_index)
@@ -74,16 +80,3 @@ public:
 		}
 	}
 };
-
-// Create a new, zeroed handle
-// Uses the user-defined USBH_malloc and USBH_memset
-// so that we can inter-operate with other classes from the STM32 Host Library
-template<typename HandleType>
-HandleType *new_usbh_handle()
-{
-	auto handle = static_cast<HandleType *>(USBH_malloc(sizeof(HandleType)));
-	if (handle)
-		USBH_memset(handle, 0, sizeof(HandleType));
-
-	return handle;
-}

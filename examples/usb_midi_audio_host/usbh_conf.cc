@@ -61,20 +61,6 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef *hpcd)
 	}
 }
 
-void *USBH_malloc(size_t sz)
-{
-	static MidiStreamingHandle _mem;
-
-	if (sz == sizeof(MidiStreamingHandle))
-		return &_mem;
-
-	return NULL;
-}
-
-void USBH_free(void *){
-	// nothing, we're using static allocation
-};
-
 /*******************************************************************************
 					   LL Driver Callbacks (HCD -> USB Host Library)
 *******************************************************************************/

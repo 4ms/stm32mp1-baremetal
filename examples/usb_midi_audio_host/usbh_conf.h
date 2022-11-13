@@ -61,8 +61,8 @@ extern "C" {
  */
 
 /* Memory management macros */
-void *USBH_malloc(size_t sz);
-void USBH_free(void *ptr);
+// void *USBH_malloc(size_t sz);
+// void USBH_free(void *ptr);
 
 #define USBH_memset memset
 #define USBH_memcpy memcpy
