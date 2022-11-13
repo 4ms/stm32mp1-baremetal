@@ -1,7 +1,6 @@
-#include "drivers/interrupt.hh"
-#include "drivers/interrupt_control.hh"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
+#include "midi_host.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
 #include "usbh_core.h"
@@ -14,9 +13,6 @@
 // Uncomment one of these to select your board:
 namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
-
-// defined in usbh_conf.c
-extern HCD_HandleTypeDef hhcd;
 
 static void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id);
 
@@ -31,21 +27,22 @@ void main()
 
 	SystemClocks::init();
 
-	USBH_HandleTypeDef usbhost;
+	MidiHost midi_host;
 
-	auto init_ok = USBH_Init(&usbhost, usbh_state_change_callback, 0);
-	if (init_ok != USBH_OK) {
-		printf("USB Host failed to initialize! Error code: %d\n", static_cast<uint32_t>(init_ok));
+	if (!midi_host.init()) {
+		printf("USB Host failed to initialize!\r\n");
 	}
-	InterruptControl::disable_irq(OTG_IRQn);
-	InterruptManager::registerISR(OTG_IRQn, [] { HAL_HCD_IRQHandler(&hhcd); });
-	InterruptControl::set_irq_priority(OTG_IRQn, 0, 0);
-	InterruptControl::enable_irq(OTG_IRQn);
 
-	USBH_RegisterClass(&usbhost, USBH_MIDI_CLASS);
-	auto start_ok = USBH_Start(&usbhost);
-	if (start_ok != USBH_OK) {
-		printf("USB Host failed to start! Error code: %d\n", static_cast<uint32_t>(start_ok));
+	midi_host.set_rx_callback([&](uint8_t *buf, uint32_t sz) { 
+		printf("RX %d bytes: ", sz);
+		if (sz >= 4)
+			printf("0x%x 0x%x 0x%x 0x%x\n", buf[0], buf[1], buf[2], buf[3]);
+
+		midi_host.receive();
+	});
+
+	if (!midi_host.start()) {
+		printf("MIDI Host failed to start!\r\n");
 	}
 
 	// Blink green1 light at 1Hz
@@ -53,7 +50,7 @@ void main()
 	bool led_state = false;
 	while (1) {
 
-		USBH_Process(&usbhost);
+		midi_host.process();
 
 		uint32_t tm = HAL_GetTick();
 		if (tm > (last_tm + 500)) {
@@ -66,44 +63,6 @@ void main()
 			led_state = !led_state;
 		}
 	}
-}
-
-uint8_t rx_buffer[128];
-void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id)
-{
-	switch (id) {
-		case HOST_USER_SELECT_CONFIGURATION:
-			printf("Select config\n");
-			break;
-
-		case HOST_USER_CONNECTION:
-			printf("Connected\n");
-			break;
-
-		case HOST_USER_CLASS_SELECTED:
-			printf("Class selected\n");
-			break;
-
-		case HOST_USER_CLASS_ACTIVE:
-			printf("Class active\n");
-			USBH_MIDI_Receive(phost, rx_buffer, 128);
-			break;
-
-		case HOST_USER_DISCONNECTION:
-			printf("Disconnected\n");
-			break;
-
-		case HOST_USER_UNRECOVERED_ERROR:
-			printf("Error\n");
-			break;
-	}
-}
-
-void USBH_MIDI_ReceiveCallback(USBH_HandleTypeDef *phost)
-{
-	auto bytes_rx = USBH_MIDI_GetLastReceivedDataSize(phost);
-	printf("RX %d bytes: 0x%x 0x%x 0x%x 0x%x\n", bytes_rx, rx_buffer[0], rx_buffer[1], rx_buffer[2], rx_buffer[3]);
-	USBH_MIDI_Receive(phost, rx_buffer, 128);
 }
 
 // required for printf()

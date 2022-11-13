@@ -4,6 +4,14 @@
 #include "usbh_core.h"
 #include "usbh_host.hh"
 
+constexpr uint8_t AudioClassCode = 0x01;
+constexpr uint8_t AudioControlSubclassCode = 0x01;
+constexpr uint8_t MidiStreamingSubClass = 0x03;
+
+constexpr uint8_t AnyProtocol = 0xFF;
+constexpr uint8_t NoValidInterfaceFound = 0xFF;
+
+
 struct MidiInterfaceHeaderDesc {
 	uint8_t bLength;			// Size of this descriptor = 7
 	uint8_t bDescriptorType;	// CS_INTERFACE (0x24)
@@ -113,12 +121,13 @@ struct MidiStreamingHandle {
 extern USBH_ClassTypeDef MIDI_Class_Ops;
 #define USBH_MIDI_CLASS &MIDI_Class_Ops
 
+USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost);
+USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost);
+USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost);
+USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost);
+
 USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
 USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
 uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost);
-void USBH_MIDI_TransmitCallback(USBH_HandleTypeDef *phost);
-void USBH_MIDI_ReceiveCallback(USBH_HandleTypeDef *phost);
-
-#endif /* __USBH_CDC_H */

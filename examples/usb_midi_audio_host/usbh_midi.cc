@@ -38,32 +38,8 @@
 
 #include "usbh_midi.hh"
 
-static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost);
-static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost);
-static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost);
-static USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost);
-static USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost);
-
 static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost);
 static void MIDI_ProcessReception(USBH_HandleTypeDef *phost);
-
-constexpr uint8_t AudioClassCode = 0x01;
-constexpr uint8_t AudioControlSubclassCode = 0x01;
-constexpr uint8_t MidiStreamingSubClass = 0x03;
-
-constexpr uint8_t AnyProtocol = 0xFF;
-constexpr uint8_t NoValidInterfaceFound = 0xFF;
-
-USBH_ClassTypeDef MIDI_Class_Ops = {
-	"MIDI",
-	AudioClassCode,
-	USBH_MIDI_InterfaceInit,
-	USBH_MIDI_InterfaceDeInit,
-	USBH_MIDI_ClassRequest,
-	USBH_MIDI_Process,
-	USBH_MIDI_SOFProcess,
-	nullptr,
-};
 
 /**
  * @brief  USBH_MIDI_InterfaceInit
@@ -71,12 +47,12 @@ USBH_ClassTypeDef MIDI_Class_Ops = {
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status;
 	uint8_t interface;
 
-	phost->pActiveClass->pData = new_usbh_handle<MidiStreamingHandle>();
+	// phost->pActiveClass->pData = new_usbh_handle<MidiStreamingHandle>();
 	if (phost->pActiveClass->pData == nullptr) {
 		USBH_DbgLog("Cannot allocate memory for CDC Handle");
 		return USBH_FAIL;
@@ -134,7 +110,7 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
 {
 	USBHostHandle host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
@@ -145,8 +121,8 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
 	host.close_and_free_pipe(MSHandle->DataItf.InEP);
 	host.close_and_free_pipe(MSHandle->DataItf.OutEP);
 
-	USBH_free(phost->pActiveClass->pData);
-	phost->pActiveClass->pData = nullptr;
+	// USBH_free(phost->pActiveClass->pData);
+	// phost->pActiveClass->pData = nullptr;
 
 	return USBH_OK;
 }
@@ -158,7 +134,7 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost)
 {
 	if (phost->pUser)
 		phost->pUser(phost, HOST_USER_CLASS_ACTIVE);
@@ -172,7 +148,7 @@ static USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost)
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;
 
@@ -209,7 +185,7 @@ static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost)
  * @param  phost: Host handle
  * @retval USBH Status
  */
-static USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost)
 {
 	UNUSED(phost);
 	return USBH_OK;
@@ -437,24 +413,14 @@ static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 	}
 }
 
-/**
- * @brief  The function informs user that data have been received
- *  @param  pdev: Selected device
- * @retval None
- */
-__weak void USBH_MIDI_TransmitCallback(USBH_HandleTypeDef *phost)
-{
-	/* Prevent unused argument(s) compilation warning */
-	UNUSED(phost);
-}
-
-/**
- * @brief  The function informs user that data have been sent
- *  @param  pdev: Selected device
- * @retval None
- */
-__weak void USBH_MIDI_ReceiveCallback(USBH_HandleTypeDef *phost)
-{
-	/* Prevent unused argument(s) compilation warning */
-	UNUSED(phost);
-}
+// Not used, but kept here in to more easily add this driver to a C project
+USBH_ClassTypeDef MIDI_Class_Ops = {
+	"MIDI",
+	AudioClassCode,
+	USBH_MIDI_InterfaceInit,
+	USBH_MIDI_InterfaceDeInit,
+	USBH_MIDI_ClassRequest,
+	USBH_MIDI_Process,
+	USBH_MIDI_SOFProcess,
+	nullptr,
+};
