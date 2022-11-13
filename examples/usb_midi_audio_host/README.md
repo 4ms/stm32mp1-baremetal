@@ -1,19 +1,18 @@
-# USB MSC Device 
+# USB MIDI Host
 
-This project demonstrates the use of the STM32 USB Device Library by creating a
-Mass Storage device Class (MSC). Plugging your board into your computer will make
-it show up as a USB flash drive.
 
-It's been tested on the OSD32MP1-BRK board, the STM32MP157C-DK2 Discovery
-board, and the STM32MP157A-DK1 Discovery board.
+This project demonstrates the use of the STM32 USB Host Library by creating a
+MIDI Host. Plug in a MIDI device such as a musical keyboard or sequencer or controller.
+Playing notes or changing CCs will display on the console.
 
-To use, first make sure U-Boot is installed on an SD card, as usual (see
-[README](https://github.com/4ms/stm32mp1-baremetal/blob/master/README.md) in
-the project root directory). 
+The board can provide VBUS power to the external device (watch your current consumption!).
 
-Optionally, modify `main.cc` to either select the OSD32MP1-BRK board or a
-Discovery board. (All this does is select the GPIO pins for the green LED
--- it'll still run if you select the wrong board). 
+
+Modify `main.cc` to either select the OSD32MP1-BRK board or a
+Discovery board. It's been tested on the OSD32MP1-BRK board. 
+Since the OSD32MP1-BRK board is typically powered through the USB jack, you need to power the board from the VIN pins with a 5V supply. Then the USB jack will be fine to use as a host (use a USG-OTG adaptor that goes from male micro-AB to female A).
+
+It will eventually work on the STM32MP157C-DK2 Discovery board, but I need to enable VBUS via the STUBS1600. It should work on the Discovery board if your MIDI keyboard is powered from something other than the USB jack.
 
 Then, in this directory run:
 
@@ -21,118 +20,90 @@ Then, in this directory run:
 make
 ```
 
-In the `build/` dir, you should see the `a7-main.uimg` file. Copy it to the 4th
-partition of the SD-card, as usual (again, see the
-[README](https://github.com/4ms/stm32mp1-baremetal/blob/master/README.md) in
-the project root dir). Power up and you should see this in the console:
+To load the program onto your SD Card, follow the normal procedure (see
+[here](https://github.com/4ms/stm32mp1-baremetal/blob/master/README.md#6-copy-the-application-to-the-sd-card) )
+
+Power up and you should see this in the console:
 
 ```
-Basic USB test
-Connect a USB cable to a computer
-You should see a 128MB unformatted drive appear.
+USB MIDI Host test
+Connect a USB cable to a MIDI device (keyboard, etc)
+ 
+[waits here until you plug in a MIDI device]
+
+USB Device Connected
+USB Device Reset Completed
+PID: 288h
+VID: 1c75h
+Address (#1) assigned.
+Manufacturer : Arturia
+Product : Arturia KeyStep 32
+Serial Number : 00000000001A
+Enumeration done.
+This device has only 1 configuration.
+Default configuration set.
+Switching to Interface (#1)
+Class    : 1h
+SubClass : 3h
+Protocol : 0h
+MIDI class started.
+
+[when you play on the MIDI device you'll see data like this:]
+CP: #0
+Note: 62 Vel: 108
+Note: 62 off
+Note: 57 Vel: 83
+Note: 57 off
+Note: 60 Vel: 79
+Note: 60 off
 ```
 
-When you connect the OSD32MP1-BRK or Discovery board to a computer with a
-micro-USB cable, the computer should recognize that a new Mass Storage Class
-device is connected. You'll need to format it and then you can then use it like
-a normal USB thumb drive. (But the memory is volatile so you'll lose everything
-if the board loses power!)
-
-Tip: Since the OSD32MP1-BRK board is powered through the same USB jack that
-supports OTG USB, it's difficult to test things like memory persistance across
-USB connect/disconnect events.  But, it is possible to power the OSD32MP1-BRK
-board from the VIN pins with a 5V supply. You also need to remove inductor L1
-so that VIN doesn't flow into the computer. Once this is done, you can
-plug/unplug the USB jack without disrupting power. The Discovery boards don't
-need any modification, as they have separate USB jacks for power and OTG USB.
 
 
-## How this was made
+## Dependencies and modifications
 
-The `stm32mp1xx_ll_usb` and `stm32mp1xx_hal_pcd` drivers have been "ported"
-(basically copied, with minor modifications) from STM32CubeH7.
+  * STM32 USB Host Library v3.5.0 is used here, with one modication:
 
-Many of these modifications were from the [hftrx project
-here](https://github.com/ua1arn/hftrx)
+	- `Core/Src/usbh_ctlreq.c`: `USBH_ParseCfgDesc()` contains a bug that hangs
+	  when a MIDI Streaming device is connected. I patched this, and it's been reported
+	  to STM [here](https://github.com/STMicroelectronics/stm32_mw_usb_host/issues/11#issuecomment-1312278910)
+  
+  * STM32CubeH7 HAL drivers for usb are used here, with some modifications:
 
-The `usbd_conf.c/h`, `usbd_desc.c/h`, and `usbd_msc_storage.c/h`files were
-copied from the example `MSC_Standalone` demonstration project found in
-STM32CubeH7 for the STM32H747I-DISCO board. They were modified a bit, as I saw
-fit. Mainly, I changed `HAL_PCD_MspInit()` to enable the USBPHYC clocks, and
-not do anything with GPIOs. In `usbd_msc_storage.c`, I added the I/O to the
-"virtual disk" buffer, inspired by ST's tutorial video on MSC Devices. In
-`USBD_LL_Init()`, some initialization values were changed (should be obvious).
-When using the STM32 USB library, all those files just mentioned are project
-files, so they're meant to be modified to suit your project's needs.
+      * All files: "h7" changed to "mp1" (found in comments, #includes, include guards)
+
+	  * `stm32mp1xx_hal_hcd.c/.h`: no modifications
+
+	  * `stm32mp1xx_ll_usb.c/.h`: selectively took some modifications from the hftrx project:
+		- Added constant `USB_OTG_HS_EMBEDDED_PHY`
+		- Added a section in `USB_CoreInit()` to initialize global USB registers.
+		- Commented out the name of a register that doesn't appear in the ST32MP157
+		  CMSIS-device file (`GDFIFOCFG`)
+		- In `USB_DevInit()`, initialize the Device Speed in the same way as with
+		  an `OTG_ULPI_PHY`
+		- Altered logic in `USB_EPStartXfer()` for when to set the even/odd frame.
+		- In `USB_HostInit()`, `USB_HC_Init()` and `USB_HC_StartXfer()`, don't use
+		  the CID register to determine if we're HS capable (always assume it's
+		  true)
+
+	  * `stm32mp1xx_ll_usb_phy.c/.h`: New files. These contain initialization code for the USBPHY peripheral. 
+		It's largely based on the implementation of such from the hftrx project.
 
 
-### Changes to the USB and PCD drivers: ###
+  * `usbh_conf.c/.h`: Copied from [STM32CubeH7 example application USB Host Audio](https://github.com/STMicroelectronics/STM32CubeH7/blob/master/Projects/STM32H743I-EVAL/Applications/USB_Host/AUDIO_Standalone/Src/usbh_conf.c) with these modifications:
+	- Re-wrote `HAL_HCD_MspInit/DeInit` to use the MP1 registers. Turns on OTG and USBPHY clocks, and connects OTG to the port we use
+	- Removed the use of a global `HCD_HandleTypeDef`. Instead we put it in MidiHost, so there's no issue if we ever need multiple MIDI Hosts
+	-  `USBH_LL_Init()`: does not init the HCD_Handle
+	-  Elsewhere we init the number of host channels to 16, and selected the right phy interface
+	- Removed Board-specific stuff like VBUS enable driving
+	- Fixed `USBH_LL_Set/GetToggle` not using the phost argument, but instead directly accessing the global handle
 
-Here's a summary of what changed from the official STM32CubeH7 HAL:
-
-  * `stm32h7xx_ll_usb.c` ==> `stm32mp1xx_ll_usb.c`:
-	- Added `USB_HS_PHYCInit()` and `USB_HS_PHYCDeInit()`, taken (and modified
-	  slightly) from hftrx project.
-	- Added a section in `USB_CoreInit()` to initialize global USB registers.
-	  Taken and modified from hftrx project.
-	- Commented out the name of a register that doesn't appear in the ST32MP157
-	  CMSIS-device file (GDFIFOCFG)
-	- In `USB_DevInit()`, initialize the Device Speed in the same way as with
-	  an `OTG_ULPI_PHY`
-	- Altered logic in `USB_EPStartXfer()` for when to set the even/odd frame.
-	- In `USB_HostInit()`, `USB_HC_Init()` and `USB_HC_StartXfer()`, don't use
-	  the CID register to determine if we're HS capable (always assume it's
-	  true)
-	- Add two parameters to `USB_HC_Init()` for Hub Address and Port Address
-	  (not tested, but copied from hftrx project).
-
-  * `stm32h7xx_ll_usb.h` ==> `stm32mp1xx_ll_usb.h`:
-    - Added constant `USB_OTG_HS_EMBEDDED_PHY` (from hftrx project)
-
-  * `stm32h7xx_hal_pcd.c` ==> `stm32mp1xx_hal_pcd.c`:
-	- In `HAL_PCD_IRQHandler()`, set the SNAK bit in DIEPCTL (set a NAK for all
-	  IN End Points) after a reset from the host
-	- Use AXISS clock, not HCLK to determine turnaround time (since MP1's OTG
-	  peripheral is clocked by AXISS)
-
-Not changed:
-
-  * `stm32h7xx_hal_pcd.h`, `stm32h7xx_hal_pcd_ex.c`, and
-	`stm32h7xx_hal_pcd_ex.h` were copied directly with no modifications, just
-	renamed them to `stm32mp1xx_hal_pcd*`
-
-  * Nothing in the STM32 USB Device Library was changed.
+  * `usbh_midi.cc/hh`: I took the CDC Host Class from the STM USB Library and removed the stuff about line encoding. I changed the class and subclass IDs, too, and made the control interface descriptor optional. I also refactored the callbacks so we can pass lambdas. Some common operations I moved to a helper class UsbHostHandle. ...and many other things (TODO)
 
 
 ### Limitations, Bugs ###
 
-  * I have not tested DMA mode yet.
-
-  * I've only tested Device mode, Host mode will be a separate example project
-
-  * If you enter USB gadget mode during the U-boot process (by hitting a key to
-	stop auto-boot and then typing `ums 0 mmc 0`), you have to power cycle the
-	board before this example project will work again. TODO: Figure out why
-	this is happening (The error happens in USB_CoreReset(), the CSRST flag
-	never gets cleared by the USB core).
-
-  * Note: earlier versions of this project would not work with IRQs. The issue
-	was that the USB OTG IRQ Handler must be Level sensitive, not Edge
-	sensitive. I believe the reason is that if the OTG peripheral asserts an
-	IRQ in the time between when you have already entered the IRQ Handler but
-	before you have read the IAR register, then reading IAR will set the IRQ
-	state to Active and the second IRQ event will be missed because when we
-	write EOIR later, the state will then go from Active to Idle. However, if
-	the IRQ is Level sensitive, then reading the IAR register will set the
-	state to Active+Pending, and then when we write EOIR the state will be set
-	to Pending. Thus, the second IRQ will be caught. What I don't understand is
-	why the interrupt registers (GINTSTS, GOTGINT, DIEPINTx, DOEPINTx, DAINT,
-	etc.) do not reflect the new (second) interrupt's status until
-	HAL_PCD_IRQHandler is entered a second time. I suspect there is some
-	register that must be read twice to get the second IRQ's values, but I
-	haven't found exactly what this is. If anyone can explain the precise
-	reason Edge sensitive IRQs fail, I'd much appreciate it!
-
+No support for Discovery boards yet
 
 ### Resources ###
 
