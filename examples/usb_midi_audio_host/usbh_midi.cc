@@ -76,7 +76,7 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 	USBH_StatusTypeDef status;
 	uint8_t interface;
 
-	auto CDC_Handle = new_usbhost_class_handle<CDC_HandleTypeDef>();
+	auto CDC_Handle = new_usbhost_class_handle<MidiStreamingHandle>();
 	phost->pActiveClass->pData = CDC_Handle;
 
 	if (CDC_Handle == nullptr) {
@@ -137,7 +137,7 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
 {
 	// USBHostHandle host{phost};
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
 	if (CDC_Handle->ControlItf.ControlEP.pipe) {
 		USBH_ClosePipe(phost, CDC_Handle->ControlItf.ControlEP.pipe);
@@ -175,7 +175,7 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
 static USBH_StatusTypeDef USBH_MIDI_ClassRequest(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status;
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
 	if (status == USBH_OK) {
 		phost->pUser(phost, HOST_USER_CLASS_ACTIVE);
@@ -198,7 +198,7 @@ static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;
 	USBH_StatusTypeDef req_status = USBH_OK;
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
 	switch (CDC_Handle->state) {
 
@@ -247,7 +247,7 @@ static USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost)
  */
 USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost)
 {
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
 	if (phost->gState == HOST_CLASS) {
 		CDC_Handle->state = CDC_IDLE_STATE;
@@ -267,7 +267,7 @@ USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost)
 uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost)
 {
 	uint32_t dataSize;
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
 	if (phost->gState == HOST_CLASS) {
 		dataSize = USBH_LL_GetLastXferSize(phost, CDC_Handle->DataItf.InEP.pipe);
@@ -286,7 +286,7 @@ uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost)
 USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
 {
 	USBH_StatusTypeDef Status = USBH_BUSY;
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
 	if ((CDC_Handle->state == CDC_IDLE_STATE) || (CDC_Handle->state == CDC_TRANSFER_DATA)) {
 		CDC_Handle->pTxData = pbuff;
@@ -315,7 +315,7 @@ USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff,
 USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
 {
 	USBH_StatusTypeDef Status = USBH_BUSY;
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
 	if ((CDC_Handle->state == CDC_IDLE_STATE) || (CDC_Handle->state == CDC_TRANSFER_DATA)) {
 		CDC_Handle->pRxData = pbuff;
@@ -343,7 +343,7 @@ USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, 
  */
 static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 {
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 	USBH_URBStateTypeDef URB_Status = USBH_URB_IDLE;
 
 	switch (CDC_Handle->data_tx_state) {
@@ -415,7 +415,7 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 
 static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 {
-	CDC_HandleTypeDef *CDC_Handle = (CDC_HandleTypeDef *)phost->pActiveClass->pData;
+	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 	USBH_URBStateTypeDef URB_Status = USBH_URB_IDLE;
 	uint32_t length;
 

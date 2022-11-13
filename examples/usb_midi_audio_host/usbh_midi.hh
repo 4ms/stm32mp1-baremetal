@@ -111,6 +111,7 @@ struct MidiItf {
 };
 
 struct CDC_HandleTypeDef {
+struct MidiStreamingHandle {
 	AudioControlItf ControlItf;
 	MidiItf DataItf;
 	uint8_t *pTxData;

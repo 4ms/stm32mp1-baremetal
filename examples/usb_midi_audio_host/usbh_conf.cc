@@ -63,9 +63,9 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef *hpcd)
 
 void *USBH_malloc(size_t sz)
 {
-	static CDC_HandleTypeDef _mem;
+	static MidiStreamingHandle _mem;
 
-	if (sz == sizeof(CDC_HandleTypeDef))
+	if (sz == sizeof(MidiStreamingHandle))
 		return &_mem;
 
 	return NULL;
