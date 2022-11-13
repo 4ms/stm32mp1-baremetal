@@ -363,7 +363,7 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 					MSHandle->data_tx_state = MidiStreamingDataState::SendData;
 				} else {
 					MSHandle->data_tx_state = MidiStreamingDataState::Idle;
-					USBH_MIDI_TransmitCallback(phost);
+					MSHandle->tx_callback();
 				}
 
 #if (USBH_USE_OS == 1U)
@@ -422,7 +422,7 @@ static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 					MSHandle->data_rx_state = MidiStreamingDataState::ReceiveData;
 				} else {
 					MSHandle->data_rx_state = MidiStreamingDataState::Idle;
-					USBH_MIDI_ReceiveCallback(phost);
+					MSHandle->rx_callback(MSHandle->pRxData, length);
 				}
 
 #if (USBH_USE_OS == 1U)

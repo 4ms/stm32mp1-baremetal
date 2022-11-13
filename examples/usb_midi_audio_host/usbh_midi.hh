@@ -1,25 +1,6 @@
-/**
- ******************************************************************************
- * @file    usbh_cdc.h
- * @author  MCD Application Team
- * @brief   This file contains all the prototypes for the usbh_cdc.c
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                      www.st.com/SLA0044
- *
- ******************************************************************************
- */
+#pragma once
 
-#ifndef __USBH_CDC_H
-#define __USBH_CDC_H
-
+#include <functional>
 #include "usbh_core.h"
 #include "usbh_host.hh"
 
@@ -109,6 +90,9 @@ enum class MidiStreamingState {
 	Error,
 };
 
+using MidiStreamRxCallbackType = std::function<void(uint8_t *, uint32_t)>;
+using MidiStreamTxCallbackType = std::function<void()>;
+
 struct MidiStreamingHandle {
 	AudioControlItf ControlItf;
 	MidiStreamingItf DataItf;
@@ -119,11 +103,17 @@ struct MidiStreamingHandle {
 	MidiStreamingState state;
 	MidiStreamingDataState data_tx_state;
 	MidiStreamingDataState data_rx_state;
+
+	static void _default_rx_cb(uint8_t *, uint32_t) {}
+	static void _default_tx_cb() {}
+	MidiStreamRxCallbackType rx_callback = _default_rx_cb;
+	MidiStreamTxCallbackType tx_callback = _default_tx_cb;
 };
 
 extern USBH_ClassTypeDef MIDI_Class_Ops;
 #define USBH_MIDI_CLASS &MIDI_Class_Ops
 
+USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
 USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
 uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost);
