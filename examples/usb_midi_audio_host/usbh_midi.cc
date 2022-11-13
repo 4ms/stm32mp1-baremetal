@@ -43,7 +43,8 @@ USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 	// But in this class, we already specified it by passing it in the pData field
 	// of the USBH_ClassTypeDef struct passed to USBH_RegisterClass
 	// This allows the app to own the class handle, managing its memory as it likes
-	// without needing dynamic memory or static/globals/singletons
+	// without requiring either dynamic memory or static/globals/singletons
+
 	if (phost->pActiveClass->pData == nullptr) {
 		USBH_DbgLog("Cannot allocate memory for CDC Handle");
 		return USBH_FAIL;
