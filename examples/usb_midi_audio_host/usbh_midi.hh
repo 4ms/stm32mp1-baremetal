@@ -23,21 +23,6 @@
 #include "usbh_core.h"
 #include "usbh_host.hH"
 
-/* States for CDC State Machine */
-enum CDC_DataStateTypeDef {
-	CDC_IDLE = 0U,
-	CDC_SEND_DATA,
-	CDC_SEND_DATA_WAIT,
-	CDC_RECEIVE_DATA,
-	CDC_RECEIVE_DATA_WAIT,
-};
-
-enum CDC_StateTypeDef {
-	CDC_IDLE_STATE = 0U,
-	CDC_TRANSFER_DATA,
-	CDC_ERROR_STATE,
-};
-
 struct MidiInterfaceHeaderDesc {
 	uint8_t bLength;			// Size of this descriptor = 7
 	uint8_t bDescriptorType;	// CS_INTERFACE (0x24)
@@ -110,7 +95,20 @@ struct MidiItf {
 	uint8_t buff[8];
 };
 
-struct CDC_HandleTypeDef {
+enum class MidiStreamingDataState {
+	Idle,
+	SendData,
+	SendDataWait,
+	ReceiveData,
+	ReceiveDataWait,
+};
+
+enum class MidiStreamingState {
+	Idle,
+	TransferData,
+	Error,
+};
+
 struct MidiStreamingHandle {
 	AudioControlItf ControlItf;
 	MidiItf DataItf;
@@ -118,9 +116,9 @@ struct MidiStreamingHandle {
 	uint8_t *pRxData;
 	uint32_t TxDataLength;
 	uint32_t RxDataLength;
-	CDC_StateTypeDef state;
-	CDC_DataStateTypeDef data_tx_state;
-	CDC_DataStateTypeDef data_rx_state;
+	MidiStreamingState state;
+	MidiStreamingDataState data_tx_state;
+	MidiStreamingDataState data_rx_state;
 };
 
 extern USBH_ClassTypeDef MIDI_Class;

@@ -120,7 +120,7 @@ static USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 	host.open_pipe(CDC_Handle->DataItf.OutEP, EndPointType::Bulk);
 	host.open_pipe(CDC_Handle->DataItf.InEP, EndPointType::Bulk);
 
-	CDC_Handle->state = CDC_IDLE_STATE;
+	CDC_Handle->state = MidiStreamingState::Idle;
 
 	host.set_toggle(CDC_Handle->DataItf.OutEP, 0U);
 	host.set_toggle(CDC_Handle->DataItf.InEP, 0U);
@@ -202,21 +202,21 @@ static USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost)
 
 	switch (CDC_Handle->state) {
 
-		case CDC_IDLE_STATE:
+		case MidiStreamingState::Idle:
 			status = USBH_OK;
 			break;
 
-		case CDC_TRANSFER_DATA:
+		case MidiStreamingState::TransferData:
 			MIDI_ProcessTransmission(phost);
 			MIDI_ProcessReception(phost);
 			break;
 
-		case CDC_ERROR_STATE:
+		case MidiStreamingState::Error:
 			req_status = USBH_ClrFeature(phost, 0x00U);
 
 			if (req_status == USBH_OK) {
 				/*Change the state to waiting*/
-				CDC_Handle->state = CDC_IDLE_STATE;
+				CDC_Handle->state = MidiStreamingState::Idle;
 			}
 			break;
 
@@ -250,7 +250,7 @@ USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost)
 	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
 	if (phost->gState == HOST_CLASS) {
-		CDC_Handle->state = CDC_IDLE_STATE;
+		CDC_Handle->state = MidiStreamingState::Idle;
 
 		USBH_ClosePipe(phost, CDC_Handle->ControlItf.ControlEP.pipe);
 		USBH_ClosePipe(phost, CDC_Handle->DataItf.InEP.pipe);
@@ -288,11 +288,11 @@ USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff,
 	USBH_StatusTypeDef Status = USBH_BUSY;
 	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
-	if ((CDC_Handle->state == CDC_IDLE_STATE) || (CDC_Handle->state == CDC_TRANSFER_DATA)) {
+	if ((CDC_Handle->state == MidiStreamingState::Idle) || (CDC_Handle->state == MidiStreamingState::TransferData)) {
 		CDC_Handle->pTxData = pbuff;
 		CDC_Handle->TxDataLength = length;
-		CDC_Handle->state = CDC_TRANSFER_DATA;
-		CDC_Handle->data_tx_state = CDC_SEND_DATA;
+		CDC_Handle->state = MidiStreamingState::TransferData;
+		CDC_Handle->data_tx_state = MidiStreamingDataState::SendData;
 		Status = USBH_OK;
 
 #if (USBH_USE_OS == 1U)
@@ -317,11 +317,11 @@ USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, 
 	USBH_StatusTypeDef Status = USBH_BUSY;
 	MidiStreamingHandle *CDC_Handle = (MidiStreamingHandle *)phost->pActiveClass->pData;
 
-	if ((CDC_Handle->state == CDC_IDLE_STATE) || (CDC_Handle->state == CDC_TRANSFER_DATA)) {
+	if ((CDC_Handle->state == MidiStreamingState::Idle) || (CDC_Handle->state == MidiStreamingState::TransferData)) {
 		CDC_Handle->pRxData = pbuff;
 		CDC_Handle->RxDataLength = length;
-		CDC_Handle->state = CDC_TRANSFER_DATA;
-		CDC_Handle->data_rx_state = CDC_RECEIVE_DATA;
+		CDC_Handle->state = MidiStreamingState::TransferData;
+		CDC_Handle->data_rx_state = MidiStreamingDataState::ReceiveData;
 		Status = USBH_OK;
 
 #if (USBH_USE_OS == 1U)
@@ -347,7 +347,7 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 	USBH_URBStateTypeDef URB_Status = USBH_URB_IDLE;
 
 	switch (CDC_Handle->data_tx_state) {
-		case CDC_SEND_DATA:
+		case MidiStreamingDataState::SendData:
 			if (CDC_Handle->TxDataLength > CDC_Handle->DataItf.OutEP.size) {
 				USBH_BulkSendData(
 					phost, CDC_Handle->pTxData, CDC_Handle->DataItf.OutEP.size, CDC_Handle->DataItf.OutEP.pipe, 1U);
@@ -356,10 +356,10 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 					phost, CDC_Handle->pTxData, (uint16_t)CDC_Handle->TxDataLength, CDC_Handle->DataItf.OutEP.pipe, 1U);
 			}
 
-			CDC_Handle->data_tx_state = CDC_SEND_DATA_WAIT;
+			CDC_Handle->data_tx_state = MidiStreamingDataState::SendDataWait;
 			break;
 
-		case CDC_SEND_DATA_WAIT:
+		case MidiStreamingDataState::SendDataWait:
 
 			URB_Status = USBH_LL_GetURBState(phost, CDC_Handle->DataItf.OutEP.pipe);
 
@@ -373,9 +373,9 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 				}
 
 				if (CDC_Handle->TxDataLength > 0U) {
-					CDC_Handle->data_tx_state = CDC_SEND_DATA;
+					CDC_Handle->data_tx_state = MidiStreamingDataState::SendData;
 				} else {
-					CDC_Handle->data_tx_state = CDC_IDLE;
+					CDC_Handle->data_tx_state = MidiStreamingDataState::Idle;
 					USBH_MIDI_TransmitCallback(phost);
 				}
 
@@ -389,7 +389,7 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 #endif
 			} else {
 				if (URB_Status == USBH_URB_NOTREADY) {
-					CDC_Handle->data_tx_state = CDC_SEND_DATA;
+					CDC_Handle->data_tx_state = MidiStreamingDataState::SendData;
 
 #if (USBH_USE_OS == 1U)
 					phost->os_msg = (uint32_t)USBH_CLASS_EVENT;
@@ -421,16 +421,16 @@ static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 
 	switch (CDC_Handle->data_rx_state) {
 
-		case CDC_RECEIVE_DATA:
+		case MidiStreamingDataState::ReceiveData:
 
 			USBH_BulkReceiveData(
 				phost, CDC_Handle->pRxData, CDC_Handle->DataItf.InEP.size, CDC_Handle->DataItf.InEP.pipe);
 
-			CDC_Handle->data_rx_state = CDC_RECEIVE_DATA_WAIT;
+			CDC_Handle->data_rx_state = MidiStreamingDataState::ReceiveDataWait;
 
 			break;
 
-		case CDC_RECEIVE_DATA_WAIT:
+		case MidiStreamingDataState::ReceiveDataWait:
 
 			URB_Status = USBH_LL_GetURBState(phost, CDC_Handle->DataItf.InEP.pipe);
 
@@ -441,9 +441,9 @@ static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 				if (((CDC_Handle->RxDataLength - length) > 0U) && (length > CDC_Handle->DataItf.InEP.size)) {
 					CDC_Handle->RxDataLength -= length;
 					CDC_Handle->pRxData += length;
-					CDC_Handle->data_rx_state = CDC_RECEIVE_DATA;
+					CDC_Handle->data_rx_state = MidiStreamingDataState::ReceiveData;
 				} else {
-					CDC_Handle->data_rx_state = CDC_IDLE;
+					CDC_Handle->data_rx_state = MidiStreamingDataState::Idle;
 					USBH_MIDI_ReceiveCallback(phost);
 				}
 
