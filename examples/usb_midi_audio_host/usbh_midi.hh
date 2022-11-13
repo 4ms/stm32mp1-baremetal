@@ -19,9 +19,10 @@
 
 #pragma once
 
+#include "usb_host_helper.hh"
 #include "usbh_core.h"
-#include "usbh_host.hh"
 #include <functional>
+
 
 constexpr uint8_t AudioClassCode = 0x01;
 constexpr uint8_t AudioControlSubclassCode = 0x01;

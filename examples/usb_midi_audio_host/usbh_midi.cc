@@ -49,7 +49,7 @@ USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
 		return USBH_FAIL;
 	}
 
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 
 	// Look for an optional Audio Control interface
@@ -103,7 +103,7 @@ USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost)
  */
 USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost)
 {
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 	if (!MSHandle)
 		return USBH_FAIL;
@@ -143,7 +143,7 @@ USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;
 
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 	if (!MSHandle)
 		return USBH_FAIL;
@@ -190,7 +190,7 @@ USBH_StatusTypeDef USBH_MIDI_SOFProcess(USBH_HandleTypeDef *phost)
  */
 USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost)
 {
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 	if (!MSHandle)
 		return USBH_FAIL;
@@ -212,7 +212,7 @@ USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost)
  */
 uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost)
 {
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 	if (!MSHandle)
 		return USBH_FAIL;
@@ -235,7 +235,7 @@ uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost)
  */
 USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
 {
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 	if (!MSHandle)
 		return USBH_FAIL;
@@ -264,7 +264,7 @@ USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff,
  */
 USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
 {
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 	if (!MSHandle)
 		return USBH_FAIL;
@@ -293,7 +293,7 @@ USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, 
  */
 static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 {
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 	if (!MSHandle)
 		return;
@@ -361,7 +361,7 @@ static void MIDI_ProcessTransmission(USBH_HandleTypeDef *phost)
 
 static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 {
-	USBHostHandle host{phost};
+	USBHostHelper host{phost};
 	auto MSHandle = host.get_class_handle<MidiStreamingHandle>();
 	if (!MSHandle)
 		return;

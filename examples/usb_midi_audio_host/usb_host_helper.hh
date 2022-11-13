@@ -25,11 +25,11 @@ enum class EndPointType : uint8_t {
 
 // Stateless wrapper for USBH_HandleTypeDef*
 // That adds helper funcs for common operations in C functions that have a phost parameter
-class USBHostHandle {
+class USBHostHelper {
 public:
 	USBH_HandleTypeDef *phost;
 
-	USBHostHandle(USBH_HandleTypeDef *phost)
+	USBHostHelper(USBH_HandleTypeDef *phost)
 		: phost{phost}
 	{}
 

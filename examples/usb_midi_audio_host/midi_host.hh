@@ -59,7 +59,7 @@ public:
 
 	static void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id)
 	{
-		USBHostHandle host{phost};
+		USBHostHelper host{phost};
 		auto mshandle = host.get_class_handle<MidiStreamingHandle>();
 		if (!mshandle)
 			return;
