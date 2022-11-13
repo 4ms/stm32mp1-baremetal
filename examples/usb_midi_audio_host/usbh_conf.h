@@ -27,7 +27,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 
-// #include "printf.h"
 #include "stm32mp1xx.h"
 
 /** @addtogroup STM32_USB_HOST_LIBRARY

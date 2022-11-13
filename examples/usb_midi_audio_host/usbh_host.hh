@@ -1,3 +1,12 @@
+//
+// usbh_host.hh
+// Helper functions for USB Hosts
+//
+// By Dan Green
+// Copyright (c) 2022 Dan Green
+// Licensed under MIT License, see LICSENSE file
+//
+
 #pragma once
 #include "usbh_core.h"
 

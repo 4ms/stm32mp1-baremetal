@@ -3,9 +3,8 @@
  * @file           : usbh_conf.c
  * @version        : v1.0_Cube
  * @brief          : This file implements the board support package for the USB host library
- * @author         : modified the H7 example, for stm32mp1-baremetal by Dan Green
+ * @author         : STM, with modifications of the H7 example for stm32mp1-baremetal by Dan Green
  ******************************************************************************
- * @attention
  *
  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
  * All rights reserved.</center></h2>

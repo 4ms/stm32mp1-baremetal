@@ -1,9 +1,27 @@
+/**
+ ******************************************************************************
+ * @file    usbh_midi.cc
+ * @author  Dan Green. Based on CDC Class in STM32 USB Host Library v3.5.0
+ * @brief   This file is the for USB Host MIDI subclass of Audio Class.
+ *
+ * Copyright (c) 2022 Dan Green.
+ * Licensed by the MIT License, see LICENSE file
+ *
+ * Portions of this file may be also:
+ * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ * This software component is licensed by ST under Ultimate Liberty license
+ * SLA0044, the "License"; You may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at:
+ *                      www.st.com/SLA0044
+ ******************************************************************************
+ */
+
 #pragma once
 
 #include "usbh_core.h"
 #include "usbh_host.hh"
 #include <functional>
-
 
 constexpr uint8_t AudioClassCode = 0x01;
 constexpr uint8_t AudioControlSubclassCode = 0x01;
@@ -120,9 +138,6 @@ struct MidiStreamingHandle {
 	uint8_t rx_buffer[MidiStreamingBufferSize];
 };
 
-extern USBH_ClassTypeDef MIDI_Class_Ops;
-#define USBH_MIDI_CLASS &MIDI_Class_Ops
-
 USBH_StatusTypeDef USBH_MIDI_InterfaceInit(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef USBH_MIDI_InterfaceDeInit(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef USBH_MIDI_Process(USBH_HandleTypeDef *phost);
@@ -133,3 +148,6 @@ USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff,
 USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
 uint16_t USBH_MIDI_GetLastReceivedDataSize(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef USBH_MIDI_Stop(USBH_HandleTypeDef *phost);
+
+// extern USBH_ClassTypeDef MIDI_Class_Ops;
+// #define USBH_MIDI_CLASS &MIDI_Class_Ops

@@ -1,3 +1,12 @@
+//
+// midi_host.hh
+// A USB MIDI Host manager - interfaces with the usbh_midi driver
+//
+// By Dan Green
+// Copyright (c) 2022 Dan Green
+// Licensed under MIT License, see LICENSE file
+//
+
 #pragma once
 #include "drivers/interrupt.hh"
 #include "drivers/interrupt_control.hh"

@@ -1,33 +1,20 @@
 /**
  ******************************************************************************
  * @file    usbh_midi.cc
- * @author  MCD Application Team
- * @brief   This file is the for USB Host MIDI subclass of Audio Class.
+ * @author  Dan Green. Based on CDC Class in STM32 USB Host Library v3.5.0
+ * @brief   USB Host Audio Class MIDI Streaming Subclass driver
  *
- *  @verbatim
- *
- *          ===================================================================
- *                        Audio Class MIDI Subclass Driver Description
- *          ===================================================================
- *           This driver manages the "Universal Serial Bus Device Class Definition for MIDI Devices"
- *           Revision 1.0 November 1, 1999".
- *           This driver implements the following aspects of the specification:
- *             - Device descriptor management
- *             - Configuration descriptor management
- *             - Enumeration as CDC device with 2 data endpoints (IN and OUT) and 1 command endpoint (IN)
- *             - Requests management (as described in section 6.2 in specification)
- *             - Abstract Control Model compliant
- *             - Union Functional collection (using 1 IN endpoint for control)
- *             - Data interface class
- *
- *  @endverbatim
+ *   See "Universal Serial Bus Device Class Definition for MIDI Devices"
+ *   Revision 1.0 November 1, 1999
  *
  ******************************************************************************
  * @attention
+ * Copyright (c) 2022 Dan Green.
+ * Licensed by the MIT License, see LICENSE file
  *
+ * Portions of this file may be also:
  * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
  * All rights reserved.</center></h2>
- *
  * This software component is licensed by ST under Ultimate Liberty license
  * SLA0044, the "License"; You may not use this file except in compliance with
  * the License. You may obtain a copy of the License at:

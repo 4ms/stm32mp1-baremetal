@@ -1,3 +1,12 @@
+//
+// usb_midi_audio_host/main.cc
+// A USB MIDI Host example project for the STM32MP15x
+//
+// By Dan Green
+// Copyright (c) 2022 Dan Green
+// Licensed under MIT License, see LICENSE file
+//
+
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "midi_host.hh"
@@ -33,7 +42,7 @@ void main()
 		printf("USB Host failed to initialize!\r\n");
 	}
 
-	midi_host.set_rx_callback([&](uint8_t *buf, uint32_t sz) { 
+	midi_host.set_rx_callback([&](uint8_t *buf, uint32_t sz) {
 		printf("RX %d bytes: ", sz);
 		if (sz >= 4)
 			printf("0x%x 0x%x 0x%x 0x%x\n", buf[0], buf[1], buf[2], buf[3]);
