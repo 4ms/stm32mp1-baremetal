@@ -10,10 +10,9 @@
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "midi_host.hh"
+#include "midi_message.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
-#include "usbh_core.h"
-#include "usbh_midi.hh"
 #include <cstdint>
 
 #include "osd32brk_conf.hh"
@@ -43,9 +42,12 @@ void main()
 	}
 
 	midi_host.set_rx_callback([&](uint8_t *buf, uint32_t sz) {
-		printf("RX %d bytes: ", sz);
-		if (sz >= 4)
-			printf("0x%x 0x%x 0x%x 0x%x\n", buf[0], buf[1], buf[2], buf[3]);
+		if (sz == 4) {
+			auto msg = MidiMessage(buf[1], buf[2], buf[3]);
+			msg.print();
+		} else {
+			printf("RX %d bytes\n", sz);
+		}
 
 		midi_host.receive();
 	});
