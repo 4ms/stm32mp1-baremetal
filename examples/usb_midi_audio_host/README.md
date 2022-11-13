@@ -8,11 +8,15 @@ Playing notes or changing CCs will display on the console.
 The board can provide VBUS power to the external device (watch your current consumption!).
 
 
-Modify `main.cc` to either select the OSD32MP1-BRK board or a
-Discovery board. It's been tested on the OSD32MP1-BRK board. 
-Since the OSD32MP1-BRK board is typically powered through the USB jack, you need to power the board from the VIN pins with a 5V supply. Then the USB jack will be fine to use as a host (use a USG-OTG adaptor that goes from male micro-AB to female A).
+Modify `main.cc` to either select the OSD32MP1-BRK board or a Discovery board.
+It's been tested on the OSD32MP1-BRK board. Since the OSD32MP1-BRK board is
+typically powered through the USB jack, you need to power the board from the
+VIN pins with a 5V supply. Then the USB jack will be fine to use as a host (use
+a USG-OTG adaptor that goes from male micro-AB to female A).
 
-It will eventually work on the STM32MP157C-DK2 Discovery board, but I need to enable VBUS via the STUBS1600. It should work on the Discovery board if your MIDI keyboard is powered from something other than the USB jack.
+It will eventually work on the STM32MP157C-DK2 Discovery board, but I need to
+enable VBUS via the STUBS1600. It should work on the Discovery board if your
+MIDI keyboard is powered from something other than the USB jack.
 
 Then, in this directory run:
 
