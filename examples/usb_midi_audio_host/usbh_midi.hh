@@ -21,7 +21,7 @@
 #define __USBH_CDC_H
 
 #include "usbh_core.h"
-#include "usbh_host.hH"
+#include "usbh_host.hh"
 
 struct MidiInterfaceHeaderDesc {
 	uint8_t bLength;			// Size of this descriptor = 7
@@ -89,7 +89,7 @@ struct AudioControlItf {
 	uint8_t buff[8];
 };
 
-struct MidiItf {
+struct MidiStreamingItf {
 	EndPoint InEP;
 	EndPoint OutEP;
 	uint8_t buff[8];
@@ -111,7 +111,7 @@ enum class MidiStreamingState {
 
 struct MidiStreamingHandle {
 	AudioControlItf ControlItf;
-	MidiItf DataItf;
+	MidiStreamingItf DataItf;
 	uint8_t *pTxData;
 	uint8_t *pRxData;
 	uint32_t TxDataLength;
@@ -121,8 +121,8 @@ struct MidiStreamingHandle {
 	MidiStreamingDataState data_rx_state;
 };
 
-extern USBH_ClassTypeDef MIDI_Class;
-#define USBH_MIDI_CLASS &MIDI_Class
+extern USBH_ClassTypeDef MIDI_Class_Ops;
+#define USBH_MIDI_CLASS &MIDI_Class_Ops
 
 USBH_StatusTypeDef USBH_MIDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
 USBH_StatusTypeDef USBH_MIDI_Receive(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);

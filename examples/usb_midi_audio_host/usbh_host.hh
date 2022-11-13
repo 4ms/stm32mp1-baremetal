@@ -14,18 +14,27 @@ enum class EndPointType : uint8_t {
 	Intr = USB_EP_TYPE_INTR,
 };
 
-// template<typename ClassHandleT>
+// Wrapper for USBH_HandleTypeDef
+// That adds helper funcs for common operations
 class USBHostHandle {
 public:
 	USBH_HandleTypeDef *phost;
-	// ClassHandleT *class_h = nullptr;
 
 	USBHostHandle(USBH_HandleTypeDef *phost)
 		: phost{phost}
+	{}
+
+	template<typename HandleType>
+	HandleType *get_class_handle()
 	{
-		// if (phost)
-		// 	if (phost->pActiveClass)
-		// 		class_h = phost->pActiveClass->pData;
+		if (phost) {
+			if (phost->pActiveClass) {
+				if (phost->pActiveClass->pData) {
+					return static_cast<HandleType *>(phost->pActiveClass->pData);
+				}
+			}
+		}
+		return nullptr;
 	}
 
 	bool is_in_ep(uint8_t interface, uint8_t ep_index)
@@ -55,13 +64,22 @@ public:
 	}
 
 	void set_toggle(const EndPoint &ep, uint8_t toggle_val) { USBH_LL_SetToggle(phost, ep.pipe, toggle_val); }
+
+	void close_and_free_pipe(EndPoint &ep)
+	{
+		if (ep.pipe) {
+			USBH_ClosePipe(phost, ep.pipe);
+			USBH_FreePipe(phost, ep.pipe);
+			ep.pipe = 0U;
+		}
+	}
 };
 
 // Create a new, zeroed handle
 // Uses the user-defined USBH_malloc and USBH_memset
 // so that we can inter-operate with other classes from the STM32 Host Library
 template<typename HandleType>
-HandleType *new_usbhost_class_handle()
+HandleType *new_usbh_handle()
 {
 	auto handle = static_cast<HandleType *>(USBH_malloc(sizeof(HandleType)));
 	if (handle)
