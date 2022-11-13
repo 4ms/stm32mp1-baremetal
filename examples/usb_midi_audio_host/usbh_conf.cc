@@ -20,8 +20,6 @@
 #include "usbh_core.h"
 #include "usbh_midi.hh"
 
-HCD_HandleTypeDef hhcd;
-
 /*******************************************************************************
 					   HCD BSP Routines
 *******************************************************************************/
@@ -123,26 +121,11 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
  */
 USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 {
-	hhcd.Instance = USB_OTG_HS;
-	hhcd.Init.Host_channels = 16;
-	hhcd.Init.dma_enable = 0;
-	hhcd.Init.low_power_enable = 0;
-	hhcd.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-	hhcd.Init.Sof_enable = DISABLE;
-	hhcd.Init.speed = HCD_SPEED_HIGH;
-	hhcd.Init.vbus_sensing_enable = DISABLE;
-	hhcd.Init.use_external_vbus = ENABLE;
-	hhcd.Init.lpm_enable = ENABLE;
-
-	// Link The driver to the stack
-	hhcd.pData = phost;
-	phost->pData = &hhcd;
-
-	if (HAL_HCD_Init(&hhcd) != HAL_OK) {
+	if (HAL_HCD_Init((HCD_HandleTypeDef *)phost->pData) != HAL_OK) {
 		return USBH_FAIL;
 	}
 
-	USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd));
+	USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame((HCD_HandleTypeDef *)phost->pData));
 
 	return USBH_OK;
 }

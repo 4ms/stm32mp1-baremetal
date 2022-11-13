@@ -16,6 +16,7 @@ class MidiHost {
 public:
 	MidiStreamingHandle MSHandle;
 	USBH_HandleTypeDef usbhost;
+	HCD_HandleTypeDef hhcd;
 
 	USBH_ClassTypeDef midi_class_ops = {
 		"MIDI",
@@ -35,14 +36,13 @@ public:
 
 	bool init()
 	{
+		init_hhcd();
 		auto status = USBH_Init(&usbhost, usbh_state_change_callback, 0);
 		if (status != USBH_OK)
 			return false;
 
-		// defined in usbh_conf.c
-		extern HCD_HandleTypeDef hhcd;
 		InterruptControl::disable_irq(OTG_IRQn);
-		InterruptManager::registerISR(OTG_IRQn, [] { HAL_HCD_IRQHandler(&hhcd); });
+		InterruptManager::registerISR(OTG_IRQn, [this] { HAL_HCD_IRQHandler(&hhcd); });
 		InterruptControl::set_irq_priority(OTG_IRQn, 0, 0);
 		InterruptControl::enable_irq(OTG_IRQn);
 
@@ -90,5 +90,29 @@ public:
 				printf("Error\n");
 				break;
 		}
+	}
+
+	void init_hhcd()
+	{
+		memset(&hhcd, 0, sizeof(HCD_HandleTypeDef));
+
+		hhcd.Instance = USB_OTG_HS;
+		hhcd.Init.Host_channels = 16;
+		hhcd.Init.speed = HCD_SPEED_HIGH;
+		hhcd.Init.dma_enable = DISABLE;
+		hhcd.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+		hhcd.Init.Sof_enable = DISABLE;
+		hhcd.Init.battery_charging_enable = ENABLE;
+		hhcd.Init.lpm_enable = ENABLE;
+		hhcd.Init.use_external_vbus = ENABLE;	 // Might only be used for ULPI?
+		hhcd.Init.vbus_sensing_enable = DISABLE; // Doesn't seem to be used for hosts?
+		hhcd.Init.low_power_enable = DISABLE;	 // Doesn't seem to be used?
+		hhcd.Init.dev_endpoints = 0;			 // Not used for hosts?
+		hhcd.Init.ep0_mps = EP_MPS_64;			 // Max packet size. Doesnt seem to be used?
+		hhcd.Init.use_dedicated_ep1 = DISABLE;
+
+		// Link The driver to the stack
+		hhcd.pData = &usbhost;
+		usbhost.pData = &hhcd;
 	}
 };
