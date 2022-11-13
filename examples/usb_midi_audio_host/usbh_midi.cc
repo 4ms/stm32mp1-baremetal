@@ -404,14 +404,18 @@ static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 	}
 }
 
-// Not used, but kept here in to more easily add this driver to a C project
-USBH_ClassTypeDef MIDI_Class_Ops = {
-	"MIDI",
-	AudioClassCode,
-	USBH_MIDI_InterfaceInit,
-	USBH_MIDI_InterfaceDeInit,
-	USBH_MIDI_ClassRequest,
-	USBH_MIDI_Process,
-	USBH_MIDI_SOFProcess,
-	nullptr,
-};
+// Note: To use this class like other STM32 Host Classes,
+// Do something like this (in your application code):
+
+// static MidiStreamingHandle MSHandle;
+//
+// USBH_ClassTypeDef MIDI_Class_Ops = {
+// 	"MIDI",
+// 	AudioClassCode,
+// 	USBH_MIDI_InterfaceInit,
+// 	USBH_MIDI_InterfaceDeInit,
+// 	USBH_MIDI_ClassRequest,
+// 	USBH_MIDI_Process,
+// 	USBH_MIDI_SOFProcess,
+// 	&MSHandle,
+// };
