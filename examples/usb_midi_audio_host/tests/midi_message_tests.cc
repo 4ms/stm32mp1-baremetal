@@ -30,7 +30,18 @@ TEST_CASE("MidiMessage")
 	CHECK_FALSE(m.is_sysex());
 	CHECK(m.raw() == 0x92407F);
 
-	MidiMessage t(0xF8, 0, 0);
-	// FAILS
-	// CHECK(m.is_system_realtime<TimingClock>());
+	MidiMessage tim(0xF8);
+	CHECK(tim.is_system_realtime<TimingClock>());
+
+	MidiMessage start(0xFA);
+	CHECK(start.is_system_realtime<Start>());
+
+	MidiMessage sysex(0xF0);
+	CHECK(sysex.is_sysex());
+
+	MidiMessage endsysex(0xF7);
+	CHECK(endsysex.is_system_common<EndExclusive>());
+
+	MidiMessage timecode(0xF1);
+	CHECK(timecode.is_system_common<TimeCodeQuarterFrame>());
 }
