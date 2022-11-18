@@ -11,5 +11,8 @@
 	several audio synths to play. Requires STM32MP1 Discovery board. Uses
 	STM32-HAL, some DaisySP example projects, and some Faust algorithms. TODO: use multi-core A7.
   * **[USB MSC Device](https://github.com/4ms/stm32mp1-baremetal/tree/master/examples/usb_msc_device)**: Simple example that creates a USB Mass Storage Class device (aka "USB thumb drive").
+  * **[USB MIDI Host](usb_midi_audio_host/)**:
+	Demonstrates USB host functionality using a MIDI keyboard, sequencer or
+	controller.
 
-See the README in the parent directory for more information.
+See the [README](../README.md) in the parent directory for more information.
