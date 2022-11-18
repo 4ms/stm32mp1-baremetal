@@ -63,6 +63,8 @@ struct MidiMessage {
 	MidiStatusByte status;
 	MidiDataBytes data;
 
+	MidiMessage() = default;
+
 	MidiMessage(uint8_t status_byte, uint8_t data_byte0 = 0, uint8_t data_byte1 = 0)
 		: status{MidiStatusByte::make(status_byte)}
 		, data{data_byte0, data_byte1}
