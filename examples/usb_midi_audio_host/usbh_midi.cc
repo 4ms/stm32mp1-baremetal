@@ -390,7 +390,7 @@ static void MIDI_ProcessReception(USBH_HandleTypeDef *phost)
 					MSHandle->data_rx_state = MidiStreamingDataState::ReceiveData;
 				} else {
 					MSHandle->data_rx_state = MidiStreamingDataState::Idle;
-					MSHandle->rx_callback(MSHandle->pRxData, length);
+					MSHandle->rx_callback(std::span<uint8_t>(MSHandle->pRxData, length));
 				}
 
 #if (USBH_USE_OS == 1U)

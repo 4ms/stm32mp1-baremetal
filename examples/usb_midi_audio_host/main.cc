@@ -13,7 +13,6 @@
 #include "midi_message.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
-#include <cstdint>
 
 #include "osd32brk_conf.hh"
 #include "stm32disco_conf.hh"
@@ -21,8 +20,6 @@
 // Uncomment one of these to select your board:
 namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
-
-static void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id);
 
 void main()
 {
@@ -41,14 +38,15 @@ void main()
 		printf("USB Host failed to initialize!\r\n");
 	}
 
-	midi_host.set_rx_callback([&](uint8_t *buf, uint32_t sz) {
-		if (sz == 4) {
-			auto msg = MidiMessage(buf[1], buf[2], buf[3]);
+	midi_host.set_rx_callback([&](std::span<uint8_t> rx_buf) {
+		if (rx_buf.size() == 4) {
+			auto msg = MidiMessage(rx_buf[1], rx_buf[2], rx_buf[3]);
 			msg.print();
 		} else {
-			printf("RX %d bytes\n", sz);
+			printf("RX %d bytes\n", rx_buf.size());
 		}
 
+		// Start listening for more data:
 		midi_host.receive();
 	});
 
@@ -59,8 +57,8 @@ void main()
 	// Blink green1 light at 1Hz
 	uint32_t last_tm = 0;
 	bool led_state = false;
-	while (1) {
 
+	while (1) {
 		midi_host.process();
 
 		uint32_t tm = HAL_GetTick();

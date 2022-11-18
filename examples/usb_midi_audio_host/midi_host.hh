@@ -13,11 +13,9 @@
 #include "usbh_midi.hh"
 
 class MidiHost {
-public:
 	MidiStreamingHandle MSHandle;
 	USBH_HandleTypeDef usbhost;
 	HCD_HandleTypeDef hhcd;
-
 	USBH_ClassTypeDef midi_class_ops = {
 		"MIDI",
 		AudioClassCode,
@@ -29,6 +27,7 @@ public:
 		&MSHandle,
 	};
 
+public:
 	MidiHost() = default;
 
 	void set_rx_callback(MidiStreamRxCallbackType rx_callback) { MSHandle.rx_callback = rx_callback; }
@@ -57,6 +56,7 @@ public:
 	USBH_StatusTypeDef receive() { return USBH_MIDI_Receive(&usbhost, MSHandle.rx_buffer, 128); }
 	USBH_StatusTypeDef transmit(uint8_t *buff, uint32_t len) { return USBH_MIDI_Transmit(&usbhost, buff, len); }
 
+private:
 	static void usbh_state_change_callback(USBH_HandleTypeDef *phost, uint8_t id)
 	{
 		USBHostHelper host{phost};
