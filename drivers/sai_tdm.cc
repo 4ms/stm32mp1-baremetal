@@ -8,7 +8,8 @@
 namespace mdrivlib
 {
 
-SaiTdmPeriph::Error SaiTdmPeriph::init() {
+SaiTdmPeriph::Error SaiTdmPeriph::init()
+{
 	_init_pins();
 
 	Clocks::SAI::reset(saidef_.sai);
@@ -50,7 +51,8 @@ SaiTdmPeriph::Error SaiTdmPeriph::init() {
 	return SAI_NO_ERR;
 }
 
-SaiTdmPeriph::Error SaiTdmPeriph::_config_rx_sai() {
+SaiTdmPeriph::Error SaiTdmPeriph::_config_rx_sai()
+{
 	Error err = SAI_NO_ERR;
 
 	__HAL_SAI_RESET_HANDLE_STATE(&hsai_rx);
@@ -62,25 +64,25 @@ SaiTdmPeriph::Error SaiTdmPeriph::_config_rx_sai() {
 		hsai_rx.Init.AudioMode = SAI_MODEMASTER_RX;
 		hsai_rx.Init.Synchro = SAI_ASYNCHRONOUS;
 		hsai_rx.Init.MckOutput = SAI_MCK_OUTPUT_ENABLE;
-		hsai_rx.Init.SynchroExt = saidef_.sync_send == SaiConfig::BlockASendsSync ? SAI_SYNCEXT_OUTBLOCKA_ENABLE
-								: saidef_.sync_send == SaiConfig::BlockBSendsSync ? SAI_SYNCEXT_OUTBLOCKB_ENABLE
-																				  : SAI_SYNCEXT_DISABLE;
+		hsai_rx.Init.SynchroExt = saidef_.sync_send == SaiConfig::BlockASendsSync ? SAI_SYNCEXT_OUTBLOCKA_ENABLE :
+								  saidef_.sync_send == SaiConfig::BlockBSendsSync ? SAI_SYNCEXT_OUTBLOCKB_ENABLE :
+																					  SAI_SYNCEXT_DISABLE;
 	}
 	if (saidef_.mode == SaiConfig::TXMaster) {
 		hsai_rx.Init.AudioMode = SAI_MODESLAVE_RX;
 		hsai_rx.Init.Synchro = SAI_SYNCHRONOUS;
 		hsai_rx.Init.MckOutput = SAI_MCK_OUTPUT_DISABLE;
-		hsai_rx.Init.SynchroExt = saidef_.sync_send == SaiConfig::BlockASendsSync ? SAI_SYNCEXT_OUTBLOCKA_ENABLE
-								: saidef_.sync_send == SaiConfig::BlockBSendsSync ? SAI_SYNCEXT_OUTBLOCKB_ENABLE
-																				  : SAI_SYNCEXT_DISABLE;
+		hsai_rx.Init.SynchroExt = saidef_.sync_send == SaiConfig::BlockASendsSync ? SAI_SYNCEXT_OUTBLOCKA_ENABLE :
+								  saidef_.sync_send == SaiConfig::BlockBSendsSync ? SAI_SYNCEXT_OUTBLOCKB_ENABLE :
+																					  SAI_SYNCEXT_DISABLE;
 	}
 	if (saidef_.mode == SaiConfig::ExtSynced) {
 		hsai_rx.Init.AudioMode = SAI_MODESLAVE_RX;
-		hsai_rx.Init.Synchro = saidef_.sync_receive_from == SaiConfig::SyncToSAI1 ? SAI_SYNCHRONOUS_EXT_SAI1
-							 : saidef_.sync_receive_from == SaiConfig::SyncToSAI2 ? SAI_SYNCHRONOUS_EXT_SAI2
-							 : saidef_.sync_receive_from == SaiConfig::SyncToSAI3 ? SAI_SYNCHRONOUS_EXT_SAI3
-							 : saidef_.sync_receive_from == SaiConfig::SyncToSAI4 ? SAI_SYNCHRONOUS_EXT_SAI4
-																				  : SAI_SYNCHRONOUS;
+		hsai_rx.Init.Synchro = saidef_.sync_receive_from == SaiConfig::SyncToSAI1 ? SAI_SYNCHRONOUS_EXT_SAI1 :
+							   saidef_.sync_receive_from == SaiConfig::SyncToSAI2 ? SAI_SYNCHRONOUS_EXT_SAI2 :
+							   saidef_.sync_receive_from == SaiConfig::SyncToSAI3 ? SAI_SYNCHRONOUS_EXT_SAI3 :
+							   saidef_.sync_receive_from == SaiConfig::SyncToSAI4 ? SAI_SYNCHRONOUS_EXT_SAI4 :
+																					  SAI_SYNCHRONOUS;
 
 		hsai_rx.Init.MckOutput = SAI_MCK_OUTPUT_DISABLE;
 		hsai_rx.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
@@ -124,7 +126,8 @@ SaiTdmPeriph::Error SaiTdmPeriph::_config_rx_sai() {
 	return err;
 }
 
-SaiTdmPeriph::Error SaiTdmPeriph::_config_tx_sai() {
+SaiTdmPeriph::Error SaiTdmPeriph::_config_tx_sai()
+{
 	Error err = SAI_NO_ERR;
 
 	__HAL_SAI_RESET_HANDLE_STATE(&hsai_tx);
@@ -135,25 +138,25 @@ SaiTdmPeriph::Error SaiTdmPeriph::_config_tx_sai() {
 		hsai_tx.Init.AudioMode = SAI_MODESLAVE_TX;
 		hsai_tx.Init.Synchro = SAI_SYNCHRONOUS;
 		hsai_tx.Init.MckOutput = SAI_MCK_OUTPUT_DISABLE;
-		hsai_tx.Init.SynchroExt = saidef_.sync_send == SaiConfig::BlockASendsSync ? SAI_SYNCEXT_OUTBLOCKA_ENABLE
-								: saidef_.sync_send == SaiConfig::BlockBSendsSync ? SAI_SYNCEXT_OUTBLOCKB_ENABLE
-																				  : SAI_SYNCEXT_DISABLE;
+		hsai_tx.Init.SynchroExt = saidef_.sync_send == SaiConfig::BlockASendsSync ? SAI_SYNCEXT_OUTBLOCKA_ENABLE :
+								  saidef_.sync_send == SaiConfig::BlockBSendsSync ? SAI_SYNCEXT_OUTBLOCKB_ENABLE :
+																					  SAI_SYNCEXT_DISABLE;
 	}
 	if (saidef_.mode == SaiConfig::TXMaster) {
 		hsai_tx.Init.AudioMode = SAI_MODEMASTER_TX;
 		hsai_tx.Init.Synchro = SAI_ASYNCHRONOUS;
 		hsai_tx.Init.MckOutput = SAI_MCK_OUTPUT_ENABLE;
-		hsai_tx.Init.SynchroExt = saidef_.sync_send == SaiConfig::BlockASendsSync ? SAI_SYNCEXT_OUTBLOCKA_ENABLE
-								: saidef_.sync_send == SaiConfig::BlockBSendsSync ? SAI_SYNCEXT_OUTBLOCKB_ENABLE
-																				  : SAI_SYNCEXT_DISABLE;
+		hsai_tx.Init.SynchroExt = saidef_.sync_send == SaiConfig::BlockASendsSync ? SAI_SYNCEXT_OUTBLOCKA_ENABLE :
+								  saidef_.sync_send == SaiConfig::BlockBSendsSync ? SAI_SYNCEXT_OUTBLOCKB_ENABLE :
+																					  SAI_SYNCEXT_DISABLE;
 	}
 	if (saidef_.mode == SaiConfig::ExtSynced) {
 		hsai_tx.Init.AudioMode = SAI_MODESLAVE_TX;
-		hsai_tx.Init.Synchro = saidef_.sync_receive_from == SaiConfig::SyncToSAI1 ? SAI_SYNCHRONOUS_EXT_SAI1
-							 : saidef_.sync_receive_from == SaiConfig::SyncToSAI2 ? SAI_SYNCHRONOUS_EXT_SAI2
-							 : saidef_.sync_receive_from == SaiConfig::SyncToSAI3 ? SAI_SYNCHRONOUS_EXT_SAI3
-							 : saidef_.sync_receive_from == SaiConfig::SyncToSAI4 ? SAI_SYNCHRONOUS_EXT_SAI4
-																				  : SAI_SYNCHRONOUS;
+		hsai_tx.Init.Synchro = saidef_.sync_receive_from == SaiConfig::SyncToSAI1 ? SAI_SYNCHRONOUS_EXT_SAI1 :
+							   saidef_.sync_receive_from == SaiConfig::SyncToSAI2 ? SAI_SYNCHRONOUS_EXT_SAI2 :
+							   saidef_.sync_receive_from == SaiConfig::SyncToSAI3 ? SAI_SYNCHRONOUS_EXT_SAI3 :
+							   saidef_.sync_receive_from == SaiConfig::SyncToSAI4 ? SAI_SYNCHRONOUS_EXT_SAI4 :
+																					  SAI_SYNCHRONOUS;
 
 		hsai_tx.Init.MckOutput = SAI_MCK_OUTPUT_DISABLE;
 		hsai_tx.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
@@ -195,7 +198,8 @@ SaiTdmPeriph::Error SaiTdmPeriph::_config_tx_sai() {
 	return err;
 }
 
-void SaiTdmPeriph::_config_rx_dma() {
+void SaiTdmPeriph::_config_rx_dma()
+{
 	hdma_rx.Init.Request = saidef_.dma_init_rx.channel;
 
 	hdma_rx.Instance = saidef_.dma_init_rx.stream;
@@ -214,7 +218,8 @@ void SaiTdmPeriph::_config_rx_dma() {
 	HAL_DMA_DeInit(&hdma_rx);
 }
 
-void SaiTdmPeriph::_config_tx_dma() {
+void SaiTdmPeriph::_config_tx_dma()
+{
 	hdma_tx.Init.Request = saidef_.dma_init_tx.channel;
 
 	hdma_tx.Instance = saidef_.dma_init_tx.stream;
@@ -233,7 +238,8 @@ void SaiTdmPeriph::_config_tx_dma() {
 	HAL_DMA_DeInit(&hdma_tx);
 }
 
-SaiTdmPeriph::Error SaiTdmPeriph::_init_sai_dma() {
+SaiTdmPeriph::Error SaiTdmPeriph::_init_sai_dma()
+{
 	// Todo always init slave first
 	if (HAL_DMA_Init(&hdma_tx) != HAL_OK)
 		return SAI_INIT_ERR;
@@ -244,7 +250,8 @@ SaiTdmPeriph::Error SaiTdmPeriph::_init_sai_dma() {
 	return SAI_NO_ERR;
 }
 
-void SaiTdmPeriph::_init_pins() {
+void SaiTdmPeriph::_init_pins()
+{
 	if (saidef_.mode == SaiConfig::TXMaster || saidef_.mode == SaiConfig::RXMaster) {
 		Pin sai_mclk{saidef_.MCLK.gpio,
 					 saidef_.MCLK.pin,
@@ -289,22 +296,26 @@ void SaiTdmPeriph::_init_pins() {
 					PinOType::PushPull};
 }
 
-void SaiTdmPeriph::set_tx_buffers(uint8_t *tx_buf_ptr, uint32_t block_size) {
+void SaiTdmPeriph::set_tx_buffers(uint8_t *tx_buf_ptr, uint32_t block_size)
+{
 	tx_buf_ptr_ = tx_buf_ptr;
 	tx_block_size_ = block_size;
 }
 
-void SaiTdmPeriph::set_rx_buffers(uint8_t *rx_buf_ptr, uint32_t block_size) {
+void SaiTdmPeriph::set_rx_buffers(uint8_t *rx_buf_ptr, uint32_t block_size)
+{
 	rx_buf_ptr_ = rx_buf_ptr;
 	rx_block_size_ = block_size;
 }
 
-void SaiTdmPeriph::set_callbacks(std::function<void()> &&tx_complete_cb, std::function<void()> &&tx_half_complete_cb) {
+void SaiTdmPeriph::set_callbacks(std::function<void()> &&tx_complete_cb, std::function<void()> &&tx_half_complete_cb)
+{
 	tx_tc_cb = std::move(tx_complete_cb);
 	tx_ht_cb = std::move(tx_half_complete_cb);
 }
 
-void SaiTdmPeriph::start() {
+void SaiTdmPeriph::start()
+{
 	if (saidef_.mode == SaiConfig::RXMaster) {
 		dma_tc_flag_index = dma_get_TC_flag_index(hdma_rx.Instance);
 		dma_ht_flag_index = dma_get_HT_flag_index(hdma_rx.Instance);
@@ -326,7 +337,8 @@ void SaiTdmPeriph::start() {
 	HAL_SAI_Receive_DMA(&hsai_rx, rx_buf_ptr_, rx_block_size_);
 }
 
-void SaiTdmPeriph::_start_irq(IRQn_Type irqn) {
+void SaiTdmPeriph::_start_irq(IRQn_Type irqn)
+{
 	InterruptManager::registerISR(irqn, [this]() {
 		if ((*dma_isr_reg & dma_tc_flag_index) /*&& (saidef_.dma_init_tx.stream->CR & DMA_IT_TC)*/) {
 			*dma_ifcr_reg = dma_tc_flag_index;
@@ -346,16 +358,19 @@ void SaiTdmPeriph::_start_irq(IRQn_Type irqn) {
 	InterruptControl::enable_irq(irqn);
 }
 
-void SaiTdmPeriph::stop() {
+void SaiTdmPeriph::stop()
+{
 	InterruptControl::disable_irq(tx_irqn);
 	InterruptControl::disable_irq(rx_irqn);
 }
 
-void SaiTdmPeriph::_sai_enable(SAI_HandleTypeDef *hsai) {
+void SaiTdmPeriph::_sai_enable(SAI_HandleTypeDef *hsai)
+{
 	hsai->Instance->CR1 = hsai->Instance->CR1 | (0x1UL << 16U);
 }
 
-void SaiTdmPeriph::_sai_disable(SAI_HandleTypeDef *hsai) {
+void SaiTdmPeriph::_sai_disable(SAI_HandleTypeDef *hsai)
+{
 	hsai->Instance->CR1 = hsai->Instance->CR1 & ~(0x1UL << 16U);
 }
 

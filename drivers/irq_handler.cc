@@ -1,4 +1,4 @@
-#include "interrupt.hh"
+#include "drivers/interrupt.hh"
 #define STASH_FPU_REGS
 
 extern "C" {

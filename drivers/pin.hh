@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "register_access.hh"
-#include "stm32xx.h"
+#include "drivers/register_access.hh"
+#include "stm32mp1xx.h"
+#include "stm32mp1xx_ll_gpio.h"
 #include <cstddef>
 
 namespace mdrivlib

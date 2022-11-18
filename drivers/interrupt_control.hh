@@ -1,6 +1,6 @@
 #pragma once
-#include "irq_ctrl.h"
-#include "stm32mp1xx.h"
+#include "CMSIS/Core_A/Include/irq_ctrl.h"
+#include "drivers/stm32xx.h"
 
 struct InterruptControl {
 	InterruptControl() = delete;

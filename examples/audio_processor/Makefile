@@ -4,7 +4,7 @@ BUILDDIR = build
 OPTFLAG = -O3
 
 EXTLIBDIR = ../../third-party
-SHAREDDIR = ../shared
+SHAREDDIR = ../../shared
 STM32HALDIR = $(EXTLIBDIR)/STM32MP1xx_HAL_Driver
 mdrivlibdir = lib/mdrivlib
 
@@ -80,5 +80,5 @@ EXTRACFLAGS = -DUSE_HAL_DRIVER \
 EXTRACXXFLAGS =  \
 
 
-include ../shared/makefile-common.mk
+include $(SHAREDDIR)/makefile-common.mk
 

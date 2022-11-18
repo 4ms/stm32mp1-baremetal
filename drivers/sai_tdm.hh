@@ -1,7 +1,8 @@
 #pragma once
-#include "interrupt.hh"
-#include "pin.hh"
-#include "sai_config_struct.hh"
+#include "drivers/interrupt.hh"
+#include "drivers/pin.hh"
+#include "drivers/sai_config_struct.hh"
+#include "stm32mp1xx_hal_sai.h"
 #include <cstdint>
 
 namespace mdrivlib

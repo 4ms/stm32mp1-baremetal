@@ -28,7 +28,8 @@
 
 #include "codec_CS42L51.hh"
 #include "codec_CS42L51_registers.h"
-#include "stm32xx.h"
+#include "stm32mp1xx.h"
+#include "stm32mp1xx_hal.h"
 
 static constexpr bool DISABLE_I2C = false;
 
@@ -53,27 +54,32 @@ CodecCS42L51::CodecCS42L51(I2CPeriph &i2c, const SaiConfig &saidef)
 	, i2c_(i2c)
 	, samplerate_{saidef.samplerate}
 	, reset_pin_{saidef.reset_pin, PinMode::Output}
-	, I2C_address{static_cast<uint8_t>((0x4A + (saidef.bus_address ? 1 : 0)) << 1)} {
+	, I2C_address{static_cast<uint8_t>((0x4A + (saidef.bus_address ? 1 : 0)) << 1)}
+{
 	reset_pin_.low();
 }
 
-CodecCS42L51::Error CodecCS42L51::init() {
+CodecCS42L51::Error CodecCS42L51::init()
+{
 	init_at_samplerate(samplerate_);
 	return sai_.init() == SaiTdmPeriph::SAI_NO_ERR ? CODEC_NO_ERR : SAI_INIT_ERR;
 }
 
-uint32_t CodecCS42L51::get_samplerate() {
+uint32_t CodecCS42L51::get_samplerate()
+{
 	return samplerate_;
 }
 
-void CodecCS42L51::start() {
+void CodecCS42L51::start()
+{
 	sai_.start();
 
 	// Set Power Down bit to 0 after MCLK and LRCK are running (CS42L51 datasheet, section 4.8)
 	power_up();
 }
 
-CodecCS42L51::Error CodecCS42L51::init_at_samplerate(uint32_t sample_rate) {
+CodecCS42L51::Error CodecCS42L51::init_at_samplerate(uint32_t sample_rate)
+{
 	reset_pin_.high();
 	HAL_Delay(1);
 
@@ -87,14 +93,16 @@ CodecCS42L51::Error CodecCS42L51::init_at_samplerate(uint32_t sample_rate) {
 	return _write_all_registers();
 }
 
-CodecCS42L51::Error CodecCS42L51::_write_samplerate_register(uint32_t sample_rate) {
-	CodecCS42L51::Error err;
+CodecCS42L51::Error CodecCS42L51::_write_samplerate_register(uint32_t sample_rate)
+{
+	[[maybe_unused]] CodecCS42L51::Error err;
 
 	auto sr_mode = _calc_samplerate(sample_rate);
 	return _write_register(MIC_POWER_CTL, MIC_POWER_CTL_AUTO | sr_mode);
 }
 
-uint8_t CodecCS42L51::_calc_samplerate(uint32_t sample_rate) {
+uint8_t CodecCS42L51::_calc_samplerate(uint32_t sample_rate)
+{
 	if (sample_rate > 50000)
 		return DSM_MODE;
 	else if (sample_rate == 16000)
@@ -107,7 +115,8 @@ uint8_t CodecCS42L51::_calc_samplerate(uint32_t sample_rate) {
 		return (uint8_t)0;
 }
 
-CodecCS42L51::Error CodecCS42L51::_write_all_registers() {
+CodecCS42L51::Error CodecCS42L51::_write_all_registers()
+{
 	CodecCS42L51::Error err;
 
 	for (auto packet : default_codec_init) {
@@ -118,10 +127,11 @@ CodecCS42L51::Error CodecCS42L51::_write_all_registers() {
 	return err;
 }
 
-CodecCS42L51::Error CodecCS42L51::_write_register(uint8_t reg_address, uint16_t reg_value) {
+CodecCS42L51::Error CodecCS42L51::_write_register(uint8_t reg_address, uint16_t reg_value)
+{
 	uint8_t Byte1 = ((reg_address << 1) & 0xFE) | ((reg_value >> 8) & 0x01);
 	uint8_t Byte2 = reg_value & 0xFF;
-	uint8_t data[2] = {Byte1, Byte2};
+	[[maybe_unused]] uint8_t data[2] = {Byte1, Byte2};
 
 	if constexpr (DISABLE_I2C)
 		return CODEC_NO_ERR;
@@ -131,11 +141,13 @@ CodecCS42L51::Error CodecCS42L51::_write_register(uint8_t reg_address, uint16_t 
 	return (err == I2CPeriph::I2C_NO_ERR) ? CODEC_NO_ERR : CODEC_I2C_ERR;
 }
 
-CodecCS42L51::Error CodecCS42L51::power_down() {
+CodecCS42L51::Error CodecCS42L51::power_down()
+{
 	return _write_register(POWER_CTL1, POWER_CTL1_PDN);
 }
 
-CodecCS42L51::Error CodecCS42L51::power_up() {
+CodecCS42L51::Error CodecCS42L51::power_up()
+{
 	return _write_register(POWER_CTL1, 0);
 }
 } // namespace mdrivlib
@@ -163,10 +175,10 @@ CodecCS42L51::Error CodecCS42L51::power_up() {
 // 	struct regmap *regmap;
 // };
 
-// #define CS42L51_FORMATS ( \
-// 		SNDRV_PCM_FMTBIT_S16_LE  | SNDRV_PCM_FMTBIT_S16_BE  | \
-// 		SNDRV_PCM_FMTBIT_S18_3LE | SNDRV_PCM_FMTBIT_S18_3BE | \
-// 		SNDRV_PCM_FMTBIT_S20_3LE | SNDRV_PCM_FMTBIT_S20_3BE | \
+// #define CS42L51_FORMATS (
+// 		SNDRV_PCM_FMTBIT_S16_LE  | SNDRV_PCM_FMTBIT_S16_BE  |
+// 		SNDRV_PCM_FMTBIT_S18_3LE | SNDRV_PCM_FMTBIT_S18_3BE |
+// 		SNDRV_PCM_FMTBIT_S20_3LE | SNDRV_PCM_FMTBIT_S20_3BE |
 // 		SNDRV_PCM_FMTBIT_S24_LE  | SNDRV_PCM_FMTBIT_S24_BE)
 
 // static int cs42l51_get_chan_mix(struct snd_kcontrol *kcontrol,

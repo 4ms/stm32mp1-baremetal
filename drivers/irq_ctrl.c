@@ -25,8 +25,8 @@
  * limitations under the License.
  */
 
-#include "irq_ctrl.h"
-#include "stm32mp1xx.h"
+#include "CMSIS/Core_A/Include/irq_ctrl.h"
+#include "drivers/stm32xx.h"
 #include <stddef.h>
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)

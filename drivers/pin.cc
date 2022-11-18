@@ -1,5 +1,7 @@
-#include "pin.hh"
-#include "rcc.hh"
+#include "drivers/pin.hh"
+#include "drivers/rcc.hh"
+#include "drivers/pinconf.hh"
+#include "stm32mp1xx_ll_gpio.h"
 
 namespace mdrivlib
 {

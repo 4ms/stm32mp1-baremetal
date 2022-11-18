@@ -93,4 +93,3 @@ private:
 	T &currentVal;
 	T lastVal;
 };
-
