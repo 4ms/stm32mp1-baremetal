@@ -46,14 +46,17 @@ Serial Number : 00000000001A
 Enumeration done.
 This device has only 1 configuration.
 Default configuration set.
+DEBUG : Found Audio Control subclass
+
 Switching to Interface (#1)
 Class    : 1h
 SubClass : 3h
 Protocol : 0h
 MIDI class started.
+Class selected
+Class active
 
 [when you play on the MIDI device you'll see data like this:]
-CP: #0
 Note: 62 Vel: 108
 Note: 62 off
 Note: 57 Vel: 83
@@ -61,7 +64,6 @@ Note: 57 off
 Note: 60 Vel: 79
 Note: 60 off
 ```
-
 
 
 ## Dependencies and modifications
@@ -95,19 +97,45 @@ Note: 60 off
 
 
   * `usbh_conf.c/.h`: Copied from [STM32CubeH7 example application USB Host Audio](https://github.com/STMicroelectronics/STM32CubeH7/blob/master/Projects/STM32H743I-EVAL/Applications/USB_Host/AUDIO_Standalone/Src/usbh_conf.c) with these modifications:
-	- Re-wrote `HAL_HCD_MspInit/DeInit` to use the MP1 registers. Turns on OTG and USBPHY clocks, and connects OTG to the port we use
-	- Removed the use of a global `HCD_HandleTypeDef`. Instead we put it in MidiHost, so there's no issue if we ever need multiple MIDI Hosts
-	-  `USBH_LL_Init()`: does not init the HCD_Handle
-	-  Elsewhere we init the number of host channels to 16, and selected the right phy interface
-	- Removed Board-specific stuff like VBUS enable driving
-	- Fixed `USBH_LL_Set/GetToggle` not using the phost argument, but instead directly accessing the global handle
 
-  * `usbh_midi.cc/hh`: I took the CDC Host Class from the STM USB Library and removed the stuff about line encoding. I changed the class and subclass IDs, too, and made the control interface descriptor optional. I also refactored the callbacks so we can pass lambdas. Some common operations I moved to a helper class UsbHostHandle. ...and many other things (TODO)
+	- Re-wrote `HAL_HCD_MspInit/DeInit` to use the MP1 registers. Turns on OTG
+	  and USBPHY clocks, and connects OTG to the port we use
+	- Removed the use of a global `HCD_HandleTypeDef`. Instead we put it in
+	  MidiHost, so there's no issue if we ever need multiple MIDI Hosts
+	- `USBH_LL_Init()`: does not init the HCD_Handle
+	- Elsewhere we init the number of host channels to 16, and selected the
+	  right phy interface
+	- Removed Board-specific stuff like VBUS enable driving
+	- Fixed `USBH_LL_Set/GetToggle` not using the phost argument, but instead
+	  directly accessing the global handle
+
+  * `usbh_midi.cc/hh`:  I started with the [CDC Host Class from the STM USB
+	Library](https://github.com/STMicroelectronics/stm32_mw_usb_host/blob/master/Class/CDC/Src/usbh_cdc.c)
+	and refactored it to match the MIDI USB specifications:
+
+	- Renamed anything CDC to MIDI
+	- Removed the code about line encoding.
+	- Changed the class and subclass to AudioClass and MidiStreamingSubclass
+	- Made the control interface descriptor optional, and selected the data interface.
+	- Refactored for C++ (scoped enums, constexpr, function object
+	  callbacks)
+	- Removed use of `USBH_malloc/free`, and instead let the application
+	  own/manager the host class instance handle (i.e. `XXX_HandleTypeDef`) and
+	  pass it to the host driver `USBH_RegisterClass`.
+	- Refactored many common operations (like linking endpoints, opening
+	  pipes), moving them to a `UsbHostHelper` class
+	- Refactored the callbacks so we can pass function objects like a
+	  lambda for the rx or tx callback.
 
 
 ### Limitations, Bugs ###
 
 No support for Discovery boards yet
+
+TODO:
+
+ - Support Discovery board with non-self-powered devices
+ - Use a lighterweight alternative to std::function for rx/tx_callbacks
 
 ### Resources ###
 
