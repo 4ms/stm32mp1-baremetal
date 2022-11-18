@@ -135,7 +135,6 @@ No support for Discovery boards yet
 TODO:
 
  - Support Discovery board with non-self-powered devices
- - Use a lighterweight alternative to std::function for rx/tx_callbacks
 
 ### Resources ###
 
