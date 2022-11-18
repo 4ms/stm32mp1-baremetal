@@ -6,7 +6,7 @@
 enum class LedActive { Low, High };
 
 // Led is a generic class that controls a GPIO output to, e.g., drive an LED.
-// See drivers/pin.hh for enum definitions for the template parameters.
+// See drivers/pinconf.hh for enum definitions for the template parameters.
 // GPIOx: the GPIO to use, such as GPIO::B
 // PINMASK: the pin to use, such as PinNum::_2
 // POLARITY: either LedActive::Low or LedActive::High (default).
