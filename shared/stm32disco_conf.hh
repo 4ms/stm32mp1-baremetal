@@ -1,6 +1,7 @@
 #pragma once
 #include "drivers/i2c_conf.hh"
 #include "drivers/leds.hh"
+#include "stm32mp1xx.h"
 
 namespace STM32MP1Disco
 {
@@ -11,10 +12,10 @@ using BlueLED = Led<GPIO::D, PinNum::_11, LedActive::High>;
 using LD8 = BlueLED;
 
 // Note: Green and Red LEDs share a pin with User1Button and User2Button.
-using GreenLED = Led<GPIO::A, PinNum::_14, LedActive::High>;
+using GreenLED = Led<GPIO::A, PinNum::_14, LedActive::Low>;
 using LD5 = GreenLED;
 
-using RedLED = Led<GPIO::A, PinNum::_13, LedActive::High>;
+using RedLED = Led<GPIO::A, PinNum::_13, LedActive::Low>;
 using LD6 = RedLED;
 
 using RedLED2 = OrangeLED; // For compatibility with OSD32BRK board

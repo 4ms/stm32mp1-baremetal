@@ -1,6 +1,7 @@
 #pragma once
 #include "drivers/i2c_conf.hh"
 #include "drivers/leds.hh"
+#include "stm32mp1xx.h"
 
 namespace OSD32BRK
 {
