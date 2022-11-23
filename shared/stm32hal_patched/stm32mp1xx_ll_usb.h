@@ -17,8 +17,8 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_LL_USB_H
-#define STM32H7xx_LL_USB_H
+#ifndef STM32MP1xx_LL_USB_H
+#define STM32MP1xx_LL_USB_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +28,7 @@ extern "C" {
 #include "stm32mp1xx_hal_def.h"
 
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
  * @{
  */
 
@@ -489,9 +489,7 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 							  uint8_t dev_address,
 							  uint8_t speed,
 							  uint8_t ep_type,
-							  uint16_t mps,
-							  uint8_t tt_hubaddr,
-							  uint8_t tt_prtaddr); // last two params added by hftrx
+							  uint16_t mps);
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDef *hc, uint8_t dma);
 
 uint32_t USB_HC_ReadInterrupt(USB_OTG_GlobalTypeDef *USBx);
@@ -500,10 +498,10 @@ HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num);
 HAL_StatusTypeDef USB_StopHost(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_ActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
-uint_fast8_t USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx); // added by hftrx
-HAL_StatusTypeDef USB_HS_PHYCInit(void);				 // added by hftrx
-HAL_StatusTypeDef USB_HS_PHYCDeInit(void);				 // added by hftrx
-#endif													 /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
+
+uint_fast8_t USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx);
+#endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
+
 /**
  * @}
  */
@@ -525,4 +523,4 @@ HAL_StatusTypeDef USB_HS_PHYCDeInit(void);				 // added by hftrx
 }
 #endif /* __cplusplus */
 
-#endif /* STM32H7xx_LL_USB_H */
+#endif /* STM32MP1xx_LL_USB_H */

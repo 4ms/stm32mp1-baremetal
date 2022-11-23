@@ -1,6 +1,7 @@
 #pragma once
 #include "drivers/i2c_conf.hh"
 #include "drivers/leds.hh"
+#include "stm32mp1xx.h"
 
 namespace OSD32BRK
 {
@@ -17,6 +18,7 @@ constexpr uint32_t ConsoleUART = UART4_BASE;
 constexpr PinConf UartRX{GPIO::B, PinNum::_2, PinAF::AF_8};
 constexpr PinConf UartTX{GPIO::G, PinNum::_11, PinAF::AF_6};
 
+// Specify whether the board has a PMIC power management IC, and what I2C bus it's on
 namespace PMIC
 {
 constexpr bool HasSTPMIC = true;
@@ -26,6 +28,13 @@ constexpr I2C_Config I2C_config{
 	.scl_pin = {GPIO::Z, PinNum::_4, PinAF::AF_6},
 };
 } // namespace PMIC
+
+// Specify whether the board has a USBC Interface IC, and what I2C bus it's on
+namespace USBC_Interface
+{
+constexpr bool HasSTUSB1600 = false;
+constexpr I2C_Config I2C_config{};
+}; // namespace USBC_Interface
 
 constexpr uint32_t HSE_Clock_Hz = 24000000;
 constexpr uint32_t MPU_MHz = 650;

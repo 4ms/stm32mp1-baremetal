@@ -21,6 +21,7 @@ SOURCES = startup.s \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd.c \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd_ex.c \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_ll_usb.c \
+		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_ll_usb_phy.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_gpio.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \

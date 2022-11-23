@@ -49,6 +49,9 @@ Here's a list of the example projects:
   * **[USB MSC Device](examples/usb_msc_device)**:
 	Simple example that creates a USB Mass Storage Class device (aka "USB thumb
 	drive").
+  * **[USB MIDI Host](examples/usb_midi_audio_host)**:
+	Demonstrates USB host functionality using a MIDI keyboard, sequencer or
+	controller.
 
 To run an application on the STM32MP1, a bootloader must load it. There are two
 bootloaders to choose from:
