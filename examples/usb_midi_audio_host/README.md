@@ -5,20 +5,26 @@ This project demonstrates the use of the STM32 USB Host Library by creating a
 MIDI Host. Plug in a MIDI device such as a musical keyboard or sequencer or controller.
 Playing notes or changing CCs will display on the console.
 
-The board can provide VBUS power to the external device (watch your current consumption!).
-
+The board can provide VBUS power to the external device.
 
 Modify `main.cc` to either select the OSD32MP1-BRK board or a Discovery board.
-It's been tested on the OSD32MP1-BRK board. Since the OSD32MP1-BRK board is
-typically powered through the USB jack, you need to power the board from the
-VIN pins with a 5V supply. Then the USB jack will be fine to use as a host (use
-a USG-OTG adaptor that goes from male micro-AB to female A).
 
-It will eventually work on the STM32MP157C-DK2 Discovery board, but I need to
-enable VBUS via the STUBS1600. It should work on the Discovery board if your
-MIDI keyboard is powered from something other than the USB jack.
+Since the OSD32MP1-BRK board is
+typically powered through the USB jack, you need to power the 
 
-Then, in this directory run:
+When using the OSD32MP1-BRK board, you will need to power the board from the
+VIN and GND pins using a 5V supply, instead of powering it from the USB jack.
+This frees up the USB jack to use connect to a MIDI device. You probably will 
+need to use a "USB OTG" (On The Go) adaptor that goes from micro-USB to female
+type-A, and then another cable that goes from male type-A to whatever your MIDI
+device has.
+
+When using the STM32MP157C-DK2 Discovery board, power the board normally using
+the USB-C jack next to the SD-Card slot. The other USB-C jack can supply VBus
+to the MIDI device, but there is USB-C Interface IC (STUSB1600) responsible
+for enabling VBus. The example code configures this IC properly via I2C.
+
+In this directory run:
 
 ```
 make
