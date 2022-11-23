@@ -8,11 +8,11 @@
 //
 
 #include "drivers/leds.hh"
+#include "drivers/stusb1600.hh"
 #include "drivers/uart.hh"
 #include "midi_host.hh"
 #include "midi_message.hh"
 #include "stm32mp1xx.h"
-#include "stusb1600.hh"
 #include "system_clk.hh"
 
 #include "osd32brk_conf.hh"
