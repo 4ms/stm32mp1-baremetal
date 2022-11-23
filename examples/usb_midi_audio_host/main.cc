@@ -28,9 +28,10 @@ void main()
 	uart.write("\r\n\r\nUSB MIDI Host test\r\n");
 	uart.write("Connect a USB cable to a MIDI device (keyboard, etc)\r\n");
 
-	Board::GreenLED green1;
-	Board::RedLED red1;
-	green1.off();
+	Board::GreenLED green_led;
+	Board::RedLED red_led;
+	red_led.off();
+	green_led.off();
 
 	SystemClocks::init();
 
@@ -40,7 +41,11 @@ void main()
 		printf("USB Host failed to initialize!\n");
 	}
 
-	midi_host.set_rx_callback([&](std::span<uint8_t> rx_buf) {
+	midi_host.set_rx_callback([&red_led, &midi_host](std::span<uint8_t> rx_buf) {
+		// Indicate activity with the red LED
+		red_led.toggle();
+
+		// Print the received MIDI message to the console
 		if (rx_buf.size() == 4) {
 			auto msg = MidiMessage(rx_buf[1], rx_buf[2], rx_buf[3]);
 			msg.print();
@@ -48,7 +53,7 @@ void main()
 			printf("RX %d bytes\n", rx_buf.size());
 		}
 
-		// Start listening for more data:
+		// Start listening for more data
 		midi_host.receive();
 	});
 
@@ -63,7 +68,7 @@ void main()
 		printf("MIDI Host failed to start!\n");
 	}
 
-	// Blink green1 light at 1Hz
+	// Blink green LED
 	uint32_t last_tm = 0;
 	bool led_state = false;
 
@@ -73,13 +78,7 @@ void main()
 		uint32_t tm = HAL_GetTick();
 		if (tm > (last_tm + 500)) {
 			last_tm = tm;
-			if (led_state) {
-				green1.off();
-				red1.off();
-			} else {
-				green1.on();
-				red1.on();
-			}
+			green_led.set(led_state);
 			led_state = !led_state;
 		}
 	}
