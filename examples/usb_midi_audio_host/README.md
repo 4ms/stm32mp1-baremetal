@@ -5,7 +5,7 @@ This project demonstrates the use of the STM32 USB Host Library by creating a
 MIDI Host. Plug in a MIDI device such as a musical keyboard or sequencer or controller.
 Playing notes or changing CCs will display on the console.
 
-The board can provide VBUS power to the external device.
+The board can provide VBus power (+5V) to the external device.
 
 Modify `main.cc` to either select the OSD32MP1-BRK board or a Discovery board.
 
@@ -71,6 +71,9 @@ Note: 60 Vel: 79
 Note: 60 off
 ```
 
+The green LED will flash regularly to indicate the application is running, and the red 
+LED will toggle whenever a MIDI message is received.
+
 
 ## Dependencies and modifications
 
@@ -102,7 +105,9 @@ Note: 60 off
 		It's largely based on the implementation of such from the hftrx project.
 
 
-  * `usbh_conf.c/.h`: Copied from [STM32CubeH7 example application USB Host Audio](https://github.com/STMicroelectronics/STM32CubeH7/blob/master/Projects/STM32H743I-EVAL/Applications/USB_Host/AUDIO_Standalone/Src/usbh_conf.c) with these modifications:
+  * `usbh_conf.c/.h`: Copied from [STM32CubeH7 example application USB Host
+	Audio](https://github.com/STMicroelectronics/STM32CubeH7/blob/master/Projects/STM32H743I-EVAL/Applications/USB_Host/AUDIO_Standalone/Src/usbh_conf.c)
+	with these modifications:
 
 	- Re-wrote `HAL_HCD_MspInit/DeInit` to use the MP1 registers. Turns on OTG
 	  and USBPHY clocks, and connects OTG to the port we use
@@ -136,11 +141,6 @@ Note: 60 off
 
 ### Limitations, Bugs ###
 
-No support for Discovery boards yet
-
-TODO:
-
- - Support Discovery board with non-self-powered devices
 
 ### Resources ###
 
