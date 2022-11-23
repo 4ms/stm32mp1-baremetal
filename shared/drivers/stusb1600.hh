@@ -18,13 +18,28 @@ private:
 	constexpr static uint32_t I2C_Address = 0x28;
 
 public:
-	enum Registers : uint8_t {
+	enum class Register : uint8_t {
 		CCconnectionStatus = 0x0E,
 		MonitoringStatus = 0x10,
 		CCOperationStatus = 0x11,
-		CCCaps = 0x18,
+		CCCap = 0x18,
 		ResetControl = 0x23,
+		VBusDischargeTime = 0x25,
 		CCPowerMode = 0x28,
+	};
+	enum CCPowerModes : uint8_t {
+		SourcePowerRole = 0b000,
+		SinkPowerRole = 0b001,
+		SinkPowerRoleNoAcc = 0b010,
+		DualPowerRole = 0b011,
+		DualPowerRoleTrySRC = 0b100,
+		DualPowerRoleTrySNK = 0b101,
+	};
+	enum CCCaps : uint8_t {
+		DefaultCurrent = 0b00000000,
+	};
+	enum VBusDischargeTimes : uint8_t {
+		T504ms = 0b11010000,
 	};
 
 	STUSB1600(const I2C_Config &conf)
@@ -35,29 +50,33 @@ public:
 
 	bool enable_vbus_source_mode()
 	{
-		return write_reg(Registers::CCPowerMode, 0b000); // source power role with acc support
+		if (!write_reg(Register::CCCap, CCCaps::DefaultCurrent))
+			return false;
+		if (!write_reg(Register::VBusDischargeTime, VBusDischargeTimes::T504ms))
+			return false;
+		if (!write_reg(Register::CCPowerMode, CCPowerModes::SourcePowerRole))
+			return false;
+		return true;
 	}
 
 	bool reset()
 	{
-		auto ok = write_reg(Registers::ResetControl, 1);
-		HAL_Delay(10);
-		if (ok) {
-			ok = write_reg(Registers::ResetControl, 0);
-			HAL_Delay(10);
-		}
-		return ok;
+		if (!write_reg(Register::ResetControl, 1))
+			return false;
+		if (!write_reg(Register::ResetControl, 0))
+			return false;
+		return true;
 	}
 
-	void print_reg(uint8_t reg)
+	void print_reg(Register reg)
 	{
 		auto val = read_reg(reg);
 		if (val.has_value())
-			printf("Read reg 0x%02x = 0x%02x\n", reg, val.value());
+			printf("Read reg 0x%02x = 0x%02x\n", static_cast<uint8_t>(reg), val.value());
 		else
-			printf("Failed to read register 0x%02x\n", reg);
+			printf("Failed to read register 0x%02x\n", static_cast<uint8_t>(reg));
 	}
 
-	bool write_reg(uint8_t reg, uint8_t val) { return i2c.write_register_byte(reg, val); }
-	std::optional<uint8_t> read_reg(uint8_t reg) { return i2c.read_register_byte(reg); }
+	bool write_reg(Register reg, uint8_t val) { return i2c.write_register_byte(static_cast<uint8_t>(reg), val); }
+	std::optional<uint8_t> read_reg(Register reg) { return i2c.read_register_byte(static_cast<uint8_t>(reg)); }
 };
