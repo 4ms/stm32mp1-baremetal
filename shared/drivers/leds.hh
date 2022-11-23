@@ -19,10 +19,7 @@ public:
 	constexpr static uint16_t pin_mask = static_cast<uint16_t>(PINMASK);
 	constexpr static uint32_t pin_num = PinConf::bit_to_num(PINMASK);
 
-	Led()
-	{
-		PinConf{GPIOx, PINMASK, PinAF::AFNone}.init(PinMode::Output);
-	}
+	Led() { PinConf{GPIOx, PINMASK, PinAF::AFNone}.init(PinMode::Output); }
 
 	void on()
 	{
@@ -39,4 +36,14 @@ public:
 		else
 			PinConf{GPIOx, PINMASK}.high();
 	}
+
+	void set(bool turnon)
+	{
+		if (turnon)
+			on();
+		else
+			off();
+	}
+
+	void toggle() { PinConf{GPIOx, PINMASK}.toggle(); }
 };

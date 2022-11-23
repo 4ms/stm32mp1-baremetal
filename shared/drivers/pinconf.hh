@@ -144,6 +144,13 @@ struct PinConf {
 		LL_GPIO_SetOutputPin(port_, pin_);
 	}
 
+	void toggle() const
+	{
+		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
+		auto pin_ = static_cast<uint16_t>(pin);
+		LL_GPIO_TogglePin(port_, pin_);
+	}
+
 	bool read() const
 	{
 		auto port_ = reinterpret_cast<GPIO_TypeDef *>(gpio);
@@ -169,6 +176,6 @@ struct PinConf {
 			   PINx == PinNum::_13 ? 13 :
 			   PINx == PinNum::_14 ? 14 :
 			   PINx == PinNum::_15 ? 15 :
-									   0;
+									 0;
 	}
 };
