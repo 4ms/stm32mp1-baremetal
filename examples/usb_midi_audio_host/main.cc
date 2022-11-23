@@ -37,7 +37,7 @@ void main()
 	MidiHost midi_host;
 
 	if (!midi_host.init()) {
-		printf("USB Host failed to initialize!\r\n");
+		printf("USB Host failed to initialize!\n");
 	}
 
 	midi_host.set_rx_callback([&](std::span<uint8_t> rx_buf) {
@@ -52,16 +52,15 @@ void main()
 		midi_host.receive();
 	});
 
-	STUSB1600 stusb{Board::PMIC::I2C_config};
-	stusb.write_reg(STUSB1600::ResetControl, 1);
-	HAL_Delay(10);
-	stusb.write_reg(STUSB1600::ResetControl, 0);
-	HAL_Delay(10);
-	// stusb.write_reg(STUSB1600::CCCaps, 0b00100000);
-	stusb.write_reg(STUSB1600::CCPowerMode, 0b000); //source power role with acc support
+	if constexpr (Board::USBC_Interface::HasSTUSB1600) {
+		printf("Enabling USB-C VBus source mode\n");
+		STUSB1600 stusb{Board::USBC_Interface::I2C_config};
+		if (!stusb.enable_vbus_source_mode())
+			printf("Failed to communicate with STUSB1600\n");
+	}
 
 	if (!midi_host.start()) {
-		printf("MIDI Host failed to start!\r\n");
+		printf("MIDI Host failed to start!\n");
 	}
 
 	// Blink green1 light at 1Hz
