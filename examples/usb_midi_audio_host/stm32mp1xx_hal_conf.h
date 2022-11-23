@@ -33,41 +33,41 @@ extern "C" {
  * @brief This is the list of modules to be used in the HAL driver
  */
 #define HAL_MODULE_ENABLED
-//#define HAL_ADC_MODULE_ENABLED
-//#define HAL_CEC_MODULE_ENABLED
-//#define HAL_CORTEX_MODULE_ENABLED
-//#define HAL_CRC_MODULE_ENABLED
-//#define HAL_CRYP_MODULE_ENABLED
-//#define HAL_DAC_MODULE_ENABLED
-//#define HAL_DCMI_MODULE_ENABLED
-//#define HAL_DFSDM_MODULE_ENABLED
+// #define HAL_ADC_MODULE_ENABLED
+// #define HAL_CEC_MODULE_ENABLED
+// #define HAL_CORTEX_MODULE_ENABLED
+// #define HAL_CRC_MODULE_ENABLED
+// #define HAL_CRYP_MODULE_ENABLED
+// #define HAL_DAC_MODULE_ENABLED
+// #define HAL_DCMI_MODULE_ENABLED
+// #define HAL_DFSDM_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
-//#define HAL_EXTI_MODULE_ENABLED
-//#define HAL_FDCAN_MODULE_ENABLED
+// #define HAL_EXTI_MODULE_ENABLED
+// #define HAL_FDCAN_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
-//#define HAL_HASH_MODULE_ENABLED
-//#define HAL_HSEM_MODULE_ENABLED
-//#define HAL_I2C_MODULE_ENABLED
-//#define HAL_IPCC_MODULE_ENABLED
-//#define HAL_LPTIM_MODULE_ENABLED
-//#define HAL_LTDC_MODULE_ENABLED
-//#define HAL_MDMA_MODULE_ENABLED
-//#define HAL_PWR_MODULE_ENABLED
-//#define HAL_QSPI_MODULE_ENABLED
+// #define HAL_HASH_MODULE_ENABLED
+// #define HAL_HSEM_MODULE_ENABLED
+#define HAL_I2C_MODULE_ENABLED
+// #define HAL_IPCC_MODULE_ENABLED
+// #define HAL_LPTIM_MODULE_ENABLED
+// #define HAL_LTDC_MODULE_ENABLED
+// #define HAL_MDMA_MODULE_ENABLED
+// #define HAL_PWR_MODULE_ENABLED
+// #define HAL_QSPI_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
-//#define HAL_RNG_MODULE_ENABLED
-//#define HAL_RTC_MODULE_ENABLED
-//#define HAL_SAI_MODULE_ENABLED
-//#define HAL_SD_MODULE_ENABLED
-//#define HAL_SMARTCARD_MODULE_ENABLED
-//#define HAL_SMBUS_MODULE_ENABLED
-//#define HAL_SPDIFRX_MODULE_ENABLED
-//#define HAL_SPI_MODULE_ENABLED
-//#define HAL_SRAM_MODULE_ENABLED
-//#define HAL_TIM_MODULE_ENABLED
+// #define HAL_RNG_MODULE_ENABLED
+// #define HAL_RTC_MODULE_ENABLED
+// #define HAL_SAI_MODULE_ENABLED
+// #define HAL_SD_MODULE_ENABLED
+// #define HAL_SMARTCARD_MODULE_ENABLED
+// #define HAL_SMBUS_MODULE_ENABLED
+// #define HAL_SPDIFRX_MODULE_ENABLED
+// #define HAL_SPI_MODULE_ENABLED
+// #define HAL_SRAM_MODULE_ENABLED
+// #define HAL_TIM_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
-//#define HAL_USART_MODULE_ENABLED
-//#define HAL_WWDG_MODULE_ENABLED
+// #define HAL_USART_MODULE_ENABLED
+// #define HAL_WWDG_MODULE_ENABLED
 
 // Modules ported from H7:
 // #define HAL_PCD_MODULE_ENABLED
@@ -77,17 +77,17 @@ extern "C" {
 /**
  * @brief This is the list of modules where register callback can be used
  */
-//#define USE_HAL_ADC_REGISTER_CALLBACKS    0u
-//#define USE_HAL_CEC_REGISTER_CALLBACKS    0u
-//#define USE_HAL_DAC_REGISTER_CALLBACKS    0u
-//#define USE_HAL_I2C_REGISTER_CALLBACKS    0u
-//#define USE_HAL_LTDC_REGISTER_CALLBACKS	0u
-//#define USE_HAL_RNG_REGISTER_CALLBACKS    0u
-//#define USE_HAL_SPI_REGISTER_CALLBACKS    0u
-//#define USE_HAL_SRAM_REGISTER_CALLBACKS   0U
-//#define USE_HAL_UART_REGISTER_CALLBACKS   0u
-//#define USE_HAL_USART_REGISTER_CALLBACKS  0u
-//#define USE_HAL_WWDG_REGISTER_CALLBACKS   0u
+// #define USE_HAL_ADC_REGISTER_CALLBACKS    0u
+// #define USE_HAL_CEC_REGISTER_CALLBACKS    0u
+// #define USE_HAL_DAC_REGISTER_CALLBACKS    0u
+// #define USE_HAL_I2C_REGISTER_CALLBACKS    0u
+// #define USE_HAL_LTDC_REGISTER_CALLBACKS	0u
+// #define USE_HAL_RNG_REGISTER_CALLBACKS    0u
+// #define USE_HAL_SPI_REGISTER_CALLBACKS    0u
+// #define USE_HAL_SRAM_REGISTER_CALLBACKS   0U
+// #define USE_HAL_UART_REGISTER_CALLBACKS   0u
+// #define USE_HAL_USART_REGISTER_CALLBACKS  0u
+// #define USE_HAL_WWDG_REGISTER_CALLBACKS   0u
 
 /* ################## SPI peripheral configuration ########################## */
 
@@ -95,7 +95,7 @@ extern "C" {
  * Activated: CRC code is present inside driver
  * Deactivated: CRC code cleaned from driver
  */
-//#define USE_SPI_CRC                     1U
+// #define USE_SPI_CRC                     1U
 
 /* ######################### Oscillator Values adaptation ################### */
 /**

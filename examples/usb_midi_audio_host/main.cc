@@ -12,14 +12,15 @@
 #include "midi_host.hh"
 #include "midi_message.hh"
 #include "stm32mp1xx.h"
+#include "stusb1600.hh"
 #include "system_clk.hh"
 
 #include "osd32brk_conf.hh"
 #include "stm32disco_conf.hh"
 
 // Uncomment one of these to select your board:
-namespace Board = OSD32BRK;
-// namespace Board = STM32MP1Disco;
+// namespace Board = OSD32BRK;
+namespace Board = STM32MP1Disco;
 
 void main()
 {
@@ -28,6 +29,7 @@ void main()
 	uart.write("Connect a USB cable to a MIDI device (keyboard, etc)\r\n");
 
 	Board::GreenLED green1;
+	Board::RedLED red1;
 	green1.off();
 
 	SystemClocks::init();
@@ -50,6 +52,14 @@ void main()
 		midi_host.receive();
 	});
 
+	STUSB1600 stusb{Board::PMIC::I2C_config};
+	stusb.write_reg(STUSB1600::ResetControl, 1);
+	HAL_Delay(10);
+	stusb.write_reg(STUSB1600::ResetControl, 0);
+	HAL_Delay(10);
+	// stusb.write_reg(STUSB1600::CCCaps, 0b00100000);
+	stusb.write_reg(STUSB1600::CCPowerMode, 0b000); //source power role with acc support
+
 	if (!midi_host.start()) {
 		printf("MIDI Host failed to start!\r\n");
 	}
@@ -66,8 +76,10 @@ void main()
 			last_tm = tm;
 			if (led_state) {
 				green1.off();
+				red1.off();
 			} else {
 				green1.on();
+				red1.on();
 			}
 			led_state = !led_state;
 		}
