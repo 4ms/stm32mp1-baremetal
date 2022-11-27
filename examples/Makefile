@@ -11,6 +11,7 @@ examples := \
 	multicore_a7 \
 	nested_irq \
 	usb_msc_device \
+	usb_midi_host \
 
 define build_example
 echo
