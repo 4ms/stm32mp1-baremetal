@@ -21,3 +21,6 @@ jobs:
       
     - name: Build all examples
       run: cd examples && make all
+    
+    - name: Build MP1-Boot
+      run: cd bootloaders/mp1-boot && make
