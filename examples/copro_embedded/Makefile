@@ -15,10 +15,15 @@ export SHAREDDIR = ../../shared
 # Todo: Use the linker to directly embed m4 sections into the right place -- but we'll need
 # to make sure u-boot knows how to translate those addresses in the .uimg file correctly.
 
-all: firmware_m4.h firmware_m4_vectors.h
-	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all 
+all: firmware_m4.h firmware_m4_vectors.h a7
 
 $(BUILDDIR_M4)/$(BINARYNAME).elf: m4
+
+a7:
+	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all 
+
+m4:
+	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk
 
 firmware_m4.h: $(BUILDDIR_M4)/firmware.bin
 	xxd -i $< > $@
@@ -49,12 +54,6 @@ clean:
 # Run `make combo` and it'll produce a combo.hex file, which you can load using a flasher.
 # Resetting and starting the m4 copro will still need to be done by the a7, but the a7 won't need to copy fw data.
 # Then you could convert the combo.hex to a .bin and then .uimg file, which u-boot can load.
-a7:
-	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all 
-
-m4:
-	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk
-
 
 $(BUILDDIR_A7)/$(BINARYNAME).hex:
 	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk $@
