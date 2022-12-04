@@ -1,3 +1,5 @@
+[![C/C++ CI](https://github.com/4ms/stm32mp1-baremetal/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/4ms/stm32mp1-baremetal/actions/workflows/c-cpp.yml)
+
 # STM32MP1 Cortex-A7 bare-metal example projects
 
 This is a set of example and template projects for bare-metal applications on
