@@ -21,10 +21,10 @@ all: firmware_m4.h firmware_m4_vectors.h
 $(BUILDDIR_M4)/$(BINARYNAME).elf: m4
 
 firmware_m4.h: $(BUILDDIR_M4)/firmware.bin
-	xxd -i $< $@
+	xxd -i $< > $@
 
 firmware_m4_vectors.h: $(BUILDDIR_M4)/vectors.bin
-	xxd -i $< $@
+	xxd -i $< > $@
 
 $(BUILDDIR_M4)/vectors.bin: $(BUILDDIR_M4)/$(BINARYNAME).elf
 	arm-none-eabi-objcopy --dump-section .isr_vector=$(BUILDDIR_M4)/vectors.bin $<
