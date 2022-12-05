@@ -84,6 +84,8 @@ BIN 	= $(BUILDDIR)/$(BINARYNAME).bin
 
 all: Makefile $(ELF) $(UIMAGENAME)
 
+elf: $(ELF)
+
 install:
 	cp $(UIMAGENAME) $(SDCARD_MOUNT_PATH)
 	diskutil unmount $(SDCARD_MOUNT_PATH)

@@ -23,7 +23,7 @@ a7:
 	@$(MAKE) --no-print-directory -f makefile_mp1a7.mk all 
 
 m4:
-	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk
+	@$(MAKE) --no-print-directory -f makefile_mp1m4.mk elf
 
 firmware_m4.h: $(BUILDDIR_M4)/firmware.bin
 	xxd -i $< > $@
