@@ -1,0 +1,8 @@
+---
+CompileFlags:
+	Add: [
+	"-DSTM32MP157Cxx",
+	"-DSTM32MP1",
+	"-DCORE_CA7",
+	"-D__NO_EMBEDDED_ASM"
+	]
