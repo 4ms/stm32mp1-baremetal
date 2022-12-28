@@ -9,6 +9,8 @@ CompileFlags:
 	"-I../fsbl",
 	"-I../third-party/CMSIS/Core_A/Include",
 	"-I../third-party/CMSIS/Device/ST/STM32MP1xx/Include",
+	"-I../third-party/STM32MP1xx_HAL_Driver/Inc",
+	"-I../third-party/printf/src",
 	"-I../../third-party/CMSIS/Core_A/Include",
 	"-I../../third-party/CMSIS/Device/ST/STM32MP1xx/Include",
 	"-I../../third-party/STM32MP1xx_HAL_Driver/Inc",
