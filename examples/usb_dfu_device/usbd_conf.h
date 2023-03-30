@@ -42,12 +42,14 @@ extern "C" {
 /** @defgroup USBD_CONF_Exported_Defines
  * @{
  */
+#define USBD_LPM_ENABLED 0U
 
 #define USBD_MAX_NUM_INTERFACES 1U
 #define USBD_MAX_NUM_CONFIGURATION 1U
 #define USBD_MAX_STR_DESC_SIZ 0x100U
 #define USBD_SELF_POWERED 1U
 #define USBD_DEBUG_LEVEL 3U
+#define USE_USB_HS
 
 #if (USBD_DEBUG_LEVEL > 0U)
 #include <stdio.h>
@@ -59,8 +61,9 @@ extern "C" {
 #define USBD_SUPPORT_USER_STRING_DESC 1U
 
 /* BillBoard Class Config */
-#define USBD_CLASS_USER_STRING_DESC 1U
-#define USBD_CLASS_BOS_ENABLED 1U
+#define USBD_CLASS_USER_STRING_DESC 0
+
+#define USBD_CLASS_BOS_ENABLED 0U
 #define USB_BB_MAX_NUM_ALT_MODE 0x2U
 
 /* MSC Class Config */
