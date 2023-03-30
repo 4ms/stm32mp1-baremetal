@@ -20,8 +20,9 @@ namespace Board = MMp9;
 
 extern PCD_HandleTypeDef hpcd;
 
-namespace {
-	Uart<Board::ConsoleUART> uart;
+namespace
+{
+Uart<Board::ConsoleUART> uart;
 }
 
 void main()
@@ -36,6 +37,8 @@ void main()
 	SystemClocks::init();
 
 	USBD_HandleTypeDef USBD_Device;
+	// ST USB library assumes handle is cleared to 0's:
+	memset(&USBD_Device, 0, sizeof(USBD_Device));
 
 	auto init_ok = USBD_Init(&USBD_Device, &DFU_Desc, 0);
 	if (init_ok != USBD_OK) {
@@ -69,7 +72,8 @@ void main()
 	}
 }
 
-extern "C" int __io_putchar(int ch) {
+extern "C" int __io_putchar(int ch)
+{
 	uart.putchar(ch);
 	return ch;
 }
