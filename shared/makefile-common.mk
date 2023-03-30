@@ -124,7 +124,7 @@ $(HEX): $(ELF)
 
 $(UIMAGENAME): $(BIN)
 	$(info Creating uimg file)
-	python $(SCRIPTDIR)/uimg_header.py $< $@
+	python3 $(SCRIPTDIR)/uimg_header.py $< $@
 
 %.d: ;
 
