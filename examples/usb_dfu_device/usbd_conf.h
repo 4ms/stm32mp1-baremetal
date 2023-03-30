@@ -47,7 +47,7 @@ extern "C" {
 #define USBD_MAX_NUM_CONFIGURATION 1U
 #define USBD_MAX_STR_DESC_SIZ 0x100U
 #define USBD_SELF_POWERED 1U
-#define USBD_DEBUG_LEVEL 0U
+#define USBD_DEBUG_LEVEL 3U
 
 #if (USBD_DEBUG_LEVEL > 0U)
 #include <stdio.h>

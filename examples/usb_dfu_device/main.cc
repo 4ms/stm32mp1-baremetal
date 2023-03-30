@@ -9,21 +9,26 @@
 #include "usbd_dfu_media.h"
 #include <cstdint>
 
-#include "osd32brk_conf.hh"
-#include "stm32disco_conf.hh"
+// #include "osd32brk_conf.hh"
+// #include "stm32disco_conf.hh"
+#include "mmp9_conf.hh"
 
 // Uncomment one of these to select your board:
-namespace Board = OSD32BRK;
+// namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
+namespace Board = MMp9;
 
 extern PCD_HandleTypeDef hpcd;
 
+namespace {
+	Uart<Board::ConsoleUART> uart;
+}
+
 void main()
 {
-	Uart<Board::ConsoleUART> uart;
-	uart.write("\r\n\r\nSimple USB MSC Device test\r\n");
+	uart.write("\r\n\r\nUSB DFU Device test\r\n");
 	uart.write("Connect a USB cable to a computer\r\n");
-	uart.write("You should see a 128MB unformatted drive appear.\r\n");
+	uart.write("Run `dfu-util --list` in a terminal and you should see this device.\r\n");
 
 	Board::GreenLED green1;
 	green1.off();
@@ -45,7 +50,6 @@ void main()
 
 	USBD_RegisterClass(&USBD_Device, USBD_DFU_CLASS);
 	USBD_DFU_RegisterMedia(&USBD_Device, &USBD_DFU_MEDIA_fops);
-	// USBD_MSC_RegisterStorage(&USBD_Device, &USBD_MSC_fops);
 	USBD_Start(&USBD_Device);
 
 	// Blink green1 light at 1Hz
@@ -63,4 +67,9 @@ void main()
 			led_state = !led_state;
 		}
 	}
+}
+
+extern "C" int __io_putchar(int ch) {
+	uart.putchar(ch);
+	return ch;
 }

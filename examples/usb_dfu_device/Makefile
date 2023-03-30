@@ -28,7 +28,8 @@ SOURCES = startup.s \
 		  $(STM32HALDIR)/Src/stm32mp1xx_ll_rcc.c \
 		  usbd_conf.c \
 		  usbd_desc.c \
-		  usbd_dfu_media.c \
+		  usbd_dfu_media.cc \
+		  syscalls.c \
 		  $(USBLIBDIR)/Class/DFU/Src/usbd_dfu.c \
 		  $(USBLIBDIR)/Core/Src/usbd_core.c \
 		  $(USBLIBDIR)/Core/Src/usbd_ctlreq.c \
@@ -46,7 +47,8 @@ INCLUDES = -I. \
 
 EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER
 
-LINK_STDLIB = --specs=nosys.specs
+# LINK_STDLIB = --specs=nosys.specs
+LINK_STDLIB =
 
 include $(SHAREDDIR)/makefile-common.mk
 

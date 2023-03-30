@@ -28,53 +28,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_dfu.h"
 
-/** @addtogroup STM32_USB_DEVICE_LIBRARY
- * @{
- */
-
-/** @defgroup USBD_MEDIA
- * @brief header file for the usbd_dfu_media_template.c file
- * @{
- */
-
-/** @defgroup USBD_MEDIA_Exported_Defines
- * @{
- */
-/**
- * @}
- */
-
-/** @defgroup USBD_MEDIA_Exported_Types
- * @{
- */
-
-/**
- * @}
- */
-
-/** @defgroup USBD_MEDIA_Exported_Macros
- * @{
- */
-
-/**
- * @}
- */
-
-/** @defgroup USBD_MEDIA_Exported_Variables
- * @{
- */
 extern USBD_DFU_MediaTypeDef USBD_DFU_MEDIA_fops;
-/**
- * @}
- */
-
-/** @defgroup USBD_MEDIA_Exported_FunctionsPrototype
- * @{
- */
-
-/**
- * @}
- */
 
 #ifdef __cplusplus
 }
