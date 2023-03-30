@@ -72,6 +72,7 @@ extern "C" {
 /* DFU Class Config */
 #define USBD_DFU_MAX_ITF_NUM 1U
 #define USBD_DFU_XFERS_IZE 1024U
+#define USBD_DFU_XFER_SIZE 1024U
 
 /* AUDIO Class Config */
 #define USBD_AUDIO_FREQ 22100U
