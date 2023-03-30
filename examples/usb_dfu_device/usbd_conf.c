@@ -415,7 +415,6 @@ uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
  */
 void *USBD_static_malloc(uint32_t size)
 {
-	// static uint32_t mem[(sizeof(USBD_MSC_BOT_HandleTypeDef) / 4) + 1]; /* On 32-bit boundary */
 	static uint32_t mem[(sizeof(USBD_DFU_HandleTypeDef) / 4) + 1]; /* On 32-bit boundary */
 	return mem;
 }
