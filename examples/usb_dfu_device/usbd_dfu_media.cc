@@ -18,6 +18,7 @@
  */
 
 #include "usbd_dfu_media.h"
+#include "norflash/qspi_flash_driver.hh"
 
 // @: To detect that this is a special mapping descriptor (to avoid decoding standard descriptor)
 // ● /: for separator between zones
@@ -36,32 +37,53 @@
 // – f (0x46): Erasable and Writeable
 // – g (0x47): Readable, Erasable and Writeable
 
-// #define FLASH_DESC_STR      "@Internal Flash   /0x08000000/1*128Ka,7*128Kg"
-#define FLASH_DESC_STR "@DDR RAM          /0xC4000000/1*512Kg"
+// TODO: set this address. If we use Mp1-boot as the DFU,
+// then we can use 0xC2000040
+#define DDRRAM_DESC_STR "@DDR RAM          /0xC4000000/1*32Me"
 
-const uint32_t AppAddrStart = 0xC4000000;
-const uint32_t AppSizeBytes = 512 * 1024;
+// TODO: do we want to use MM mode? we can't write in that case
+#define NORFLASH_DESC_STR "@NOR Flash        /0x70080000/999*4Kg"
+// #define NORFLASH_DESC_STR "@NOR Flash        /0x70080000/248*64Kg"
+// 256 total sectors @64kB each = 16MB, but first 8 sectors are for FSBL
 
-#define FLASH_ERASE_TIME (uint16_t)50
-#define FLASH_PROGRAM_TIME (uint16_t)50
+constexpr uint32_t DDRAppAddrStart = 0xC4000000;
+constexpr uint32_t DDRAppSizeBytes = 32 * 1024 * 1024;
+constexpr uint32_t DDRAppAddrEnd = DDRAppAddrStart + DDRAppSizeBytes;
 
-static uint16_t MEM_If_Init(void);
+constexpr uint32_t NORAppAddrStart = 0x70080000;
+constexpr uint32_t NORAppSizeBytes = 15 * 1024 * 1024;
+constexpr uint32_t NORAppAddrEnd = NORAppAddrStart + NORAppSizeBytes;
+constexpr uint32_t NORAppAddrOffset = 0x70000000;
+
+constexpr inline uint32_t DDR_PROGRAM_TIME = 5;
+constexpr inline uint32_t DDR_ERASE_TIME = 5;
+
+constexpr inline uint32_t NOR_PROGRAM_TIME = 50;
+constexpr inline uint32_t NOR_ERASE_TIME = 250;
+
+static uint16_t MEM_If_Init();
 static uint16_t MEM_If_Erase(uint32_t Add);
 static uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len);
 static uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t Len);
-static uint16_t MEM_If_DeInit(void);
+static uint16_t MEM_If_DeInit();
 static uint16_t MEM_If_GetStatus(uint32_t Add, uint8_t Cmd, uint8_t *buffer);
 
-__ALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_MEDIA_fops __ALIGN_END =
+// TODO: make this a class, but we need to expose the C callbacks using a static instance
+using QSpiFlash = mdrivlib::QSpiFlash;
+QSpiFlash *flash = nullptr;
+void dfu_set_qspi_driver(mdrivlib::QSpiFlash *flash_driver) { flash = flash_driver; }
+/////////////////
+
+void check_magic()
 {
-   (uint8_t*)FLASH_DESC_STR,
-	MEM_If_Init,
-	MEM_If_DeInit,
-	MEM_If_Erase,
-	MEM_If_Write,
-	MEM_If_Read,
-	MEM_If_GetStatus,
-};
+	uint32_t len = 256;
+	uint8_t check[256];
+	for (int i = 0; i < len; i++)
+		check[i] = 0;
+
+	flash->read(check, 0x80000, len);
+	USBD_UsrLog("0x80000 is 0x%02x%02x%02x%02x", check[0], check[1], check[2], check[3]);
+}
 
 /**
  * @brief  MEM_If_Init
@@ -69,9 +91,10 @@ __ALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_MEDIA_fops __ALIGN_END =
  * @param  None
  * @retval 0 if operation is successful, MAL_FAIL else.
  */
-uint16_t MEM_If_Init(void)
+uint16_t MEM_If_Init()
 {
-	USBD_UsrLog("MEM_if_Init");
+	USBD_UsrLog("INIT");
+	check_magic();
 	return 0;
 }
 
@@ -81,7 +104,7 @@ uint16_t MEM_If_Init(void)
  * @param  None
  * @retval 0 if operation is successful, MAL_FAIL else.
  */
-uint16_t MEM_If_DeInit(void) { return 0; }
+uint16_t MEM_If_DeInit() { return 0; }
 
 /**
  * @brief  MEM_If_Erase
@@ -89,17 +112,28 @@ uint16_t MEM_If_DeInit(void) { return 0; }
  * @param  Add: Address of sector to be erased.
  * @retval 0 if operation is successful, MAL_FAIL else.
  */
-uint16_t MEM_If_Erase(uint32_t Add)
+uint16_t MEM_If_Erase(uint32_t addr)
 {
-	USBD_UsrLog("Erasing %x", Add);
-	if (Add != AppAddrStart)
-		return 1;
+	USBD_UsrLog("Erasing 0x%08x", addr);
 
-	uint32_t *mem_ptr = reinterpret_cast<uint32_t *>(AppAddrStart);
-	for (uint32_t i = 0; i < AppSizeBytes; i += 4)
-		*mem_ptr++ = 0;
+	if (addr >= DDRAppAddrStart && addr < DDRAppAddrEnd) {
+		uint32_t *mem_ptr = reinterpret_cast<uint32_t *>(DDRAppAddrStart);
+		for (uint32_t i = 0; i < DDRAppSizeBytes; i += 4)
+			*mem_ptr++ = 0;
+		return 0;
+	}
 
-	return 0;
+	if (addr >= NORAppAddrStart && addr < NORAppAddrEnd) {
+		addr -= NORAppAddrOffset;
+		bool ok = flash->erase(QSpiFlash::SECTOR, addr);
+		if (!ok)
+			USBD_ErrLog("Failed to erase NOR Flash");
+
+		check_magic();
+		return ok ? 0 : 1;
+	}
+
+	return 2; // unknown address
 }
 
 /**
@@ -109,14 +143,50 @@ uint16_t MEM_If_Erase(uint32_t Add)
  * @param  Len: Number of data to be written (in bytes).
  * @retval 0 if operation is successful, MAL_FAIL else.
  */
-uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len)
+uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t len)
 {
-	USBD_UsrLog("Writing %d B from %p to %p", Len, src, dest);
+	USBD_UsrLog("Writing %d B from %p to %p", len, src, dest);
 
-	while (Len--) {
-		*dest++ = *src++;
+	uint32_t addr = reinterpret_cast<uint32_t>(dest);
+
+	if (addr >= DDRAppAddrStart && addr < DDRAppAddrEnd) {
+		while (len--) {
+			*dest++ = *src++;
+		}
+		return 0;
 	}
-	return 0;
+
+	if (addr >= NORAppAddrStart && addr < NORAppAddrEnd) {
+		check_magic();
+
+		addr -= NORAppAddrOffset;
+		bool ok = flash->write(src, addr, len);
+		if (!ok) {
+			USBD_ErrLog("Failed to write to NOR Flash");
+			return 1;
+		}
+		USBD_UsrLog("First word is 0x%02x%02x%02x%02x", src[0], src[1], src[2], src[3]);
+
+		if (len > 1024) {
+			USBD_UsrLog("Warning: can only verify first 1024B");
+			len = 1024;
+		}
+		uint8_t check[1024];
+		for (int i = 0; i < len; i++)
+			check[i] = 0;
+
+		flash->read(check, addr, len);
+		for (int i = 0; i < len; i++) {
+			if (check[i] != src[i]) {
+				USBD_ErrLog("Not verified: %x != %x @ %p", check[i], src[i], dest + i);
+			}
+		}
+		USBD_UsrLog("OK");
+		check_magic();
+		return 0;
+	}
+
+	return 2; // unknown address
 }
 
 /**
@@ -126,22 +196,29 @@ uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len)
  * @param  Len: Number of data to be read (in bytes).
  * @retval Pointer to the physical address where data should be read.
  */
-uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t Len)
+uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t len)
 {
-	USBD_UsrLog("Reading %d B from %p to %p", Len, src, dest);
+	USBD_UsrLog("Reading %d B from %p to %p", len, src, dest);
 
-	uint32_t src_addr = (uint32_t)(src);
-	if (src_addr < AppAddrStart || src_addr >= (AppAddrStart + AppSizeBytes)) {
-		return dest; //do nothing
+	uint32_t addr = reinterpret_cast<uint32_t>(src);
+
+	if (addr >= DDRAppAddrStart && addr < DDRAppAddrEnd) {
+		uint8_t *d = dest;
+		while (len--) {
+			*d++ = *src++;
+		}
+		/* Return a valid address to avoid HardFault */
+		return (uint8_t *)(dest);
 	}
 
-	uint8_t *d = dest;
-	while (Len--) {
-		*d++ = *src++;
+	if (addr >= NORAppAddrStart && addr < NORAppAddrEnd) {
+		addr -= NORAppAddrOffset;
+
+		bool ok = flash->read(src, addr, len);
+		return (uint8_t *)(dest);
 	}
 
-	/* Return a valid address to avoid HardFault */
-	return (uint8_t *)(dest);
+	return (uint8_t *)(DDRAppAddrStart); // unknown address, just return something safe
 }
 
 /**
@@ -151,28 +228,47 @@ uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t Len)
  * @param  cmd: Number of data to be read (in bytes).
  * @retval Pointer to the physical address where data should be read.
  */
-uint16_t MEM_If_GetStatus(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
+uint16_t MEM_If_GetStatus(uint32_t addr, uint8_t cmd, uint8_t *buffer)
 {
 	USBD_UsrLog("GetStatus");
 
-	switch (Cmd) {
+	uint32_t prog_time;
+	uint32_t erase_time;
+	if (addr >= DDRAppAddrStart && addr < DDRAppAddrEnd) {
+		prog_time = DDR_PROGRAM_TIME;
+		erase_time = DDR_PROGRAM_TIME;
+	}
+	if (addr >= NORAppAddrStart && addr < NORAppAddrEnd) {
+		prog_time = NOR_PROGRAM_TIME;
+		erase_time = NOR_PROGRAM_TIME;
+	}
+	switch (cmd) {
 		case DFU_MEDIA_PROGRAM:
-			buffer[1] = (uint8_t)FLASH_PROGRAM_TIME;
-			buffer[2] = (uint8_t)(FLASH_PROGRAM_TIME << 8);
+			buffer[1] = (uint8_t)prog_time;
+			buffer[2] = (uint8_t)(prog_time << 8);
 			buffer[3] = 0;
-			USBD_UsrLog("Quered Media Program");
+			USBD_UsrLog("Quered Media Program Time");
 			break;
 
 		case DFU_MEDIA_ERASE:
-			buffer[1] = (uint8_t)FLASH_ERASE_TIME;
-			buffer[2] = (uint8_t)(FLASH_ERASE_TIME << 8);
+			buffer[1] = (uint8_t)erase_time;
+			buffer[2] = (uint8_t)(erase_time << 8);
 			buffer[3] = 0;
-			USBD_UsrLog("Quered Media Erase");
+			USBD_UsrLog("Quered Media Erase Time");
 			break;
 
 		default:
 			break;
 	}
-	return (0);
+	return 0;
 }
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+__ALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_MEDIA_fops __ALIGN_END = {
+	(uint8_t *)DDRRAM_DESC_STR NORFLASH_DESC_STR,
+	MEM_If_Init,
+	MEM_If_DeInit,
+	MEM_If_Erase,
+	MEM_If_Write,
+	MEM_If_Read,
+	MEM_If_GetStatus,
+};

@@ -2,6 +2,7 @@
 #include "drivers/interrupt_control.hh"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
+#include "norflash//qspi_flash_conf.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
 #include "usbd_core.h"
@@ -31,14 +32,18 @@ void main()
 	uart.write("Connect a USB cable to a computer\r\n");
 	uart.write("Run `dfu-util --list` in a terminal and you should see this device.\r\n");
 
-	Board::GreenLED green1;
-	green1.off();
+	// Board::GreenLED green1;
+	// green1.off();
 
 	SystemClocks::init();
 
 	USBD_HandleTypeDef USBD_Device;
 	// ST USB library assumes handle is cleared to 0's:
 	memset(&USBD_Device, 0, sizeof(USBD_Device));
+
+	mdrivlib::QSpiFlash flash{qspi_flash_conf};
+	// TODO: DFUdevice dfu{flash};
+	dfu_set_qspi_driver(&flash);
 
 	auto init_ok = USBD_Init(&USBD_Device, &DFU_Desc, 0);
 	if (init_ok != USBD_OK) {
@@ -62,11 +67,11 @@ void main()
 		uint32_t tm = HAL_GetTick();
 		if (tm > (last_tm + 500)) {
 			last_tm = tm;
-			if (led_state) {
-				green1.off();
-			} else {
-				green1.on();
-			}
+			// if (led_state) {
+			// 	green1.off();
+			// } else {
+			// 	green1.on();
+			// }
 			led_state = !led_state;
 		}
 	}
