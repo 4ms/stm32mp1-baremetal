@@ -17,21 +17,32 @@
  ******************************************************************************
  */
 
-/* BSPDependencies
-- "stm32xxxxx_{eval}{discovery}{nucleo_144}.c"
-- "stm32xxxxx_{eval}{discovery}_io.c"
-EndBSPDependencies */
-
-/* Includes ------------------------------------------------------------------*/
 #include "usbd_dfu_media.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-/* Extern function prototypes ------------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
+// @: To detect that this is a special mapping descriptor (to avoid decoding standard descriptor)
+// ● /: for separator between zones
+// ● Maximum 8 digits per address starting by “0x”
+// ● /: for separator between zones
+// ● Maximum of 2 digits for the number of sectors
+// ● *: For separator between number of sectors and sector size
+// ● Maximum 3 digits for sector size between 0 and 999
+// ● 1 digit for the sector size multiplier. Valid entries are: B (byte), K (Kilo), M (Mega)
+// ● 1 digit for the sector type as follows:
+// – a (0x41): Readable
+// – b (0x42): Erasable
+// – c (0x43): Readable and Erasabled
+// - d (0x44): Writeable
+// – e (0x45): Readable and Writeable
+// – f (0x46): Erasable and Writeable
+// – g (0x47): Readable, Erasable and Writeable
+
+// #define FLASH_DESC_STR      "@Internal Flash   /0x08000000/1*128Ka,7*128Kg"
+#define FLASH_DESC_STR "@DDR RAM          /0xC2000000/1*512Kg"
+const uint32_t AppAddrStart = 0xC2000000;
+
+#define FLASH_ERASE_TIME (uint16_t)50
+#define FLASH_PROGRAM_TIME (uint16_t)50
+
 uint16_t MEM_If_Init(void);
 uint16_t MEM_If_Erase(uint32_t Add);
 uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len);
