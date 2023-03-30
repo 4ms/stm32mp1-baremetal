@@ -1092,7 +1092,9 @@ static void DFU_Leave(USBD_HandleTypeDef *pdev)
     (void)USBD_Stop(pdev);
 
     /* Generate system reset to allow jumping to the user code */
-    NVIC_SystemReset();
+	// FIXME: Cortex-A7 does not have NVIC_SystemReset, and we should instead
+	// jump to the user code 
+    //NVIC_SystemReset();
 
     /* The next instructions will not be reached (system reset) */
   }
