@@ -37,36 +37,43 @@
 // – g (0x47): Readable, Erasable and Writeable
 
 // #define FLASH_DESC_STR      "@Internal Flash   /0x08000000/1*128Ka,7*128Kg"
-#define FLASH_DESC_STR "@DDR RAM          /0xC2000000/1*512Kg"
-const uint32_t AppAddrStart = 0xC2000000;
+#define FLASH_DESC_STR "@DDR RAM          /0xC4000000/1*512Kg"
+
+const uint32_t AppAddrStart = 0xC4000000;
+const uint32_t AppSizeBytes = 512 * 1024;
 
 #define FLASH_ERASE_TIME (uint16_t)50
 #define FLASH_PROGRAM_TIME (uint16_t)50
 
-uint16_t MEM_If_Init(void);
-uint16_t MEM_If_Erase(uint32_t Add);
-uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len);
-uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t Len);
-uint16_t MEM_If_DeInit(void);
-uint16_t MEM_If_GetStatus(uint32_t Add, uint8_t Cmd, uint8_t *buffer);
+static uint16_t MEM_If_Init(void);
+static uint16_t MEM_If_Erase(uint32_t Add);
+static uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len);
+static uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t Len);
+static uint16_t MEM_If_DeInit(void);
+static uint16_t MEM_If_GetStatus(uint32_t Add, uint8_t Cmd, uint8_t *buffer);
 
-USBD_DFU_MediaTypeDef USBD_DFU_MEDIA_fops = {
-	(uint8_t *)"DFU MEDIA",
+__ALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_MEDIA_fops __ALIGN_END =
+{
+   (uint8_t*)FLASH_DESC_STR,
 	MEM_If_Init,
 	MEM_If_DeInit,
 	MEM_If_Erase,
 	MEM_If_Write,
 	MEM_If_Read,
 	MEM_If_GetStatus,
-
 };
+
 /**
  * @brief  MEM_If_Init
  *         Memory initialization routine.
  * @param  None
  * @retval 0 if operation is successful, MAL_FAIL else.
  */
-uint16_t MEM_If_Init(void) { return 0; }
+uint16_t MEM_If_Init(void)
+{
+	USBD_UsrLog("MEM_if_Init");
+	return 0;
+}
 
 /**
  * @brief  MEM_If_DeInit
@@ -82,7 +89,18 @@ uint16_t MEM_If_DeInit(void) { return 0; }
  * @param  Add: Address of sector to be erased.
  * @retval 0 if operation is successful, MAL_FAIL else.
  */
-uint16_t MEM_If_Erase(uint32_t Add) { return 0; }
+uint16_t MEM_If_Erase(uint32_t Add)
+{
+	USBD_UsrLog("Erasing %x", Add);
+	if (Add != AppAddrStart)
+		return 1;
+
+	uint32_t *mem_ptr = reinterpret_cast<uint32_t *>(AppAddrStart);
+	for (uint32_t i = 0; i < AppSizeBytes; i += 4)
+		*mem_ptr++ = 0;
+
+	return 0;
+}
 
 /**
  * @brief  MEM_If_Write
@@ -91,7 +109,15 @@ uint16_t MEM_If_Erase(uint32_t Add) { return 0; }
  * @param  Len: Number of data to be written (in bytes).
  * @retval 0 if operation is successful, MAL_FAIL else.
  */
-uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len) { return 0; }
+uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len)
+{
+	USBD_UsrLog("Writing %d B from %p to %p", Len, src, dest);
+
+	while (Len--) {
+		*dest++ = *src++;
+	}
+	return 0;
+}
 
 /**
  * @brief  MEM_If_Read
@@ -102,8 +128,20 @@ uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t Len) { return 0; }
  */
 uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t Len)
 {
+	USBD_UsrLog("Reading %d B from %p to %p", Len, src, dest);
+
+	uint32_t src_addr = (uint32_t)(src);
+	if (src_addr < AppAddrStart || src_addr >= (AppAddrStart + AppSizeBytes)) {
+		return dest; //do nothing
+	}
+
+	uint8_t *d = dest;
+	while (Len--) {
+		*d++ = *src++;
+	}
+
 	/* Return a valid address to avoid HardFault */
-	return (uint8_t *)(0);
+	return (uint8_t *)(dest);
 }
 
 /**
@@ -115,14 +153,24 @@ uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t Len)
  */
 uint16_t MEM_If_GetStatus(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
+	USBD_UsrLog("GetStatus");
+
 	switch (Cmd) {
 		case DFU_MEDIA_PROGRAM:
-
+			buffer[1] = (uint8_t)FLASH_PROGRAM_TIME;
+			buffer[2] = (uint8_t)(FLASH_PROGRAM_TIME << 8);
+			buffer[3] = 0;
+			USBD_UsrLog("Quered Media Program");
 			break;
 
 		case DFU_MEDIA_ERASE:
-		default:
+			buffer[1] = (uint8_t)FLASH_ERASE_TIME;
+			buffer[2] = (uint8_t)(FLASH_ERASE_TIME << 8);
+			buffer[3] = 0;
+			USBD_UsrLog("Quered Media Erase");
+			break;
 
+		default:
 			break;
 	}
 	return (0);
