@@ -10,14 +10,16 @@
 #include "usbd_dfu_media.h"
 #include <cstdint>
 
-// #include "osd32brk_conf.hh"
-// #include "stm32disco_conf.hh"
+#include "brainboard_p3_conf.hh"
 #include "mmp9_conf.hh"
+#include "osd32brk_conf.hh"
+#include "stm32disco_conf.hh"
 
 // Uncomment one of these to select your board:
 // namespace Board = OSD32BRK;
 // namespace Board = STM32MP1Disco;
-namespace Board = MMp9;
+// namespace Board = MMp9;
+namespace Board = Brainboard_p3;
 
 extern PCD_HandleTypeDef hpcd;
 
@@ -28,9 +30,10 @@ Uart<Board::ConsoleUART> uart;
 
 void main()
 {
-	uart.write("\r\n\r\nUSB DFU Device test\r\n");
-	uart.write("Connect a USB cable to a computer\r\n");
-	uart.write("Run `dfu-util --list` in a terminal and you should see this device.\r\n");
+	uart.write("\n\nUSB DFU Device test\n");
+	uart.write("Connect a USB cable to a computer\n");
+	uart.write("Run `dfu-util --list` in a terminal and you should see this device.\n");
+	uart.write("It only works with NOR Flash\n");
 
 	// Board::GreenLED green1;
 	// green1.off();
@@ -47,7 +50,7 @@ void main()
 
 	auto init_ok = USBD_Init(&USBD_Device, &DFU_Desc, 0);
 	if (init_ok != USBD_OK) {
-		uart.write("USB Device failed to initialize!\r\n");
+		uart.write("USB Device failed to initialize!\n");
 		uart.write("Error code: ");
 		uart.write(static_cast<uint32_t>(init_ok));
 	}

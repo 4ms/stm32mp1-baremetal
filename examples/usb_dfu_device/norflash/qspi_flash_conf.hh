@@ -1,11 +1,16 @@
 #pragma once
+// FIXME: we need a more general way of setting the board conf
+// See mp1-boot repo
+#include "brainboard_p3_conf.hh"
 #include "norflash/qspi_flash_struct.hh"
 
 constexpr mdrivlib::QSPIFlashConfig qspi_flash_conf = {
 	.io0 = {GPIO::F, PinNum::_8, PinAF::AF_10},
 	.io1 = {GPIO::F, PinNum::_9, PinAF::AF_10},
-	.io2 = {GPIO::F, PinNum::_7, PinAF::AF_9},
-	.io3 = {GPIO::F, PinNum::_6, PinAF::AF_9},
+
+	.io2 = Brainboard_p3::NORFlash::d2,
+	.io3 = Brainboard_p3::NORFlash::d2,
+
 	.clk = {GPIO::F, PinNum::_10, PinAF::AF_9},
 	.cs = {GPIO::B, PinNum::_6, PinAF::AF_10},
 

@@ -2,7 +2,7 @@
 #include "drivers/i2c_conf.hh"
 #include "drivers/leds.hh"
 
-namespace MMp9
+namespace Brainboard_p3
 {
 using RedLED = Led<GPIO::E, PinNum::_2, LedActive::High>;
 using GreenLED = Led<GPIO::D, PinNum::_3, LedActive::High>;
@@ -16,6 +16,12 @@ constexpr uint32_t ConsoleUART = USART6_BASE;
 constexpr PinConf UartRX{GPIO::C, PinNum::_7, PinAF::AF_7};
 constexpr PinConf UartTX{GPIO::C, PinNum::_6, PinAF::AF_7};
 
+namespace NORFlash
+{
+constexpr PinConf d2{GPIO::F, PinNum::_7, PinAF::AF_9};
+constexpr PinConf d3{GPIO::F, PinNum::_6, PinAF::AF_9};
+} // namespace NORFlash
+
 namespace PMIC
 {
 constexpr bool HasSTPMIC = false;
@@ -25,9 +31,4 @@ constexpr I2C_Config I2C_config{};
 constexpr uint32_t HSE_Clock_Hz = 24000000;
 constexpr uint32_t MPU_MHz = 800;
 
-namespace NORFlash
-{
-constexpr PinConf d2{GPIO::F, PinNum::_7, PinAF::AF_9};
-constexpr PinConf d3{GPIO::A, PinNum::_1, PinAF::AF_9};
-} // namespace NORFlash
-} // namespace MMp9
+} // namespace Brainboard_p3
