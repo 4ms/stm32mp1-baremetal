@@ -40,11 +40,10 @@
 // TODO: set this address. If we use Mp1-boot as the DFU,
 // then we can use 0xC2000040
 #define DDRRAM_DESC_STR "@DDR RAM          /0xC4000000/1*32Me"
-
-// TODO: do we want to use MM mode? we can't write in that case
 #define NORFLASH_DESC_STR "@NOR Flash        /0x70080000/999*4Kg"
-// #define NORFLASH_DESC_STR "@NOR Flash        /0x70080000/248*64Kg"
-// 256 total sectors @64kB each = 16MB, but first 8 sectors are for FSBL
+
+// This is not safe, but could be necessary for overwriting the FSBL:
+// #define NORFLASH_DESC_STR "@NOR Flash        /0x70000000/999*4Kg"
 
 constexpr uint32_t DDRAppAddrStart = 0xC4000000;
 constexpr uint32_t DDRAppSizeBytes = 32 * 1024 * 1024;
@@ -53,7 +52,7 @@ constexpr uint32_t DDRAppAddrEnd = DDRAppAddrStart + DDRAppSizeBytes;
 constexpr uint32_t NORAppAddrStart = 0x70080000;
 constexpr uint32_t NORAppSizeBytes = 15 * 1024 * 1024;
 constexpr uint32_t NORAppAddrEnd = NORAppAddrStart + NORAppSizeBytes;
-constexpr uint32_t NORAppAddrOffset = 0x70000000;
+constexpr uint32_t NORMediaOffset = 0x70000000;
 
 constexpr inline uint32_t DDR_PROGRAM_TIME = 5;
 constexpr inline uint32_t DDR_ERASE_TIME = 5;
@@ -124,7 +123,7 @@ uint16_t MEM_If_Erase(uint32_t addr)
 	}
 
 	if (addr >= NORAppAddrStart && addr < NORAppAddrEnd) {
-		addr -= NORAppAddrOffset;
+		addr -= NORMediaOffset;
 		bool ok = flash->erase(QSpiFlash::SECTOR, addr);
 		if (!ok)
 			USBD_ErrLog("Failed to erase NOR Flash");
@@ -159,7 +158,7 @@ uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t len)
 	if (addr >= NORAppAddrStart && addr < NORAppAddrEnd) {
 		check_magic();
 
-		addr -= NORAppAddrOffset;
+		addr -= NORMediaOffset;
 		bool ok = flash->write(src, addr, len);
 		if (!ok) {
 			USBD_ErrLog("Failed to write to NOR Flash");
@@ -212,7 +211,7 @@ uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t len)
 	}
 
 	if (addr >= NORAppAddrStart && addr < NORAppAddrEnd) {
-		addr -= NORAppAddrOffset;
+		addr -= NORMediaOffset;
 
 		bool ok = flash->read(src, addr, len);
 		return (uint8_t *)(dest);
