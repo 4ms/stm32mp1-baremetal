@@ -9,7 +9,7 @@ constexpr mdrivlib::QSPIFlashConfig qspi_flash_conf = {
 	.io1 = {GPIO::F, PinNum::_9, PinAF::AF_10},
 
 	.io2 = Brainboard_p3::NORFlash::d2,
-	.io3 = Brainboard_p3::NORFlash::d2,
+	.io3 = Brainboard_p3::NORFlash::d3,
 
 	.clk = {GPIO::F, PinNum::_10, PinAF::AF_9},
 	.cs = {GPIO::B, PinNum::_6, PinAF::AF_10},
