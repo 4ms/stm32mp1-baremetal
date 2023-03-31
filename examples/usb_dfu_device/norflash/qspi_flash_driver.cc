@@ -94,6 +94,16 @@ QSpiFlash::QSpiFlash(const QSPIFlashConfig &config_defs)
 
 void QSpiFlash::GPIO_init_IO0_IO1()
 {
+	// Disable all possible QSPI IO2 and IO3, since the FSBL may have used incorrect alt pins for QSPI quad mode
+	// This only would happen if we're using a debugger to bootstrap the bootloader into DDR RAM
+	// in order to overwrite the faulty FSBL
+	PinConf{GPIO::E, PinNum::_2, PinAF::AFNone}.init(PinMode::Analog, PinPull::None);
+	PinConf{GPIO::F, PinNum::_7, PinAF::AFNone}.init(PinMode::Analog, PinPull::None);
+	PinConf{GPIO::A, PinNum::_1, PinAF::AFNone}.init(PinMode::Analog, PinPull::None);
+	PinConf{GPIO::F, PinNum::_6, PinAF::AFNone}.init(PinMode::Analog, PinPull::None);
+	PinConf{GPIO::D, PinNum::_13, PinAF::AFNone}.init(PinMode::Analog, PinPull::None);
+
+	// Setup required IO pins
 	PinConf{defs.cs.gpio, defs.cs.pin, defs.cs.af}.init(PinMode::Alt, PinPull::Up);
 	PinConf{defs.clk.gpio, defs.clk.pin, defs.clk.af}.init(PinMode::Alt);
 	PinConf{defs.io0.gpio, defs.io0.pin, defs.io0.af}.init(PinMode::Alt);
@@ -111,6 +121,7 @@ void QSpiFlash::GPIO_init_IO0_IO1()
 
 void QSpiFlash::GPIO_init_IO2_IO3_AF()
 {
+
 	PinConf io2{defs.io2.gpio, defs.io2.pin, defs.io2.af};
 	io2.init(PinMode::Alt, PinPull::None);
 
