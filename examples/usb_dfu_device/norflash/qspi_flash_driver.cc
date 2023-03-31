@@ -1,6 +1,4 @@
 #include "qspi_flash_driver.hh"
-#include "drivers/interrupt.hh"
-#include "drivers/interrupt_control.hh"
 #include "qspi_flash_registers.h"
 #include "stm32mp1xx.h"
 
@@ -62,13 +60,6 @@ QSpiFlash::QSpiFlash(const QSPIFlashConfig &config_defs)
 	// Initialize chip pins in single IO mode
 	GPIO_init_IO0_IO1();
 
-	InterruptControl::set_irq_priority(QUADSPI_IRQn, defs.IRQ_pri, defs.IRQ_subpri);
-	InterruptManager::registerISR(QUADSPI_IRQn, [hal_handle_ptr = &handle]() {
-		// Todo: use our own handler, so can get rid of the static instance_ and extern "C" functions
-		HAL_QSPI_IRQHandler(hal_handle_ptr);
-	});
-	InterruptControl::enable_irq(QUADSPI_IRQn);
-
 	handle.Init.ClockPrescaler = defs.clock_division;
 	handle.Init.FifoThreshold = 1;
 	handle.Init.SampleShifting = QSPI_SAMPLE_SHIFTING_HALFCYCLE;
@@ -120,8 +111,11 @@ void QSpiFlash::GPIO_init_IO0_IO1()
 
 void QSpiFlash::GPIO_init_IO2_IO3_AF()
 {
-	PinConf{defs.io2.gpio, defs.io2.pin, defs.io2.af}.init(PinMode::Alt, PinPull::None);
-	PinConf{defs.io3.gpio, defs.io3.pin, defs.io3.af}.init(PinMode::Alt, PinPull::None);
+	PinConf io2{defs.io2.gpio, defs.io2.pin, defs.io2.af};
+	io2.init(PinMode::Alt, PinPull::None);
+
+	PinConf io3{defs.io3.gpio, defs.io3.pin, defs.io3.af};
+	io3.init(PinMode::Alt, PinPull::None);
 }
 
 void QSpiFlash::init_command(QSPI_CommandTypeDef *s_command)
