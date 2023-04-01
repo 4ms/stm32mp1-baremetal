@@ -2,6 +2,7 @@
 #include "board_conf.hh"
 #include "norflash/qspi_flash_struct.hh"
 
+// TODO: this belongs in Board Conf
 constexpr mdrivlib::QSPIFlashConfig qspi_flash_conf = {
 	.io0 = {GPIO::F, PinNum::_8, PinAF::AF_10},
 	.io1 = {GPIO::F, PinNum::_9, PinAF::AF_10},

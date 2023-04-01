@@ -1,17 +1,19 @@
+#include "app_loader/boot_detect.hh"
+#include "app_loader/boot_media_loader.hh"
 #include "board_conf.hh"
 #include "drivers/interrupt.hh"
 #include "drivers/interrupt_control.hh"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
+#include "norflash/norflash-loader.hh"
 #include "norflash/qspi_flash_conf.hh"
+#include "print.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_dfu_media.h"
 #include <cstdint>
-
-extern PCD_HandleTypeDef hpcd;
 
 namespace
 {
@@ -26,44 +28,37 @@ void main()
 	// If it's jumpered shut (low) --> run DFU mode
 
 	if (!dfu_mode_requested()) {
+		auto boot_method = BootDetect::read_boot_method();
+		print("Booted from ", BootDetect::bootmethod_string(boot_method).data(), "\n");
+		print("Loading app image...\n");
+
 		constexpr uint32_t AppFlashSectorAddr = 0x100000;
-		// Load image
-		auto image_entry = reinterpret_cast<void (*)()>(AppFlashSectorAddr);
-		image_entry();
+		BootMediaLoader loader{boot_method};
+		bool image_ok = loader.load_image(BootLoader::ImageType::Kernel);
+
+		if (image_ok) {
+			print("Jumping to app\n");
+			loader.boot_image();
+		}
+		print("FAILED\n");
+	} else {
+		print("DFU Mode pin detected active.\n");
 	}
 
-	uart.write("\n\nUSB DFU Device\n");
-	uart.write("Connect a USB cable to the computer\n");
-	uart.write("Run `dfu-util --list` in a terminal and you should see this device.\n");
-	uart.write("Note: This DFU loader only works with DDR RAM and NOR Flash. TODO: SDMMC\n");
+	print("\n\nUSB DFU Loader Starting...\n");
 
 	Board::GreenLED green1;
 	green1.off();
 
 	SystemClocks::init();
 
-	USBD_HandleTypeDef USBD_Device;
-	// ST USB library assumes handle is cleared to 0's:
-	memset(&USBD_Device, 0, sizeof(USBD_Device));
+	NorFlashDFULoader dfu_loader{qspi_flash_conf}; // TODO: Board::QspiFlashConf
+	dfu_loader.start();
 
-	mdrivlib::QSpiFlash flash{qspi_flash_conf};
-	// TODO: DFUdevice dfu{flash};
-	dfu_set_qspi_driver(&flash);
-
-	auto init_ok = USBD_Init(&USBD_Device, &DFU_Desc, 0);
-	if (init_ok != USBD_OK) {
-		uart.write("USB Device failed to initialize!\n");
-		uart.write("Error code: ");
-		uart.write(static_cast<uint32_t>(init_ok));
-	}
-	InterruptControl::disable_irq(OTG_IRQn);
-	InterruptManager::registerISR(OTG_IRQn, [] { HAL_PCD_IRQHandler(&hpcd); });
-	InterruptControl::set_irq_priority(OTG_IRQn, 0, 0);
-	InterruptControl::enable_irq(OTG_IRQn);
-
-	USBD_RegisterClass(&USBD_Device, USBD_DFU_CLASS);
-	USBD_DFU_RegisterMedia(&USBD_Device, &USBD_DFU_MEDIA_fops);
-	USBD_Start(&USBD_Device);
+	print("Connect a USB cable to the computer\n");
+	print("Run `dfu-util --list` in a terminal and you should see this device.\n");
+	print("Note: This DFU loader only works with NOR Flash. TODO: SDMMC\n");
+	print("You must reboot after loading. TODO: auto-jump to app after detach\n");
 
 	// Blink green1 light at 1Hz
 	uint32_t last_tm = 0;
@@ -99,8 +94,4 @@ bool dfu_mode_requested()
 }
 } // namespace
 
-extern "C" int __io_putchar(int ch)
-{
-	uart.putchar(ch);
-	return ch;
-}
+void putchar_s(const char c) { uart.putchar(c); }
