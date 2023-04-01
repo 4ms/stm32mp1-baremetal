@@ -4,17 +4,18 @@
 
 namespace Brainboard_p3
 {
-using RedLED = Led<GPIO::E, PinNum::_2, LedActive::High>;
-using GreenLED = Led<GPIO::D, PinNum::_3, LedActive::High>;
-using RedLED2 = Led<GPIO::B, PinNum::_14, LedActive::High>;
-using GreenLED2 = Led<GPIO::E, PinNum::_1, LedActive::High>;
-
+using RedLED = Led<GPIO::G, PinNum::_12, LedActive::High>;	// DEBUG2
+using GreenLED = Led<GPIO::A, PinNum::_9, LedActive::High>; // D0
+using RedLED2 = RedLED;
+using GreenLED2 = GreenLED;
 using OrangeLED = RedLED2;
-using BlueLED = Led<GPIO::A, PinNum::_14, LedActive::Low>;
+using BlueLED = GreenLED2;
 
 constexpr uint32_t ConsoleUART = USART6_BASE;
 constexpr PinConf UartRX{GPIO::C, PinNum::_7, PinAF::AF_7};
 constexpr PinConf UartTX{GPIO::C, PinNum::_6, PinAF::AF_7};
+
+constexpr PinConf DFUBootPin{GPIO::E, PinNum::_11}; // DEBUG3
 
 namespace NORFlash
 {
