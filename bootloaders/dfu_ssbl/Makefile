@@ -11,6 +11,7 @@ USBLIBDIR = $(EXTLIBDIR)/STM32_USB_Device_Library
 
 SOURCES = startup.s \
 		  main.cc \
+		  syscalls.c \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/system/system_ca7.c \
@@ -27,11 +28,12 @@ SOURCES = startup.s \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_rcc_ex.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_hal_qspi.c \
 		  $(STM32HALDIR)/Src/stm32mp1xx_ll_rcc.c \
-		  usbd_conf.c \
-		  usbd_desc.c \
-		  usbd_dfu_media.cc \
-		  syscalls.c \
-		  norflash/qspi_flash_driver.cc \
+		  usb_dfu/usbd_conf.c \
+		  usb_dfu/usbd_desc.c \
+		  usb_dfu/usbd_dfu_media.cc \
+		  usb_dfu/norflash/qspi_flash_driver.cc \
+		  app_loader/norflash/qspi_ll.c \
+		  app_loader/norflash/qspi_norflash_read.c \
 		  $(USBLIBDIR)/Class/DFU/Src/usbd_dfu.c \
 		  $(USBLIBDIR)/Core/Src/usbd_core.c \
 		  $(USBLIBDIR)/Core/Src/usbd_ctlreq.c \
@@ -39,6 +41,7 @@ SOURCES = startup.s \
 
 
 INCLUDES = -I. \
+		   -Iusb_dfu \
 		   -I$(PATCHEDSTM32HALDIR) \
 		   -I$(EXTLIBDIR)/STM32MP1xx_HAL_Driver/Inc \
 		   -I$(EXTLIBDIR)/CMSIS/Core_A/Include \
@@ -47,7 +50,7 @@ INCLUDES = -I. \
 		   -I$(USBLIBDIR)/Class/DFU/Inc \
 		   -I$(USBLIBDIR)/Core/Inc \
 
-EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER
+EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER -DBOARD_CONF_PATH=board_conf/brainboard_p3_conf.hh
 
 # LINK_STDLIB = --specs=nosys.specs
 LINK_STDLIB =
