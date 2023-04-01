@@ -45,7 +45,7 @@
 // This is not safe, but could be necessary for overwriting the FSBL:
 // #define NORFLASH_DESC_STR "@NOR Flash        /0x70000000/999*4Kg"
 
-constexpr uint32_t DDRAppAddrStart = 0xC4000000;
+constexpr uint32_t DDRAppAddrStart = 0xC2000000;
 constexpr uint32_t DDRAppSizeBytes = 32 * 1024 * 1024;
 constexpr uint32_t DDRAppAddrEnd = DDRAppAddrStart + DDRAppSizeBytes;
 
