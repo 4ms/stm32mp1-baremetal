@@ -2,7 +2,7 @@
 #include "drivers/interrupt_control.hh"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
-#include "norflash//qspi_flash_conf.hh"
+#include "norflash/qspi_flash_conf.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
 #include "usbd_core.h"
@@ -26,17 +26,29 @@ extern PCD_HandleTypeDef hpcd;
 namespace
 {
 Uart<Board::ConsoleUART> uart;
-}
+bool dfu_mode_requested();
+} // namespace
 
 void main()
 {
-	uart.write("\n\nUSB DFU Device test\n");
-	uart.write("Connect a USB cable to a computer\n");
-	uart.write("Run `dfu-util --list` in a terminal and you should see this device.\n");
-	uart.write("It only works with NOR Flash\n");
+	// Check DFU pin:
+	// If it's open (high) -->  Try to Jump to App or else fall-through to DFU mode
+	// If it's jumpered shut (low) --> run DFU mode
 
-	// Board::GreenLED green1;
-	// green1.off();
+	if (!dfu_mode_requested()) {
+		constexpr uint32_t AppFlashSectorAddr = 0x100000;
+		// Load image
+		auto image_entry = reinterpret_cast<void (*)()>(AppFlashSectorAddr);
+		image_entry();
+	}
+
+	uart.write("\n\nUSB DFU Device\n");
+	uart.write("Connect a USB cable to the computer\n");
+	uart.write("Run `dfu-util --list` in a terminal and you should see this device.\n");
+	uart.write("Note: This DFU loader only works with DDR RAM and NOR Flash. TODO: SDMMC\n");
+
+	Board::GreenLED green1;
+	green1.off();
 
 	SystemClocks::init();
 
@@ -70,15 +82,32 @@ void main()
 		uint32_t tm = HAL_GetTick();
 		if (tm > (last_tm + 500)) {
 			last_tm = tm;
-			// if (led_state) {
-			// 	green1.off();
-			// } else {
-			// 	green1.on();
-			// }
+			if (led_state) {
+				green1.off();
+			} else {
+				green1.on();
+			}
 			led_state = !led_state;
 		}
 	}
 }
+
+namespace
+{
+bool dfu_mode_requested()
+{
+	Board::DFUBootPin.init(PinMode::Input, PinPull::Up, PinPolarity::Inverted);
+	uint32_t pin_read = 10000;
+	uint32_t dfu_pin_active = 0;
+
+	while (pin_read--) {
+		if (Board::DFUBootPin.read())
+			dfu_pin_active++;
+	}
+
+	return (dfu_pin_active > 5000);
+}
+} // namespace
 
 extern "C" int __io_putchar(int ch)
 {
