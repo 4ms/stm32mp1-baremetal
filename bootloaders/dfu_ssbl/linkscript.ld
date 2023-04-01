@@ -121,11 +121,6 @@ SECTIONS
 	} > HEAP
 	end = _sheap;
 
-	.virtdrive (NOLOAD):
-	{
-		*(.virtdrive)
-	} > VIRTDRIVE
-
     _user_stack_start = _ram_aligned_end; 
     _user_stack_end = _user_stack_start + 0x10000;
 
