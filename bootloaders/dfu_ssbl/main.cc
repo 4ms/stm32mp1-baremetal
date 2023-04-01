@@ -1,3 +1,4 @@
+#include "board_conf.hh"
 #include "drivers/interrupt.hh"
 #include "drivers/interrupt_control.hh"
 #include "drivers/leds.hh"
@@ -9,17 +10,6 @@
 #include "usbd_desc.h"
 #include "usbd_dfu_media.h"
 #include <cstdint>
-
-#include "brainboard_p3_conf.hh"
-#include "mmp9_conf.hh"
-#include "osd32brk_conf.hh"
-#include "stm32disco_conf.hh"
-
-// Uncomment one of these to select your board:
-// namespace Board = OSD32BRK;
-// namespace Board = STM32MP1Disco;
-// namespace Board = MMp9;
-namespace Board = Brainboard_p3;
 
 extern PCD_HandleTypeDef hpcd;
 
