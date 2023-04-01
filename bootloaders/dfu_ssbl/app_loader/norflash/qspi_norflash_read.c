@@ -1,4 +1,3 @@
-#include "delay.h"
 #include "qspi_ll.h"
 #include "stm32mp1xx.h"
 
