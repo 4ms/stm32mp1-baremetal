@@ -2,8 +2,7 @@
 #include "boot_detect.hh"
 #include "boot_image_def.hh"
 #include "boot_nor.hh"
-#include "boot_sd.hh"
-#include "compiler.h"
+// #include "boot_sd.hh" //not supported yet
 #include "print_messages.hh"
 
 struct AppImageInfo {
@@ -22,7 +21,7 @@ public:
 			pr_err("BootMediaLoader(): Unknown boot method\n");
 	}
 
-	bool load_image()
+	bool load_image(BootLoader::ImageType image_type = BootLoader::ImageType::SSBL)
 	{
 		if (!_loader) {
 			pr_err("BootMediaLoader::load_image(): Unknown boot method\n");
@@ -32,14 +31,14 @@ public:
 		BootImageDef::image_header header;
 		static_assert(sizeof(header) == BootImageDef::HeaderSize);
 
-		header = _loader->read_image_header();
+		header = _loader->read_image_header(image_type);
 
 		if (!_parse_header(header)) {
 			pr_err("No valid img header found\n");
 			return false;
 		}
 
-		bool ok = _loader->load_image(_image_info.load_addr, _image_info.size);
+		bool ok = _loader->load_image(_image_info.load_addr, _image_info.size, image_type);
 		if (!ok) {
 			pr_err("Failed reading boot media when loading app img\n");
 			return false;
@@ -75,18 +74,12 @@ public:
 private:
 	bool _image_loaded = false;
 	AppImageInfo _image_info;
-	// We don't have dynamic memory, so instead of having a static copy of each
-	// type of loader we use placement new.
-	uint8_t loader_storage[std::max(sizeof(BootSDLoader), sizeof(BootNorLoader))];
+	BootNorLoader s_loader;
 	BootLoader *_loader;
 
-	// To support a new boot media (such as NAND Flash),
-	// associate its class to the enum value BOOTROM uses for that media:
 	BootLoader *_get_boot_loader(BootDetect::BootMethod bootmethod)
 	{
-		return bootmethod == BootDetect::BOOT_NOR	 ? new (loader_storage) BootNorLoader :
-			   bootmethod == BootDetect::BOOT_SDCARD ? new (loader_storage) BootSDLoader :
-														 static_cast<BootLoader *>(nullptr);
+		return bootmethod == BootDetect::BOOT_NOR ? &s_loader : static_cast<BootLoader *>(nullptr);
 	}
 
 	bool _parse_header(BootImageDef::image_header &header)
@@ -141,5 +134,15 @@ private:
 		}
 
 		return false;
+	}
+
+	uint32_t be32_to_cpu(uint32_t x)
+	{
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		return ((((x)&0xff000000) >> 24) | (((x)&0x00ff0000) >> 8) | (((x)&0x0000ff00) << 8) |
+				(((x)&0x000000ff) << 24));
+#else
+		return x;
+#endif
 	}
 };

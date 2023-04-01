@@ -7,6 +7,7 @@ namespace BootImageDef
 
 // U-Boot uses these values for the location of the next boot stage, so we will also:
 constexpr uint32_t NorFlashSSBLAddr = 0x80000;
+constexpr uint32_t NorFlashKernelAddr = 0x100000;
 constexpr uint32_t SDCardSSBLPartition = 3;
 
 constexpr uint32_t IH_MAGIC = 0x27051956; /* Image Magic Number		*/
