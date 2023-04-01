@@ -27,6 +27,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx.h"
+#include <string.h> //for memset
 
 #define USB_USB_HS // used in usbd_core.c
 
@@ -48,13 +49,13 @@ extern "C" {
 #define USBD_MAX_NUM_CONFIGURATION 1U
 #define USBD_MAX_STR_DESC_SIZ 0x100U
 #define USBD_SELF_POWERED 1U
-#define USBD_DEBUG_LEVEL 3U
+#define USBD_DEBUG_LEVEL 0U
 #define USE_USB_HS
 
 #if (USBD_DEBUG_LEVEL > 0U)
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+// #include "print.hh" //FixMe: c++ but is included by c files
 #endif
 
 /* ECM, RNDIS, DFU Class Config */
@@ -146,8 +147,8 @@ extern "C" {
 #if (USBD_DEBUG_LEVEL > 0U)
 #define USBD_UsrLog(...)                                                                                               \
 	do {                                                                                                               \
-		printf(__VA_ARGS__);                                                                                           \
-		printf("\n");                                                                                                  \
+		print(__VA_ARGS__);                                                                                            \
+		print("\n");                                                                                                   \
 	} while (0)
 #else
 #define USBD_UsrLog(...)                                                                                               \
@@ -159,9 +160,9 @@ extern "C" {
 
 #define USBD_ErrLog(...)                                                                                               \
 	do {                                                                                                               \
-		printf("ERROR: ");                                                                                             \
-		printf(__VA_ARGS__);                                                                                           \
-		printf("\n");                                                                                                  \
+		print("ERROR: ");                                                                                              \
+		print(__VA_ARGS__);                                                                                            \
+		print("\n");                                                                                                   \
 	} while (0)
 #else
 #define USBD_ErrLog(...)                                                                                               \
@@ -172,9 +173,9 @@ extern "C" {
 #if (USBD_DEBUG_LEVEL > 2U)
 #define USBD_DbgLog(...)                                                                                               \
 	do {                                                                                                               \
-		printf("DEBUG : ");                                                                                            \
-		printf(__VA_ARGS__);                                                                                           \
-		printf("\n");                                                                                                  \
+		print("DEBUG : ");                                                                                             \
+		print(__VA_ARGS__);                                                                                            \
+		print("\n");                                                                                                   \
 	} while (0)
 #else
 #define USBD_DbgLog(...)                                                                                               \

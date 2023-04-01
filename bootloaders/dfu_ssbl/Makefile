@@ -11,7 +11,7 @@ USBLIBDIR = $(EXTLIBDIR)/STM32_USB_Device_Library
 
 SOURCES = startup.s \
 		  main.cc \
-		  syscalls.c \
+		  print.cc \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/system/system_ca7.c \
@@ -52,8 +52,8 @@ INCLUDES = -I. \
 
 EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER -DBOARD_CONF_PATH=board_conf/brainboard_p3_conf.hh
 
-# LINK_STDLIB = --specs=nosys.specs
-LINK_STDLIB =
+LINK_STDLIB = --specs=nosys.specs
+# LINK_STDLIB =
 
 include $(SHAREDDIR)/makefile-common.mk
 
