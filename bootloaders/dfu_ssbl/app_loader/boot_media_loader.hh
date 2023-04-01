@@ -86,7 +86,7 @@ private:
 	{
 		return bootmethod == BootDetect::BOOT_NOR	 ? new (loader_storage) BootNorLoader :
 			   bootmethod == BootDetect::BOOT_SDCARD ? new (loader_storage) BootSDLoader :
-													   static_cast<BootLoader *>(nullptr);
+														 static_cast<BootLoader *>(nullptr);
 	}
 
 	bool _parse_header(BootImageDef::image_header &header)
