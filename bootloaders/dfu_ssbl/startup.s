@@ -8,7 +8,6 @@
 .equ MODE_UND, 0x1B
 .equ MODE_SYS, 0x1F
 
-.equ UART4_TDR, 0x40010028
 
 .section .vector_table, "x"
 .global _Reset
@@ -26,10 +25,6 @@ _Reset:
 .section .resethandler
 Reset_Handler:
 	cpsid   if 										// Mask Interrupts
-
-	ldr r4, =UART4_TDR 								// UART: print 'A'
-	mov r0, #65
-	str r0, [r4]
 
 	mrc     p15, 0, r0, c1, c0, 0					// Read System Control register (SCTLR)
 	bic     r0, r0, #(0x1 << 12) 					// Clear I bit 12 to disable I Cache
@@ -113,16 +108,8 @@ bss_loop:
     strlt r0, [r1], #4
     blt bss_loop
 
-													// UART: print 'B'
-	mov r0, #66
-	str r0, [r4]
-
 	bl SystemInit 									// System and libc/cpp init
     bl __libc_init_array
-
-													// UART: print 'C'
-	mov r5, #67
-	str r5, [r4]
 
 	cpsie   i 										// Enable Interrupts
 
