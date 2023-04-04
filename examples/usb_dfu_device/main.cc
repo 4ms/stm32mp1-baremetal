@@ -1,10 +1,9 @@
-#include "board_conf.hh"
+#include "board_conf/qspi_flash_conf.hh"
 #include "drivers/interrupt.hh"
 #include "drivers/interrupt_control.hh"
 #include "drivers/leds.hh"
 #include "drivers/uart.hh"
 #include "norflash/norflash-loader.hh"
-#include "norflash/qspi_flash_conf.hh"
 #include "print.hh"
 #include "stm32mp1xx.h"
 #include "system_clk.hh"
@@ -12,6 +11,16 @@
 #include "usbd_desc.h"
 #include "usbd_dfu_media.h"
 #include <cstdint>
+
+// Uncomment one of these to select your board:
+// #include "osd32brk_conf.hh"
+// namespace Board = OSD32BRK;
+
+// #include "stm32disco_conf.hh"
+// namespace Board = STM32MP1Disco;
+
+#include "brainboard_p3_conf.hh"
+namespace Board = Brainboard_p3;
 
 namespace
 {

@@ -1,8 +1,8 @@
 #pragma once
+#include "board_conf/qspi_flash_conf.hh"
 #include "drivers/interrupt.hh"
 #include "drivers/interrupt_control.hh"
 #include "print.hh"
-#include "qspi_flash_conf.hh"
 #include "qspi_flash_driver.hh"
 #include "stm32mp1xx.h"
 #include "usbd_desc.h"

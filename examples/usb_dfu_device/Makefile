@@ -1,7 +1,7 @@
 BINARYNAME = main
 BUILDDIR = build
 
-OPTFLAG = -O0
+OPTFLAG = -O3
 
 EXTLIBDIR = ../../third-party
 SHAREDDIR = ../../shared
@@ -48,7 +48,7 @@ INCLUDES = -I. \
 		   -I$(USBLIBDIR)/Class/DFU/Inc \
 		   -I$(USBLIBDIR)/Core/Inc \
 
-EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER -DBOARD_CONF_PATH=board_conf/brainboard_p3_conf.hh
+EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER 
 
 LINK_STDLIB = --specs=nosys.specs
 # LINK_STDLIB =

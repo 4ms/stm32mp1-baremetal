@@ -15,14 +15,6 @@ constexpr uint32_t ConsoleUART = USART6_BASE;
 constexpr PinConf UartRX{GPIO::C, PinNum::_7, PinAF::AF_7};
 constexpr PinConf UartTX{GPIO::C, PinNum::_6, PinAF::AF_7};
 
-constexpr PinConf DFUBootPin{GPIO::E, PinNum::_11}; // DEBUG3
-
-namespace NORFlash
-{
-constexpr PinConf d2{GPIO::F, PinNum::_7, PinAF::AF_9};
-constexpr PinConf d3{GPIO::F, PinNum::_6, PinAF::AF_9};
-} // namespace NORFlash
-
 namespace PMIC
 {
 constexpr bool HasSTPMIC = false;
