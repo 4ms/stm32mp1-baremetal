@@ -10,6 +10,7 @@
 
 struct NorFlashDFULoader {
 	mdrivlib::QSpiFlash flash;
+	USBD_HandleTypeDef USBD_Device;
 
 	NorFlashDFULoader()
 		: flash{qspi_flash_conf}
@@ -27,7 +28,6 @@ struct NorFlashDFULoader {
 	{
 		extern PCD_HandleTypeDef hpcd;
 
-		USBD_HandleTypeDef USBD_Device;
 		// ST USB library assumes handle is cleared to 0's:
 		memset(&USBD_Device, 0, sizeof(USBD_Device));
 
