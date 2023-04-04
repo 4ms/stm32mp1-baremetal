@@ -1,5 +1,3 @@
-#include "app_loader/boot_detect.hh"
-#include "app_loader/boot_media_loader.hh"
 #include "board_conf.hh"
 #include "drivers/interrupt.hh"
 #include "drivers/interrupt_control.hh"
@@ -22,19 +20,6 @@ Uart<Board::ConsoleUART> uart;
 
 void main()
 {
-	// auto boot_method = BootDetect::read_boot_method();
-	// print("Booted from ", BootDetect::bootmethod_string(boot_method).data(), "\n");
-	// print("Loading app image...\n");
-
-	// constexpr uint32_t AppFlashSectorAddr = 0x100000;
-	// BootMediaLoader loader{boot_method};
-	// bool image_ok = loader.load_image(BootLoader::ImageType::Kernel);
-
-	// if (image_ok) {
-	// 	print("Jumping to app\n");
-	// 	loader.boot_image();
-	// }
-
 	print("\n\nUSB DFU Loader Starting...\n");
 
 	Board::GreenLED green1;

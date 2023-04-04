@@ -32,8 +32,6 @@ SOURCES = startup.s \
 		  usb_dfu/usbd_desc.c \
 		  usb_dfu/usbd_dfu_media.cc \
 		  usb_dfu/norflash/qspi_flash_driver.cc \
-		  app_loader/norflash/qspi_ll.c \
-		  app_loader/norflash/qspi_norflash_read.c \
 		  $(USBLIBDIR)/Class/DFU/Src/usbd_dfu.c \
 		  $(USBLIBDIR)/Core/Src/usbd_core.c \
 		  $(USBLIBDIR)/Core/Src/usbd_ctlreq.c \
