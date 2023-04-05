@@ -89,7 +89,7 @@ static uint16_t MEM_If_DeInit()
  */
 static uint16_t MEM_If_Erase(uint32_t addr)
 {
-	print("Erasing 0x", Hex{addr}, "\n");
+	// print("Erasing 0x", Hex{addr}, "\n");
 
 	if (addr >= DDRAppAddrStart && addr < DDRAppAddrEnd) {
 		uint32_t *mem_ptr = reinterpret_cast<uint32_t *>(DDRAppAddrStart);
@@ -119,7 +119,7 @@ static uint16_t MEM_If_Erase(uint32_t addr)
  */
 static uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t len)
 {
-	print("Writing ", len, " B from ", Hex{(uint32_t)&src}, " to ", Hex{(uint32_t)&dest});
+	// print("Writing ", len, " B from ", Hex{(uint32_t)src}, " to ", Hex{(uint32_t)dest}, "\n");
 
 	uint32_t addr = reinterpret_cast<uint32_t>(dest);
 
@@ -140,7 +140,6 @@ static uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t len)
 			print("ERROR: Failed to write to NOR Flash\n");
 			return 1;
 		}
-		// print("First word is 0x", Hex{src[0]}, Hex{src[1]}, Hex{src[2]}, Hex{src[3]}, "\n");
 
 		if (len > 1024) {
 			print("Warning: can only verify first 1024B\n");
@@ -156,7 +155,6 @@ static uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t len)
 				USBD_ErrLog("Not verified: ", Hex{check[i]}, " != ", Hex{src[i]}, " at ", dest + i, "\n");
 			}
 		}
-		print("OK\n");
 		return 0;
 	}
 
@@ -172,7 +170,7 @@ static uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t len)
  */
 static uint8_t *MEM_If_Read(uint8_t *src, uint8_t *dest, uint32_t len)
 {
-	print("Reading ", len, " B from ", Hex{(uint32_t)&src}, " to ", Hex{(uint32_t)&dest});
+	// print("Reading ", len, " B from ", Hex{(uint32_t)&src}, " to ", Hex{(uint32_t)&dest});
 
 	uint32_t addr = reinterpret_cast<uint32_t>(src);
 

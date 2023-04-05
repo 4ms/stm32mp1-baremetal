@@ -39,8 +39,9 @@ void main()
 	NorFlashDFULoader dfu_loader{qspi_flash_conf}; // TODO: Board::QspiFlashConf
 	dfu_loader.start();
 
-	print("Connect a USB cable to the computer\n");
+	print("Connect a USB cable to the computer.\n");
 	print("Run `dfu-util --list` in a terminal and you should see this device.\n");
+	print("\n");
 	print("Note: This DFU loader only works with NOR Flash. TODO: SDMMC and DDR RAM\n");
 	print("You must reboot after loading. TODO: auto-jump to app after detaching\n");
 
