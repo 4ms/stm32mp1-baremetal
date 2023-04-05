@@ -9,14 +9,17 @@ STM32HALDIR = $(EXTLIBDIR)/STM32MP1xx_HAL_Driver
 PATCHEDSTM32HALDIR = $(SHAREDDIR)/stm32hal_patched
 USBLIBDIR = $(EXTLIBDIR)/STM32_USB_Device_Library
 
+LOADADDR   = 0xC0200000
+ENTRYPOINT = 0xC0200000
+
 SOURCES = startup.s \
 		  main.cc \
 		  print.cc \
+		  mmu_ca7.c \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/system/system_ca7.c \
 		  $(SHAREDDIR)/system/irq_init.c \
-		  $(SHAREDDIR)/system/mmu_ca7.c \
 		  $(SHAREDDIR)/drivers/irq_handler.cc \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal.c \
 		  $(PATCHEDSTM32HALDIR)/stm32mp1xx_hal_pcd.c \

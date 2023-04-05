@@ -40,7 +40,7 @@ Reset_Handler:
 	mcr     p15, 0, r0, c1, c0, 1 					// Write CP15 Auxiliary Control Register
 
 													// Set Vector Base Address Register (VBAR) to point to this application's vector table
-	ldr    R0, =0xC2000040
+	ldr    R0, =0xC0200000
 	mcr    p15, 0, R0, c12, c0, 0
 
     												// FIQ stack
