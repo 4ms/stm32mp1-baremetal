@@ -41,7 +41,8 @@ constexpr inline uint32_t NOR_ERASE_TIME = 250;
 
 // TODO: make this a class, but we need to expose the C callbacks using a static instance
 using QSpiFlash = mdrivlib::QSpiFlash;
-QSpiFlash *flash = nullptr;
+static QSpiFlash *flash = nullptr;
+static uint32_t lowest_ddr_address_written = 0xFFFFFFFF;
 void dfu_set_qspi_driver(mdrivlib::QSpiFlash *flash_driver) { flash = flash_driver; }
 /////////////////
 
@@ -65,7 +66,18 @@ static uint16_t MEM_If_Init()
  */
 static uint16_t MEM_If_DeInit()
 {
-	print("DeInit DFU\n");
+	// Jump to the lowest_ddr_address_written if it's a valid DDR address
+	if (lowest_ddr_address_written < 0xDFFFFFFF && lowest_ddr_address_written > 0xC0000000) {
+		print("Jumping to ", Hex{lowest_ddr_address_written}, "\n");
+
+		auto image_entry = reinterpret_cast<void (*)()>(lowest_ddr_address_written);
+		image_entry();
+	}
+
+	// TODO: detect if we detached from Flash
+	// and then copy the image from Flash to the loadaddr
+	// and jump to the entrypoint
+
 	return 0;
 }
 
@@ -112,6 +124,9 @@ static uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t len)
 	uint32_t addr = reinterpret_cast<uint32_t>(dest);
 
 	if (addr >= DDRAppAddrStart && addr < DDRAppAddrEnd) {
+		if (lowest_ddr_address_written > addr)
+			lowest_ddr_address_written = addr;
+
 		while (len--) {
 			*dest++ = *src++;
 		}
@@ -125,7 +140,7 @@ static uint16_t MEM_If_Write(uint8_t *src, uint8_t *dest, uint32_t len)
 			print("ERROR: Failed to write to NOR Flash\n");
 			return 1;
 		}
-		print("First word is 0x", Hex{src[0]}, Hex{src[1]}, Hex{src[2]}, Hex{src[3]}, "\n");
+		// print("First word is 0x", Hex{src[0]}, Hex{src[1]}, Hex{src[2]}, Hex{src[3]}, "\n");
 
 		if (len > 1024) {
 			print("Warning: can only verify first 1024B\n");
