@@ -33,11 +33,11 @@ constexpr uint32_t NORAppSizeBytes = 15 * 1024 * 1024;
 constexpr uint32_t NORAppAddrEnd = NORAppAddrStart + NORAppSizeBytes;
 constexpr uint32_t NORMediaOffset = 0x70000000;
 
-constexpr inline uint32_t DDR_PROGRAM_TIME = 5;
-constexpr inline uint32_t DDR_ERASE_TIME = 5;
+constexpr inline uint32_t DDR_PROGRAM_TIME = 1;
+constexpr inline uint32_t DDR_ERASE_TIME = 1;
 
-constexpr inline uint32_t NOR_PROGRAM_TIME = 50;
-constexpr inline uint32_t NOR_ERASE_TIME = 250;
+constexpr inline uint32_t NOR_PROGRAM_TIME = 2; // actually takes 2ms to program, but DFU-util inserts 8ms between reads
+constexpr inline uint32_t NOR_ERASE_TIME = 100; // Takes 45ms
 
 // TODO: make this a class, but we need to expose the C callbacks using a static instance
 using QSpiFlash = mdrivlib::QSpiFlash;
