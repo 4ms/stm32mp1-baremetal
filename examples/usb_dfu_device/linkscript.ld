@@ -2,14 +2,11 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_Reset)
 
-/* This is an SSBL, so we load it into 0xC020'0000 - 0xC040'0000
- * This lets us load the final app into 0xC200'0000
- */
 MEMORY
 {
-    ROM (rx) : ORIGIN = 0xC0200000, LENGTH = 0x00100000 /* 1M */
-    RAM (rw): ORIGIN = 0xC0300000, LENGTH = 0x00100000  /* 1M */
-	HEAP (rw) : ORIGIN = 0xC0400000, LENGTH = 0x00100000 /* 1M */
+    ROM (rx) : ORIGIN = 0xC2000040, LENGTH = 0x0D000000 
+    RAM (rw): ORIGIN = 0xC0200000, LENGTH = 0x01000000 
+	HEAP (rw) : ORIGIN = 0xD0000000, LENGTH = 0x01000000 
 }
 
 __HEAP_SIZE = LENGTH(HEAP);
