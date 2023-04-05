@@ -9,8 +9,8 @@ UIMAGENAME ?= $(BUILDDIR)/a7-main.uimg
 SCRIPTDIR ?= ../../scripts
 
 OBJDIR = $(BUILDDIR)/obj/obj
-LOADADDR 	= 0xC2000040
-ENTRYPOINT 	= 0xC2000040
+LOADADDR 	?= 0xC2000040
+ENTRYPOINT 	?= 0xC2000040
 
 OBJECTS   = $(addprefix $(OBJDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
 DEPS   	  = $(addprefix $(OBJDIR)/, $(addsuffix .d, $(basename $(SOURCES))))
@@ -124,7 +124,7 @@ $(HEX): $(ELF)
 
 $(UIMAGENAME): $(BIN)
 	$(info Creating uimg file)
-	python3 $(SCRIPTDIR)/uimg_header.py $< $@
+	python3 $(SCRIPTDIR)/uimg_header.py $< $@ $(LOADADDR) $(ENTRYPOINT)
 
 %.d: ;
 
