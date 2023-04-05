@@ -36,8 +36,9 @@
 #define __RAM_BASE 0xC0300000
 #define __RAM_SIZE 0x01000000
 
-// #define __RAM2_BASE 0xC0300000
-// #define __RAM2_SIZE 0x01000000
+// RAM for loading into
+#define __RAM2_BASE 0xC2000000
+#define __RAM2_SIZE 0x1E000000
 
 #define __HEAP_BASE 0xC0400000
 #define __HEAP_SIZE 0x00100000
@@ -111,10 +112,10 @@ void MMU_CreateTranslationTable(void)
 	// Setting it to Normal works better. This shouldn't matter when U-boot loads the firmware.
 	// Todo: Investigate why this is!
 	MMU_TTSection(TTB_BASE, __ROM_BASE, __ROM_SIZE / 0x100000, Sect_Normal);
+	MMU_TTSection(TTB_BASE, __RAM2_BASE, __RAM2_SIZE / 0x100000, Sect_Normal); // writeable and executable
 
 	// RAM is RW, cacheable
 	MMU_TTSection(TTB_BASE, __RAM_BASE, __RAM_SIZE / 0x100000, Sect_Normal_RW);
-	// MMU_TTSection(TTB_BASE, __RAM2_BASE, __RAM2_SIZE / 0x100000, Sect_Normal_RW);
 	MMU_TTSection(TTB_BASE, __HEAP_BASE, __HEAP_SIZE / 0x100000, Sect_Normal_RW);
 
 	// SRAM1-4, used by Cortex-M4 MCU for code execution and stack
