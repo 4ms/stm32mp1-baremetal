@@ -22,7 +22,7 @@
 #include "print.hh"
 
 #define NORFLASH_DESC_STR "@NOR Flash        /0x70080000/999*4Kg"
-#define DDRRAM_DESC_STR "@DDR RAM          /0xC2000000/1*16Me"
+#define DDRRAM_DESC_STR "@DDR RAM          /0xC2000000/1*256Me"
 
 constexpr uint32_t DDRAppAddrStart = 0xC2000000;
 constexpr uint32_t DDRAppSizeBytes = 16 * 1024 * 1024;
