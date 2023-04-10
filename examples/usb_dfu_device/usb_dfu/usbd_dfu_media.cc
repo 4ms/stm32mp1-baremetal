@@ -22,7 +22,8 @@
 #include "print.hh"
 
 #define NORFLASH_DESC_STR "@NOR Flash        /0x70080000/999*4Kg"
-#define DDRRAM_DESC_STR "@DDR RAM          /0xC2000000/256*1Me/"
+#define DDRRAM_DESC_STR "@DDR RAM          /0xC2000000/256*1Me"
+#define DESC_STR "@NOR Flash And DDR/0x70080000/999*4Kg;/0xC2000000/256*1Me"
 
 constexpr uint32_t DDRAppAddrStart = 0xC2000000;
 constexpr uint32_t DDRAppSizeBytes = 16 * 1024 * 1024;
@@ -232,7 +233,7 @@ static uint16_t MEM_If_GetStatus(uint32_t addr, uint8_t cmd, uint8_t *buffer)
 }
 
 __ALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_MEDIA_fops __ALIGN_END = {
-	(uint8_t *)DDRRAM_DESC_STR NORFLASH_DESC_STR,
+	(uint8_t *)NORFLASH_DESC_STR,
 	MEM_If_Init,
 	MEM_If_DeInit,
 	MEM_If_Erase,
