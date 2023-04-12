@@ -46,7 +46,8 @@ compress = compress_none
 image_name = bytes("stm32mp1-baremetal image", "ascii")
 
 # Calculate some header entries:
-datalen = len(payload)
+header_size = 64
+datalen = len(payload) + header_size
 tmstamp = int(time.time())
 data_crc = zlib.crc32(payload) & 0xffffffff
 
