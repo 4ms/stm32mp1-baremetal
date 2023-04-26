@@ -9,6 +9,7 @@ SHAREDDIR = ../../shared
 SOURCES = startup.s \
 		  main.cc \
 		  systeminit.c \
+		  $(SHAREDDIR)/system/syscalls.c \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/print.cc \
