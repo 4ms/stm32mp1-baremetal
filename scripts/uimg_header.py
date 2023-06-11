@@ -40,7 +40,7 @@ image_name = bytes("stm32mp1-baremetal image", "ascii")
 
 # Calculate some header entries:
 header_size = 64
-datalen = len(payload) + header_size
+datalen = len(payload)
 tmstamp = int(time.time())
 data_crc = zlib.crc32(payload) & 0xffffffff
 
