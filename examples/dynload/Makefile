@@ -11,6 +11,7 @@ PATCHEDSTM32HALDIR = $(SHAREDDIR)/stm32hal_patched
 
 SOURCES = startup.s \
 		  main.cc \
+		  common.cc \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/system/system_ca7.c \
