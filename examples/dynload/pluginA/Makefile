@@ -11,7 +11,7 @@ PATCHEDSTM32HALDIR = $(SHAREDDIR)/stm32hal_patched
 
 SOURCES = startup.s \
 		  main.cc \
-		  plugin_api/common.cc \
+		  common.cc \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
 		  $(SHAREDDIR)/system/system_ca7.c \
@@ -32,8 +32,6 @@ INCLUDES = -I. \
 		   -I$(SHAREDDIR)\
 
 EXTRA_ARCH_CFLAGS = -DUSE_HAL_DRIVER
-
-LINKSCR = linkscript.ld
 
 include $(SHAREDDIR)/makefile-common.mk
 
