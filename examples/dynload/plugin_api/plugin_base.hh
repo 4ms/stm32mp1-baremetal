@@ -1,13 +1,9 @@
 #pragma once
-#include "common.hh"
-#include <cstdint>
+#include "module.hh"
+#include <string_view>
 
 class PluginBase {
 public:
-	virtual void init() = 0;
-	virtual float get_val(Channel &chan) = 0;
-	virtual void set_val(Channel const &chan, float val) = 0;
-	virtual void update() = 0;
-
-	float data[4];
+	std::string_view name;
+	PluginModule *module;
 };
