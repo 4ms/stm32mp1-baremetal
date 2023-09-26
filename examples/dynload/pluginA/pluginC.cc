@@ -1,5 +1,11 @@
 #include <cstddef>
+
+// internal functions
+unsigned calc_something(unsigned);
 void statics_init();
+
+// foreign function
+int external_call(int);
 
 // Global data (bss)
 int zero_data{};
@@ -8,10 +14,9 @@ int zero_data{};
 int init_data[4]{1, 2, 3, 4};
 
 // Global data (RO)
-const int const_data[4]{11, 22, 33, 44};
+extern const int const_data[4]; //{0xAAAA, 0x55BB, 0x1234, 0x12345678};
 
 // Runtime calculated data (on plugin load)
-unsigned calc_something(unsigned);
 unsigned init_runtime[4]{calc_something(3), calc_something(6), calc_something(9), calc_something(12)};
 
 // C++ static data
@@ -40,4 +45,6 @@ __attribute__((section(".ismain"))) void init_plugin(int *result)
 
 	for (auto d : StaticData::constexpr_data)
 		*result += d;
+
+	*result += external_call(*result);
 }
