@@ -22,8 +22,13 @@ add_executable(pluginC.elf pluginC.cc calc.cc init.cc)
 
 target_link_libraries(pluginC.elf PUBLIC mp15xa7_arch)
 
-target_compile_options(pluginC.elf PUBLIC -fPIC -ffreestanding -nostdlib
-                                          -nostartfiles)
+# target_compile_options(pluginC.elf PUBLIC -fPIC)
+
+# spb and ofp make no difference
+#
+target_compile_options(pluginC.elf PUBLIC -fpie -msingle-pic-base
+-fomit-frame-pointer)
+
 target_link_script(
   pluginC
   ${CMAKE_CURRENT_LIST_DIR}/linkscript.ld
@@ -32,7 +37,9 @@ target_link_script(
   -ffreestanding
   -nostartfiles
   -nostdlib
-  -fPIC)
+  -fPIC
+  -Wl,--unresolved-symbols=ignore-in-object-files
+  -Wl,--emit-relocs)
 
 add_bin_hex_command(pluginC)
 
