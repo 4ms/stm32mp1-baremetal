@@ -29,7 +29,7 @@ OPTFLAG ?= -O0
 
 AFLAGS = $(MCU)
 
-CFLAGS = -g2 \
+CFLAGS ?= -g2 \
 		 -fno-common \
 		 $(ARCH_CFLAGS) \
 		 $(MCU) \
@@ -38,13 +38,13 @@ CFLAGS = -g2 \
 		 -nostartfiles \
 		 -ffreestanding \
 		 $(EXTRACFLAGS)\
+		 -c \
 
-CXXFLAGS = $(CFLAGS) \
+CXXFLAGS ?= $(CFLAGS) \
 		-std=c++2a \
 		-fno-rtti \
 		-fno-exceptions \
 		-fno-unwind-tables \
-		-ffreestanding \
 		-fno-threadsafe-statics \
 		-mno-unaligned-access \
 		-Werror=return-type \
@@ -55,7 +55,7 @@ CXXFLAGS = $(CFLAGS) \
 
 LINK_STDLIB ?= -nostdlib
 
-LFLAGS = -Wl,--gc-sections \
+LFLAGS ?= -Wl,--gc-sections \
 		 -Wl,-Map,$(BUILDDIR)/$(BINARYNAME).map,--cref \
 		 $(MCU)  \
 		 -T $(LINKSCR) \
@@ -104,12 +104,12 @@ $(OBJDIR)/%.o: %.s
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
-	@$(CC) -c $(DEPFLAGS) $(OPTFLAG) $(CFLAGS) $< -o $@
+	@$(CC) $(DEPFLAGS) $(OPTFLAG) $(CFLAGS) $< -o $@
 
 $(OBJDIR)/%.o: %.c[cp]* $(OBJDIR)/%.d
 	@mkdir -p $(dir $@)
 	$(info Building $< at $(OPTFLAG))
-	@$(CXX) -c $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
+	@$(CXX) $(DEPFLAGS) $(OPTFLAG) $(CXXFLAGS) $< -o $@
 
 $(ELF): $(OBJECTS) $(LINKSCR)
 	$(info Linking...)
