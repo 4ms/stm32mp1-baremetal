@@ -131,13 +131,13 @@ You need:
   - A computer with the
 	[arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)
 	toolchain installed (v8 or later)
-    - See [Setup](./Setup.md) for details on installing the required software on your computer.
+    - See [Setup](./docs/Setup.md) for details on installing the required software on your computer.
   - Various common USB cables, depending on which board you select
   - A micro SD card
   - A USB-to-serial cable (only if you use the OSD32 board) such as the [FTDI cable](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/TTL-232R-3V3/1836393)
   - Optionally, a J-Link or ST-LINK debugger (only if you use the OSD32 board -- the Discovery board has an ST-LINK on-board)
 
-![Image of STM32MP157A-DK1 board](https://www.st.com/bin/ecommerce/api/image.PF268547.en.feature-description-include-personalized-no-cpn-large.jpg)
+![Image of STM32MP157A-DK1 board](docs/stm32mp157a-dk1.jpg)
 *STM32MP157A-DK1 Discovery board*
 
 ![Image of OSD32MP1-BRK board](https://octavosystems.com/octavosystems.com/wp-content/uploads/2020/02/OSD32MP1-BRK-Features-product-carousel.png)
