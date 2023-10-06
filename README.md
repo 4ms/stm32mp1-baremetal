@@ -131,6 +131,7 @@ You need:
   - A computer with the
 	[arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)
 	toolchain installed (v8 or later)
+    - See [Setup](./Setup.md) for details on installing the required software on your computer.
   - Various common USB cables, depending on which board you select
   - A micro SD card
   - A USB-to-serial cable (only if you use the OSD32 board) such as the [FTDI cable](https://www.digikey.com/en/products/detail/ftdi-future-technology-devices-international-ltd/TTL-232R-3V3/1836393)
