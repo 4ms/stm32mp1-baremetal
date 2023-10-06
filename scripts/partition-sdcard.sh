@@ -23,13 +23,22 @@ fi
 
 echo ""
 echo "Device $1 found, removing partitions"
+
+echo "sudo sgdisk -Z $1"
+sudo sgdisk -g $1  || exit
+
 echo "sudo sgdisk -o $1"
-sudo sgdisk -o $1 
+sudo sgdisk -o $1 || exit
 
 echo ""
 echo "Partitioning..."
-echo "sudo sgdisk --resize-table=128 -a 1 -n 1:34:545 -c 1:fsbl1 -n 2:546:1057 -c 2:fsbl2 -n 3:1058:5153 -c 3:ssbl -N 4 -c 4:prog -p $1"
-sudo sgdisk --resize-table=128 -a 1 -n 1:34:545 -c 1:fsbl1 -n 2:546:1057 -c 2:fsbl2 -n 3:1058:5153 -c 3:ssbl -N 4 -c 4:prog -p $1
+echo "sudo sgdisk --resize-table=128 -a 1 -n 1:34:545 -c 1:fsbl1 -n 2:546:1057 -c 2:fsbl2 -n 3:1058:17441 -c 3:ssbl -N 4 -c 4:prog -p $1"
+sudo sgdisk --resize-table=128 -a 1 \
+	-n 1:34:545 -c 1:fsbl1 \
+	-n 2:546:1057 -c 2:fsbl2 \
+	-n 3:1058:17441 -c 3:ssbl \
+	-N 4 -c 4:prog \
+	-p $1
 
 echo ""
 echo "Formatting partition 4 as FAT32"

@@ -244,29 +244,25 @@ ls -l build/fsbl.stm32
 ## 3) Loading the bootloader onto your SD card
 
 Now you need to format and partition an SD card.  Insert a card and do:
-```
-## Linux:
-mkfs.fat -F 32 /dev/sdX
 
-## MacOS:
-diskutil eraseDisk FAT32 BAREMETA /dev/disk#
-```
-Where /dev/sdX or /dev/disk# is the actual device name, such as /dev/sdc or /dev/disk3. 
-
-_If you need to find out what the device is, you can type `ls -l /dev/sd` or `ls -l /dev/disk` and then hit Tab.
-Or, on macOS you can type `mount` instead of `ls -l /dev/disk<TAB>`
-Take note of what it lists. Then remove (or insert) the SD card, and repeat the command. Whatever changed is the SD card's device name(s). Use the base name, e.g. /dev/sdc, not /dev/sdc3._
-
-You also could use the script `format-sdcard.sh`, though it's just a wrapper around the above commands.
-
-I recommend you eject and re-insert the card at this point (you might get some cryptic errors if you don't).
-
-Then run the script to partition the drive 
 ```
 scripts/partition-sdcard.sh /dev/XXX 
 ```
-...where /dev/XXX is the SD card device name such as /dev/sdc or /dev/disk2
+
+Where /dev/XXX is the actual device name, such as /dev/sdc or /dev/disk3. 
+Take care to get the device name right because the script will FULLY ERASE
+whatever device you tell it!
+
 This script will create four partitions, and format the fourth to FAT32.
+
+_If you need to find out what the device is, you can type `ls -l /dev/sd` or
+`ls -l /dev/disk` and then hit Tab. Or, on macOS you can type `mount` instead
+of `ls -l /dev/disk<TAB>` Take note of what it lists. Then remove (or insert)
+the SD card, and repeat the command. Whatever changed is the SD card's device
+name(s). Use the base name, e.g. /dev/sdc, not /dev/sdc3._
+
+I recommend you eject and re-insert the card at this point (you might get some
+cryptic errors if you don't).
 
 Then run the script to copy the bootloader to the first two or three partitions:
 
