@@ -6,6 +6,7 @@
 #include "drivers/cycle_counter.hh"
 #include "drivers/i2c.hh"
 #include "rcc_conf.hh"
+#include "util/callable.hh"
 
 using AudioInBuffer = AudioStreamConf::AudioInBuffer;
 using AudioOutBuffer = AudioStreamConf::AudioOutBuffer;
@@ -24,7 +25,7 @@ class AudioStream {
 	static inline __attribute__((section(".noncachable"))) AudioOutBlock audio_out_dma_block;
 
 public:
-	using AudioProcessFunction = std::function<void(AudioInBuffer &, AudioOutBuffer &)>;
+	using AudioProcessFunction = Function<void(AudioInBuffer &, AudioOutBuffer &)>;
 
 	AudioStream()
 		: i2c{i2c_conf}
