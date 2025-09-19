@@ -1,6 +1,6 @@
 #include "audio_stream.hh"
-#include "drivers/uart.hh"
-// #include "stm32disco_buttons_conf.hh"
+// #include "drivers/uart.hh"
+//  #include "stm32disco_buttons_conf.hh"
 #include "stm32mp1xx.h"
 
 #include "synth_list.hh"
@@ -10,22 +10,34 @@
 int main()
 {
 	// UI
-	Uart<USART6_BASE> uart;
-	uart.write("\r\n\r\nStarting Audio Processor\r\n");
-	uart.write("Press User1 button to select a synth\r\n");
+	// Uart<USART6_BASE> uart;
+	// uart.write("\r\n\r\nStarting Audio Processor\r\n");
+	// uart.write("Press User1 button to select a synth\r\n");
 
 	// User1Button button1;
 	// User2Button button2;
 
-	SynthList synths;
-	int current_synth = SynthList::Synths::DualFMOscillators;
+	// SynthList synths;
+	// int current_synth = SynthList::Synths::DualFMOscillators;
 
-	uart.write("Using Synth: ");
-	uart.write(synths.name[current_synth]);
-	uart.write("\r\n");
+	// uart.write("Using Synth: ");
+	// uart.write(synths.name[current_synth]);
+	// uart.write("\r\n");
 
 	AudioStream audio;
-	audio.start(synths.process_func[current_synth]);
+
+	uint16_t phase{};
+
+	audio.start([&phase](AudioInBuffer &in, AudioOutBuffer &out) {
+		static constexpr uint16_t inc = 1.f / AudioStreamConf::SampleRate * 440 * 65536;
+		for (auto &o : out) {
+			const auto samp = phase << 8; // 24 bit?? unsigned?
+			for (auto &c : o.chan) {
+				c = samp;
+			}
+			phase += inc;
+		}
+	});
 
 	constexpr uint32_t LoadTimerStartingValue = 5000000;
 	uint32_t display_load_timer = LoadTimerStartingValue;
@@ -36,15 +48,15 @@ int main()
 
 		// Select synth
 		// if (button1.is_just_pressed()) {
-		current_synth++;
-		if (current_synth == SynthList::NumSynths)
-			current_synth = 0;
+		//		current_synth++;
+		//		if (current_synth == SynthList::NumSynths)
+		//			current_synth = 0;
 
-		audio.set_process_function(synths.process_func[current_synth]);
+		//		audio.set_process_function(synths.process_func[current_synth]);
 
-		uart.write("Using Synth: ");
-		uart.write(synths.name[current_synth]);
-		uart.write("\r\n");
+		//	uart.write("Using Synth: ");
+		//	uart.write(synths.name[current_synth]);
+		//	uart.write("\r\n");
 
 		// Let the new synth run for a bit, so we get an accurate load measurement
 		display_load_timer = LoadTimerStartingValue;
@@ -55,9 +67,9 @@ int main()
 		// }
 
 		if (display_load_timer == 1) {
-			uart.write("Current load: ");
-			uart.write(audio.get_load_measurement());
-			uart.write("%\r\n\r\n");
+			//		uart.write("Current load: ");
+			//		uart.write(audio.get_load_measurement());
+			//		uart.write("%\r\n\r\n");
 		}
 		if (display_load_timer)
 			display_load_timer--;
