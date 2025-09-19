@@ -36,7 +36,6 @@ CFLAGS = -g2 \
 		 $(INCLUDES) \
 		 -fdata-sections -ffunction-sections \
 		 -nostartfiles \
-		 -ffreestanding \
 		 $(EXTRACFLAGS)\
 
 CXXFLAGS = $(CFLAGS) \
@@ -44,7 +43,6 @@ CXXFLAGS = $(CFLAGS) \
 		-fno-rtti \
 		-fno-exceptions \
 		-fno-unwind-tables \
-		-ffreestanding \
 		-fno-threadsafe-statics \
 		-mno-unaligned-access \
 		-Werror=return-type \
@@ -61,7 +59,6 @@ LFLAGS = -Wl,--gc-sections \
 		 -T $(LINKSCR) \
 		 $(LINK_STDLIB) \
 		 -nostartfiles \
-		 -ffreestanding \
 		 $(EXTRALDFLAGS) \
 
 DEPFLAGS = -MMD -MP -MF $(OBJDIR)/$(basename $<).d
