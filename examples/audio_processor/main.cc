@@ -24,14 +24,14 @@ int main()
 	// uart.write(synths.name[current_synth]);
 	// uart.write("\r\n");
 
-	AudioStream audio;
+	AudioStream audio{};
 
 	uint16_t phase{};
 
 	audio.start([&phase](AudioInBuffer &in, AudioOutBuffer &out) {
 		static constexpr uint16_t inc = 1.f / AudioStreamConf::SampleRate * 440 * 65536;
 		for (auto &o : out) {
-			const auto samp = phase << 8; // 24 bit?? unsigned?
+			const auto samp = (phase - 32768l) << 8; // 24 bit?? unsigned?
 			for (auto &c : o.chan) {
 				c = samp;
 			}
