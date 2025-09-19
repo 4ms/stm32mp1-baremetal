@@ -1,0 +1,5 @@
+Halt
+LoadFile build/main-uimg.bin 0xC0000000 noreset
+W4 0x5C00A118 0xC0000000
+Go
+quit
