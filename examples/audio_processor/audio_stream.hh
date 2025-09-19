@@ -35,8 +35,8 @@ public:
 		HAL_RCCEx_PeriphCLKConfig(&rcc_periph_clk_conf);
 
 		codec.init();
-		codec.set_rx_buffers(audio_in_dma_block[0]);
-		codec.set_tx_buffers(audio_out_dma_block[0]);
+		codec.set_rx_buffer<AudioStreamConf::AudioInFrame>(audio_in_dma_block[0], AudioStreamConf::BlockSize);
+		codec.set_tx_buffer<AudioStreamConf::AudioOutFrame>(audio_out_dma_block[0], AudioStreamConf::BlockSize);
 		load_measurer.init();
 	}
 
