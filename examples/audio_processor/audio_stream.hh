@@ -32,9 +32,14 @@ public:
 		, codec{i2c, sai_conf}
 	{
 		// Setup clocks needed for codec
-		HAL_RCCEx_PeriphCLKConfig(&rcc_periph_clk_conf);
+		{
+			HAL_RCCEx_PeriphCLKConfig(&rcc_periph_clk_conf);
+			HAL_Delay(1);
+		}
 
-		codec.init();
+		auto err = codec.init();
+		if (err != CodecBase::Error::CODEC_NO_ERR)
+			__BKPT(5);
 		codec.set_rx_buffer<AudioStreamConf::AudioInFrame>(audio_in_dma_block[0], AudioStreamConf::BlockSize);
 		codec.set_tx_buffer<AudioStreamConf::AudioOutFrame>(audio_out_dma_block[0], AudioStreamConf::BlockSize);
 		load_measurer.init();
@@ -42,9 +47,9 @@ public:
 
 	void set_process_function(AudioProcessFunction &process) { _process_func = process; }
 
-	void start(AudioProcessFunction &&process)
+	void start(auto process)
 	{
-		_process_func = std::move(process);
+		_process_func = process;
 		codec.set_callbacks([this] { _process<1>(); }, [this] { _process<0>(); });
 		codec.start();
 	}
