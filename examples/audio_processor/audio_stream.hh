@@ -42,9 +42,9 @@ public:
 
 	void set_process_function(AudioProcessFunction &process) { _process_func = process; }
 
-	void start(AudioProcessFunction &process)
+	void start(AudioProcessFunction &&process)
 	{
-		_process_func = process;
+		_process_func = std::move(process);
 		codec.set_callbacks([this] { _process<1>(); }, [this] { _process<0>(); });
 		codec.start();
 	}
