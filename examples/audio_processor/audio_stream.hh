@@ -1,10 +1,10 @@
 #pragma once
 #include "audio_codec_conf.hh"
 #include "audio_stream_conf.hh"
-#include "drv/cache.hh"
-#include "drv/codec_CS42L51.hh"
-#include "drv/cycle_counter.hh"
-#include "drv/i2c.hh"
+#include "drivers/cache.hh"
+#include "drivers/codec_PCM3060.hh"
+#include "drivers/cycle_counter.hh"
+#include "drivers/i2c.hh"
 #include "rcc_conf.hh"
 
 using AudioInBuffer = AudioStreamConf::AudioInBuffer;
@@ -14,7 +14,7 @@ using AudioOutBlock = AudioStreamConf::AudioOutBlock;
 
 class AudioStream {
 	mdrivlib::I2CPeriph i2c;
-	mdrivlib::CodecCS42L51 codec;
+	mdrivlib::CodecPCM3060 codec;
 
 	// DMA buffers must be in a region of RAM that's not cached
 	// -- OR -- we have to use cache maintenance routines
@@ -39,10 +39,7 @@ public:
 		load_measurer.init();
 	}
 
-	void set_process_function(AudioProcessFunction &process)
-	{
-		_process_func = process;
-	}
+	void set_process_function(AudioProcessFunction &process) { _process_func = process; }
 
 	void start(AudioProcessFunction &process)
 	{
@@ -51,10 +48,7 @@ public:
 		codec.start();
 	}
 
-	uint32_t get_load_measurement()
-	{
-		return (uint32_t)(audio_load_smoothed * 100.f);
-	}
+	uint32_t get_load_measurement() { return (uint32_t)(audio_load_smoothed * 100.f); }
 
 	template<uint32_t buffer_half>
 	void _process()

@@ -11,15 +11,15 @@ mdrivlibdir = lib/mdrivlib
 SOURCES = main.cc \
 		  mmu_ca7.c \
 		  startup.s \
+		  get_tick.cc \
 		  lib/util/math_tables.cc \
-		  drv/i2c.cc \
-		  drv/pin.cc \
-		  drv/codec_CS42L51.cc \
-		  drv/sai_tdm.cc \
-		  drv/cycle_counter.cc \
-		  drv/hal_handlers.cc \
-		  drv/interrupt_handler.cc \
-		  drv/irq_ctrl.c \
+		  mdrivlib/drivers/i2c.cc \
+		  mdrivlib/drivers/pin.cc \
+		  mdrivlib/drivers/codec_PCM3060.cc \
+		  mdrivlib/target/stm32mp1_ca7/drivers/sai_tdm.cc \
+		  mdrivlib/target/stm32mp1_ca7/drivers/cycle_counter.cc \
+		  mdrivlib/target/stm32mp1_ca7/drivers/interrupt_handler.cc \
+		  mdrivlib/target/stm32mp1_ca7/boot/irq_ctrl.c \
 		  $(SHAREDDIR)/system/system_ca7.c \
 		  $(SHAREDDIR)/system/libc_stub.c \
 		  $(SHAREDDIR)/system/libcpp_stub.cc \
@@ -42,8 +42,10 @@ SOURCES = main.cc \
 INCLUDES = -I. \
 		   -I.. \
 		   -Ilib \
-		   -Iutil \
-		   -Idrv \
+		   -Icpputil \
+		   -Imdrivlib/ \
+		   -Imdrivlib/target/stm32mp1 \
+		   -Imdrivlib/target/stm32mp1_ca7 \
 		   -I$(SHAREDDIR) \
 		   -I$(SHAREDDIR)/drivers \
 		   -I$(STM32HALDIR)/Inc \
@@ -65,6 +67,7 @@ EXTRACFLAGS = -DUSE_HAL_DRIVER \
 				-mno-unaligned-access \
 				-funsafe-math-optimizations \
 				-mvectorize-with-neon-quad \
+				-Wfatal-errors
 			  
 EXTRACXXFLAGS =  \
 
