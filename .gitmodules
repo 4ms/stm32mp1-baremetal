@@ -1,0 +1,3 @@
+[submodule "examples/audio_processor/mdrivlib"]
+	path = examples/audio_processor/mdrivlib
+	url = git@github.com:4ms/mdrivlib
