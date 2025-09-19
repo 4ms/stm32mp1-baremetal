@@ -1,20 +1,22 @@
-#include "drv/i2c_config_struct.hh"
-#include "drv/sai_config_struct.hh"
+#include "drivers/i2c_config_struct.hh"
+#include "drivers/sai_config_struct.hh"
+
+using namespace mdrivlib;
 
 using mdrivlib::I2CConfig;
 
 const I2CConfig i2c_conf = {
-	.I2Cx = I2C1,
-	.SCL = {mdrivlib::GPIO::D, 12, LL_GPIO_AF_5},
-	.SDA = {mdrivlib::GPIO::F, 15, LL_GPIO_AF_5},
+	.I2Cx = I2C6,
+	.SCL = {GPIO::A, PinNum::_11, PinAF::AltFunc2},
+	.SDA = {GPIO::A, PinNum::_12, PinAF::AltFunc2},
 	.timing =
 		{
-			.PRESC = 0x20,
-			.SCLDEL_SDADEL = 0x90,
-			.SCLH = 0x19,
-			.SCLL = 0x45,
+			.PRESC = 0x40,
+			.SCLDEL_SDADEL = 0xFF,
+			.SCLH = 0x90,
+			.SCLL = 0x90,
 		},
-	.priority1 = 0,
+	.priority1 = 2,
 	.priority2 = 1,
 };
 
@@ -24,22 +26,24 @@ const SaiConfig sai_conf = {
 	.sai = SAI2,
 	.tx_block = SAI2_Block_A,
 	.rx_block = SAI2_Block_B,
+
 	.mode = SaiConfig::TXMaster,
+
 	.dma_init_tx =
 		{
-			.DMAx = DMA1,
-			.stream = DMA1_Stream0,
+			.DMAx = DMA2,
+			.stream = DMA2_Stream1,
 			.channel = DMA_REQUEST_SAI2_A,
-			.IRQn = DMA1_Stream0_IRQn,
+			.IRQn = DMA2_Stream1_IRQn,
 			.pri = 1,
 			.subpri = 1,
 		},
 	.dma_init_rx =
 		{
-			.DMAx = DMA1,
-			.stream = DMA1_Stream1,
+			.DMAx = DMA2,
+			.stream = DMA2_Stream2,
 			.channel = DMA_REQUEST_SAI2_B,
-			.IRQn = DMA1_Stream1_IRQn,
+			.IRQn = DMA2_Stream2_IRQn,
 			.pri = 1,
 			.subpri = 1,
 		},
@@ -48,14 +52,15 @@ const SaiConfig sai_conf = {
 	.framesize = 32,
 	.samplerate = 48000,
 
-	.MCLK = {mdrivlib::GPIO::E, 0, LL_GPIO_AF_10},
-	.SCLK = {mdrivlib::GPIO::I, 5, LL_GPIO_AF_10},
-	.LRCLK = {mdrivlib::GPIO::I, 7, LL_GPIO_AF_10},
-	.SD_DAC = {mdrivlib::GPIO::I, 6, LL_GPIO_AF_10},  // PI6 = SAI2_SD_A
-	.SD_ADC = {mdrivlib::GPIO::F, 11, LL_GPIO_AF_10}, // PF11 = SAI2_SD_B
-	.reset_pin = {mdrivlib::GPIO::G, 9},
+	.MCLK = {GPIO::E, PinNum::_0, PinAF::AltFunc10},
+	.SCLK = {GPIO::D, PinNum::_13, PinAF::AltFunc10},
+	.LRCLK = {GPIO::D, PinNum::_12, PinAF::AltFunc10},
+	.SD_DAC = {GPIO::D, PinNum::_11, PinAF::AltFunc10}, // SD A
+	.SD_ADC = {GPIO::G, PinNum::_10, PinAF::AltFunc10}, // SD B
 
-	.bus_address = 0,
+	.reset_pin = {GPIO::A, PinNum::_10},
+
+	.bus_address = 0b00,
 
 	.num_tdm_ins = 2,
 	.num_tdm_outs = 2,
