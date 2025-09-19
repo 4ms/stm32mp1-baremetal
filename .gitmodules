@@ -1,3 +1,6 @@
 [submodule "examples/audio_processor/mdrivlib"]
 	path = examples/audio_processor/mdrivlib
 	url = git@github.com:4ms/mdrivlib
+[submodule "examples/audio_processor/cpputil"]
+	path = examples/audio_processor/cpputil
+	url = git@github.com:4ms/cpputil
